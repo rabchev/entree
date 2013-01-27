@@ -1,0 +1,15 @@
+{
+    "name"              : "entree",
+    "description"       : "Data provider model abstraction.",
+    "version"           : "0.0.1-beta-1",
+    "main"              : "index",
+    "scripts"           : {
+        "start"             : "node ./examples/blog-app"
+    },
+    "dependencies"      : {
+    },
+    "devDependencies"   : {
+        "nodeunit"          : "*",
+        "rewire"            : "*"
+    }
+}

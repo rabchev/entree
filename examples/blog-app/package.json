@@ -1,0 +1,14 @@
+{
+    "name"              : "blog-app",
+    "description"       : "Entree example application.",
+    "version"           : "0.0.1",
+    "main"              : "app",
+    "scripts"           : {
+        "start"             : "node app"
+    },
+    "dependencies"      : {
+        "mongodb"           : "*",
+        "express"           : "*",
+        "hbs"               : "*"
+    }
+}
