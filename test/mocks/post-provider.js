@@ -2,21 +2,33 @@
 /*global require, exports, module */
 
 var Provider    = require("../../lib/provider"),
-    util        = require("util");
+    util        = require("util"),
+    uuid        = require('node-uuid');
 
 function PostProvider(connStr, options) {
     Provider.call(this, connStr, options);
     this.store = [];
 }
 
+util.inherits(PostProvider, Provider);
+
 PostProvider.prototype._insert = function (item, callback) {
     "use strict";
     
+    var that    = this,
+        id      = that._getId(item);
+    
+    if (!id) {
+        id = uuid.v1();
+        item[this.options.identifier] = id;
+    }
+    
     process.nextTick(function () {
-        if (this.store[item._id]) {
+        var sid = "" + id;
+        if (that.store[item[sid]]) {
             callback(new Error("Item exists."));
         } else {
-            this.store[item._id] = item;
+            that.store[item[sid]] = item;
             callback(null, item);
         }
     });
@@ -25,8 +37,16 @@ PostProvider.prototype._insert = function (item, callback) {
 PostProvider.prototype._upsert = function (item, callback) {
     "use strict";
     
+    var that    = this,
+        id      = that._getId(item);
+    
+    if (!id) {
+        id = uuid.v1();
+        item[this.options.identifier] = id;
+    }
+    
     process.nextTick(function () {
-        this.store[item._id] = item;
+        that.store["" + id] = item;
         callback(null, item);
     });
 };
@@ -34,12 +54,40 @@ PostProvider.prototype._upsert = function (item, callback) {
 PostProvider.prototype._update = function (item, callback) {
     "use strict";
     
+    var that    = this,
+        id      = that._getId(item);
+    
+    if (!id) {
+        callback(new Error("Identifier not specified."));
+    }
+    
     process.nextTick(function () {
-        if (!this.store[item._id]) {
+        var sid = "" + id;
+        if (!that.store[sid]) {
             callback(new Error("Item doesn't exists."));
         } else {
-            this.store[item._id] = item;
+            that.store[sid] = item;
             callback(null, item);
+        }
+    });
+};
+
+PostProvider.prototype._get = function (item, callback) {
+    "use strict";
+    
+    var that    = this,
+        id      = that._getId(item);
+    
+    if (!id) {
+        callback(new Error("Identifier not specified."));
+    }
+    
+    process.nextTick(function () {
+        var sid = "" + id;
+        if (!that.store[sid]) {
+            callback(new Error("Item doesn't exists."));
+        } else {
+            callback(null, that.store[sid]);
         }
     });
 };
@@ -47,16 +95,22 @@ PostProvider.prototype._update = function (item, callback) {
 PostProvider.prototype._delete = function (item, callback) {
     "use strict";
     
+    var that    = this,
+        id      = that._getId(item);
+    
+    if (!id) {
+        callback(new Error("Identifier not specified."));
+    }
+    
     process.nextTick(function () {
-        if (!this.store[item._id]) {
+        var sid = "" + id;
+        if (!that.store[sid]) {
             callback(new Error("Item doesn't exists."));
         } else {
-            delete this.store[item._id];
+            delete that.store[sid];
             callback(null, item);
         }
     });
 };
-
-util.inherits(PostProvider, Provider);
 
 module.exports = exports = PostProvider;
