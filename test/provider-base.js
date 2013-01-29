@@ -1,4 +1,4 @@
-/*jslint plusplus: true, devel: true, nomen: true, node: true, indent: 4, maxerr: 50 */
+/*jslint plusplus: true, devel: true, nomen: true, node: true, es5: true, indent: 4, maxerr: 50 */
 /*global require, exports, module */
 
 var testCase        = require("nodeunit").testCase,
@@ -6,7 +6,27 @@ var testCase        = require("nodeunit").testCase,
     provider,
     context;
 
-debugger;
+function assertFirstItem(test, err, result) {
+    "use strict";
+    
+    test.ok(!err);
+    test.ok(result);
+    test.equal(result._id, 556617);
+    test.equal(result.title, "Test Post");
+    test.equal(result.author, "Me Me Me");
+    test.equal(result.age, 43);
+}
+
+function assertUpdatedItem(test, err, result) {
+    "use strict";
+    
+    test.ok(!err);
+    test.ok(result);
+    test.equal(result._id, 556617);
+    test.equal(result.title, "Updated Post");
+    test.equal(result.author, "Fred Goldman");
+    test.equal(result.age, 55);
+}
 
 module.exports = testCase({
     "Fixture Setup": function (test) {
@@ -48,17 +68,11 @@ module.exports = testCase({
             age: 43
         }, function (err, result) {
             
-            test.ok(!err);
-            test.ok(result);
-            test.equal(result._id, 556617);
-            test.equal(result.title, "Test Post");
-            test.equal(result.author, "Me Me Me");
-            test.equal(result.age, 43);
-            
+            assertFirstItem(test, err, result);
             test.done();
         });
     },
-    "Get Item": function (test) {
+    "Get Item by Example": function (test) {
         "use strict";
         
         test.expect(6);
@@ -67,14 +81,79 @@ module.exports = testCase({
             _id: 556617
         }, function (err, result) {
             
-            test.ok(!err);
-            test.ok(result);
-            test.equal(result._id, 556617);
-            test.equal(result.title, "Test Post");
-            test.equal(result.author, "Me Me Me");
-            test.equal(result.age, 43);
-            
+            assertFirstItem(test, err, result);
             test.done();
         });
+    },
+    "Get Item by ID": function (test) {
+        "use strict";
+        
+        test.expect(6);
+                
+        provider.get(context,
+            556617,
+            function (err, result) {
+                
+                assertFirstItem(test, err, result);
+                test.done();
+            });
+    },
+    "Update Item": function (test) {
+        "use strict";
+        
+        test.expect(6);
+                
+        provider.update(context, {
+            _id: 556617,
+            title: "Updated Post",
+            author: "Fred Goldman",
+            age: 55
+        }, function (err, result) {
+            
+            assertUpdatedItem(test, err, result);
+            test.done();
+        });
+    },
+    "Get Updated Item by ID": function (test) {
+        "use strict";
+        
+        test.expect(6);
+                
+        provider.get(context,
+            556617,
+            function (err, result) {
+                
+                assertUpdatedItem(test, err, result);
+                test.done();
+            });
+    },
+    "Delete Item by ID": function (test) {
+        "use strict";
+        
+        test.expect(2);
+                
+        provider.delete(context,
+            556617,
+            function (err, result) {
+                
+                test.ok(!err);
+                test.ok(result);
+                test.done();
+            });
+    },
+    "Get Deleted Item by ID": function (test) {
+        "use strict";
+        
+        test.expect(3);
+                
+        provider.get(context,
+            556617,
+            function (err, result) {
+                
+                test.ok(err);
+                test.ok(!result);
+                test.equal(err.message, "Item doesn't exists.");
+                test.done();
+            });
     }
 });

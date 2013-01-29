@@ -3,7 +3,8 @@
 
 var Provider    = require("../../lib/provider"),
     util        = require("util"),
-    uuid        = require('node-uuid');
+    uuid        = require('node-uuid'),
+    empty       = "";
 
 function PostProvider(connStr, options) {
     Provider.call(this, connStr, options);
@@ -24,11 +25,11 @@ PostProvider.prototype._insert = function (item, callback) {
     }
     
     process.nextTick(function () {
-        var sid = "" + id;
-        if (that.store[item[sid]]) {
+        var sid = empty + id;
+        if (that.store[sid]) {
             callback(new Error("Item exists."));
         } else {
-            that.store[item[sid]] = item;
+            that.store[sid] = item;
             callback(null, item);
         }
     });
@@ -46,7 +47,7 @@ PostProvider.prototype._upsert = function (item, callback) {
     }
     
     process.nextTick(function () {
-        that.store["" + id] = item;
+        that.store[empty + id] = item;
         callback(null, item);
     });
 };
@@ -62,7 +63,7 @@ PostProvider.prototype._update = function (item, callback) {
     }
     
     process.nextTick(function () {
-        var sid = "" + id;
+        var sid = empty + id;
         if (!that.store[sid]) {
             callback(new Error("Item doesn't exists."));
         } else {
@@ -83,7 +84,7 @@ PostProvider.prototype._get = function (item, callback) {
     }
     
     process.nextTick(function () {
-        var sid = "" + id;
+        var sid = empty + id;
         if (!that.store[sid]) {
             callback(new Error("Item doesn't exists."));
         } else {
@@ -103,7 +104,7 @@ PostProvider.prototype._delete = function (item, callback) {
     }
     
     process.nextTick(function () {
-        var sid = "" + id;
+        var sid = empty + id;
         if (!that.store[sid]) {
             callback(new Error("Item doesn't exists."));
         } else {
@@ -111,6 +112,10 @@ PostProvider.prototype._delete = function (item, callback) {
             callback(null, item);
         }
     });
+};
+
+PostProvider.prototype._select = function (query, template, callback) {
+    
 };
 
 module.exports = exports = PostProvider;
