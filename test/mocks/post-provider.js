@@ -2,6 +2,7 @@
 /*global require, exports, module */
 
 var Provider    = require("../../lib/provider"),
+    Cursor      = require("./cursor-mock"),
     util        = require("util"),
     uuid        = require('node-uuid'),
     empty       = "";
@@ -114,8 +115,8 @@ PostProvider.prototype._delete = function (item, callback) {
     });
 };
 
-PostProvider.prototype._select = function (query, template, callback) {
-    
+PostProvider.prototype._select = function (args, callback) {
+    callback(null, new Cursor(this, args.query, args.projection, args.options));
 };
 
 module.exports = exports = PostProvider;
