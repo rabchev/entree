@@ -1,4 +1,4 @@
-/*jslint plusplus: true, devel: true, nomen: true, node: true, es5: true, indent: 4, maxerr: 50 */
+/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
 /*global require, exports, module */
 
 var testCase        = require("nodeunit").testCase,
@@ -26,6 +26,48 @@ function assertUpdatedItem(test, err, result) {
     test.equal(result.title, "Updated Post");
     test.equal(result.author, "Fred Goldman");
     test.equal(result.age, 55);
+}
+
+function insertTestData(provider) {
+    "use strict";
+    
+    var i,
+        data    = [
+            {
+                title: "Calipso - Fading Away",
+                author: "Claudia Rice",
+                age: 22
+            },
+            {
+                title: "Thoughts On Paper",
+                author: "Adam Boil",
+                age: 36
+            },
+            {
+                title: "Neonatology Review",
+                author: "Florance Downing",
+                age: 61
+            },
+            {
+                title: "A Hopeful Life",
+                author: "Carlos Rivera",
+                age: 52
+            },
+            {
+                title: "Second Chances",
+                author: "Samantha  Morgan",
+                age: 33
+            },
+            {
+                title: "Brotherhood Of Men",
+                author: "John Smit",
+                age: 43
+            }
+        ];
+    
+    for (i = 0; i < data.length; i++) {
+        provider.insert(context, data[i]);
+    }
 }
 
 module.exports = testCase({
@@ -142,6 +184,21 @@ module.exports = testCase({
             });
     },
     "Get Deleted Item by ID": function (test) {
+        "use strict";
+        
+        test.expect(3);
+                
+        provider.get(context,
+            556617,
+            function (err, result) {
+                
+                test.ok(err);
+                test.ok(!result);
+                test.equal(err.message, "Item doesn't exists.");
+                test.done();
+            });
+    },
+    "Select All": function (test) {
         "use strict";
         
         test.expect(3);

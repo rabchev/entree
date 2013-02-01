@@ -42,6 +42,6 @@ CursorMock.prototype._nextObject = function (callback) {
         if (this.projection) {
             item = this._project(item);
         }
-        callback(item);
+        callback(null, item, false);
     });
 };

@@ -28,7 +28,7 @@ PostProvider.prototype._insert = function (item, callback) {
     process.nextTick(function () {
         var sid = empty + id;
         if (that.store[sid]) {
-            callback(new Error("Item exists."));
+            that.handleError("Item exists.", callback);
         } else {
             that.store[sid] = item;
             callback(null, item);
@@ -60,13 +60,13 @@ PostProvider.prototype._update = function (item, callback) {
         id      = that._getId(item);
     
     if (!id) {
-        callback(new Error("Identifier not specified."));
+        return this.handleError("Identifier not specified.", callback);
     }
     
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            callback(new Error("Item doesn't exists."));
+            that.handleError("Item doesn't exists.", callback);
         } else {
             that.store[sid] = item;
             callback(null, item);
@@ -81,13 +81,13 @@ PostProvider.prototype._get = function (item, callback) {
         id      = that._getId(item);
     
     if (!id) {
-        callback(new Error("Identifier not specified."));
+        return this.handleError("Identifier not specified.", callback);
     }
     
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            callback(new Error("Item doesn't exists."));
+            that.handleError("Item doesn't exists.", callback);
         } else {
             callback(null, that.store[sid]);
         }
@@ -101,13 +101,13 @@ PostProvider.prototype._delete = function (item, callback) {
         id      = that._getId(item);
     
     if (!id) {
-        callback(new Error("Identifier not specified."));
+        return this.handleError("Identifier not specified.", callback);
     }
     
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            callback(new Error("Item doesn't exists."));
+            that.handleError("Item doesn't exists.", callback);
         } else {
             delete that.store[sid];
             callback(null, item);
@@ -116,7 +116,21 @@ PostProvider.prototype._delete = function (item, callback) {
 };
 
 PostProvider.prototype._select = function (args, callback) {
-    callback(null, new Cursor(this, args.query, args.projection, args.options));
+    var cursor = new Cursor(this, args.query, args.projection, args.options);
+    if (callback) {
+        callback(null, cursor);
+    } else {
+        return cursor;
+    }
+};
+
+PostProvider.prototype.handleError = function (message, callback) {
+    var err = new Error(message);
+    if (callback) {
+        callback(err);
+    } else {
+        throw err;
+    }
 };
 
 module.exports = exports = PostProvider;
