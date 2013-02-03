@@ -10,6 +10,7 @@ var Provider    = require("../../lib/provider"),
 function PostProvider(connStr, options) {
     Provider.call(this, connStr, options);
     this.store = [];
+    this.sync = false;
 }
 
 util.inherits(PostProvider, Provider);
@@ -31,7 +32,9 @@ PostProvider.prototype._insert = function (item, callback) {
             that.handleError("Item exists.", callback);
         } else {
             that.store[sid] = item;
-            callback(null, item);
+            if (callback) {
+                callback(null, item);
+            }
         }
     });
 };
@@ -49,7 +52,9 @@ PostProvider.prototype._upsert = function (item, callback) {
     
     process.nextTick(function () {
         that.store[empty + id] = item;
-        callback(null, item);
+        if (callback) {
+            callback(null, item);
+        }
     });
 };
 
@@ -69,7 +74,9 @@ PostProvider.prototype._update = function (item, callback) {
             that.handleError("Item doesn't exists.", callback);
         } else {
             that.store[sid] = item;
-            callback(null, item);
+            if (callback) {
+                callback(null, item);
+            }
         }
     });
 };
@@ -89,7 +96,9 @@ PostProvider.prototype._get = function (item, callback) {
         if (!that.store[sid]) {
             that.handleError("Item doesn't exists.", callback);
         } else {
-            callback(null, that.store[sid]);
+            if (callback) {
+                callback(null, that.store[sid]);
+            }
         }
     });
 };
@@ -110,7 +119,9 @@ PostProvider.prototype._delete = function (item, callback) {
             that.handleError("Item doesn't exists.", callback);
         } else {
             delete that.store[sid];
-            callback(null, item);
+            if (callback) {
+                callback(null, item);
+            }
         }
     });
 };
