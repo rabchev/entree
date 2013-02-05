@@ -6,22 +6,33 @@ var Cursor      = require("../../lib/cursor"),
     sift        = require("sift"),
     _           = require("underscore");
 
-function CursorMock(provider, query, projection, options) {
-    Cursor.call(this, provider, query, projection, options);
+function CursorMock(provider, query, options) {
+    "use strict";
     
-    this.current = this.skip;
-    if (this.current !== 0 && this.limit !== 0) {
-        this.limit += this.current;
+    if (query) {
+        this.sifter = sift(query);
     }
-    if (this.query) {
-        this.sifter = sift(this.query);
+    this.items = _.values(provider.store);
+    
+    Cursor.call(this, provider, query, options);
+}
+
+util.inherits(CursorMock, Cursor);
+
+CursorMock.prototype.reset = function () {
+    "use strict";
+    
+    this.current = this.skipValue;
+    if (this.current !== 0 && this.limitValue !== 0) {
+        this.limitValue += this.current;
     }
-    this.items = _.values(this.provider.store);
-    if (this.sort) {
+    
+    if (this.sortValue) {
         this.items.sort(function (a, b) {
             // TODO: 
         });
     }
+    
     if (this.projection && !_.isArray(this.projection)) {
         if (_.isObject(this.projection)) {
             this.projection = _.keys(this.projection);
@@ -31,9 +42,7 @@ function CursorMock(provider, query, projection, options) {
             throw new Error("Unsuported arument type.");
         }
     }
-}
-
-util.inherits(CursorMock, Cursor);
+};
 
 CursorMock.prototype._isMatch = function (item) {
     
@@ -53,7 +62,7 @@ CursorMock.prototype._nextObject = function (callback) {
     var self = this;
     function nextItem(sync) {
         var item;
-        if (self.limit === 0 || self.current < self.limit) {
+        if (self.limitValue === 0 || self.current < self.limitValue) {
             item = self.items[self.current++];
             while (item) {
                 if (self._isMatch(item)) {

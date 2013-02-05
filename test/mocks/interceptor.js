@@ -51,7 +51,7 @@ exports.security = function (action, context, item, next, out) {
         intersection = _.intersection(roles, permissions[perm]);
             
     if (intersection.length === 0) {
-        debugger;
+        
         var err = new Error("Access denied!");
         if (out) {
             out(err);
@@ -87,6 +87,21 @@ exports.logging = function (action, context, item, next, out) {
 exports.timestamp = function (action, context, item, next, out) {
     "use strict";
     
+    function wrapCursor(cursor) {
+        var func = cursor._nextObject;
+        cursor._nextObject = function (callback) {
+            
+            function handleCallback(err, item, sync) {
+                if (item) {
+                    item.timestamp = new Date();
+                }
+                callback(err, item, sync);
+            }
+            
+            func.call(cursor, handleCallback);
+        };
+    }
+    
     function handleResult(err, item) {
         if (!err && item) {
             switch (action) {
@@ -94,15 +109,20 @@ exports.timestamp = function (action, context, item, next, out) {
             case "_insert":
             case "_upsert":
             case "_delete":
+            case "_get":
                 item.timestamp = new Date();
                 break;
             case "_select":
-                
+                wrapCursor(item);
                 break;
             }
         }
         out(err, item);
     }
     
-    next(item, handleResult);
+    var result = next(item, out ? handleResult : null);
+    if (result) {
+        wrapCursor(result);
+    }
+    return result;
 };

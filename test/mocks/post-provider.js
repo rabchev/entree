@@ -127,7 +127,7 @@ PostProvider.prototype._delete = function (item, callback) {
 };
 
 PostProvider.prototype._select = function (args, callback) {
-    var cursor = new Cursor(this, args.query, args.projection, args.options);
+    var cursor = new Cursor(this, args.query, args.options);
     if (callback) {
         callback(null, cursor);
     } else {

@@ -247,7 +247,7 @@ module.exports = testCase({
         
         test.expect(2);
         
-        var cursor = provider.select(context, null, null, { limit: 3 });
+        var cursor = provider.select(context, null, { limit: 3 });
         test.ok(cursor);
         
         var count = 0;
@@ -265,7 +265,7 @@ module.exports = testCase({
         
         test.expect(5);
         
-        var cursor = provider.select(context, null, null, { skip: 2, limit: 2 });
+        var cursor = provider.select(context, null, { skip: 2, limit: 2 });
         test.ok(cursor);
         
         cursor.toArray(function (err, arr) {
@@ -277,12 +277,30 @@ module.exports = testCase({
             test.done();
         });
     },
+    "Fluent Skip & Limit": function (test) {
+        "use strict";
+        
+        test.expect(5);
+        
+        provider.select(context)
+            .skip(1)
+            .limit(3)
+            .toArray(function (err, arr) {
+                test.ok(!err);
+                test.equal(arr.length, 3);
+                test.equal(arr[0].author, "Adam Boil");
+                test.equal(arr[1].author, "Florance Downing");
+                test.equal(arr[2].author, "Carlos Rivera");
+                
+                test.done();
+            });
+    },
     "Projection": function (test) {
         "use strict";
         
         test.expect(10);
         
-        var cursor = provider.select(context, null, ["age"]);
+        var cursor = provider.select(context, null, { projection: ["age"] });
         test.ok(cursor);
         
         cursor.toArray(function (err, arr) {
@@ -298,6 +316,27 @@ module.exports = testCase({
             
             test.done();
         });
+    },
+    "Fluent Projection": function (test) {
+        "use strict";
+        
+        test.expect(9);
+        
+        provider.select(context)
+            .project(["age"])
+            .toArray(function (err, arr) {
+                test.ok(!err);
+                test.equal(arr.length, 6);
+                test.equal(arr[0].age, 22);
+                test.equal(arr[1].age, 36);
+                test.equal(arr[5].age, 43);
+                test.ok(!arr[0].author);
+                test.ok(!arr[0].title);
+                test.ok(!arr[5].author);
+                test.ok(!arr[5].title);
+                
+                test.done();
+            });
     },
     "Synchronous Select": function (test) {
         "use strict";
@@ -419,5 +458,48 @@ module.exports = testCase({
             
             test.done();
         });
+    },
+    "Interceptoin - Modify Data": function (test) {
+        "use strict";
+        
+        test.expect(6);
+        
+        provider.use(interceptor.timestamp);
+        
+        provider.get(context, 556617, function (err, item) {
+            
+            test.ok(item.timestamp instanceof Date);
+            test.equal(interceptor.logdata.length, 2);
+            
+            var entry = interceptor.logdata[0];
+            test.equal(entry.action, "_get");
+            test.equal(entry.message, "Security check passed.");
+            
+            entry = interceptor.logdata[1];
+            test.equal(entry.action, "_get");
+            test.equal(entry.message, "success");
+            
+            test.done();
+        });
+    },
+    "Interceptoin - Wrap Cursor": function (test) {
+        "use strict";
+        
+        test.expect(9);
+        debugger;
+        provider
+            .select(context)
+            .toArray(function (err, arr) {
+                
+                test.ok(!err);
+                test.equal(arr.length, 7);
+                
+                var i;
+                for (i = 0; i < arr.length; i++) {
+                    test.ok(arr[i].timestamp instanceof Date);
+                }
+                
+                test.done();
+            });
     }
 });
