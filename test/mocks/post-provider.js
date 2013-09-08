@@ -71,7 +71,7 @@ PostProvider.prototype._update = function (item, callback) {
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            that.handleError("Item doesn't exists.", callback);
+            that.handleError("Item doesn't exist.", callback);
         } else {
             that.store[sid] = item;
             if (callback) {
@@ -94,7 +94,7 @@ PostProvider.prototype._get = function (item, callback) {
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            that.handleError("Item doesn't exists.", callback);
+            that.handleError("Item doesn't exist.", callback);
         } else {
             if (callback) {
                 callback(null, that.store[sid]);
@@ -132,15 +132,6 @@ PostProvider.prototype._select = function (args, callback) {
         callback(null, cursor);
     } else {
         return cursor;
-    }
-};
-
-PostProvider.prototype.handleError = function (message, callback) {
-    var err = new Error(message);
-    if (callback) {
-        callback(err);
-    } else {
-        throw err;
     }
 };
 

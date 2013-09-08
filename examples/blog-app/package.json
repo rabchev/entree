@@ -7,7 +7,6 @@
         "start"             : "node app"
     },
     "dependencies"      : {
-        "mongodb"           : "*",
         "express"           : "*",
         "hbs"               : "*"
     }

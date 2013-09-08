@@ -13,5 +13,7 @@ try {
 }
 
 process.chdir(__dirname);
-reporter.run(["./provider-base.js"
-             ]);
+reporter.run([
+    "./provider-base.js",
+    "./file-system.js"
+]);

@@ -202,7 +202,7 @@ module.exports = testCase({
                 
                 test.ok(err);
                 test.ok(!result);
-                test.equal(err.message, "Item doesn't exists.");
+                test.equal(err.message, "Item doesn't exist.");
                 test.done();
             });
     },
@@ -486,7 +486,7 @@ module.exports = testCase({
         "use strict";
         
         test.expect(9);
-        debugger;
+        
         provider
             .select(context)
             .toArray(function (err, arr) {
