@@ -62,7 +62,7 @@ CursorMock.prototype._nextObject = function (callback) {
     "use strict";
 
     var self = this;
-    function nextItem(sync) {
+    function nextItem() {
         var item;
         if (self.limitValue === 0 || self.current < self.limitValue) {
             item = self.items[self.current++];
@@ -77,11 +77,11 @@ CursorMock.prototype._nextObject = function (callback) {
                 item = self._map(item);
             }
         }
-        callback(null, item, sync || false);
+        callback(null, item);
     }
 
     if (this.provider.sync) {
-        nextItem(true);
+        nextItem();
     } else {
         process.nextTick(nextItem);
     }
