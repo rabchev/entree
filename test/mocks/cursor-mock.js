@@ -27,6 +27,9 @@ CursorMock.prototype.reset = function () {
     }
 
     if (this.sortValue) {
+        if (_.isFunction(this.sortValue)) {
+
+        }
         this.items.sort(function (a, b) {
             // TODO:
         });

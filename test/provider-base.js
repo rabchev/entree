@@ -374,7 +374,7 @@ module.exports = testCase({
 
             assertFirstItem(test, err, result);
 
-            var msg, entry;
+            var entry;
 
             test.equal(interceptor.logdata.length, 2);
 
