@@ -1,5 +1,5 @@
-/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, es5: true, indent: 4, maxerr: 50 */
-/*global require, exports, module */
+/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, indent: 4, maxerr: 50 */
+/*global require, module */
 
 var Provider    = require("../../lib/provider"),
     Cursor      = require("./cursor-mock"),
@@ -17,15 +17,15 @@ util.inherits(PostProvider, Provider);
 
 PostProvider.prototype._insert = function (item, callback) {
     "use strict";
-    
+
     var that    = this,
         id      = that._getId(item);
-    
+
     if (!id) {
         id = uuid.v1();
         item[this.options.identifier] = id;
     }
-    
+
     process.nextTick(function () {
         var sid = empty + id;
         if (that.store[sid]) {
@@ -41,15 +41,15 @@ PostProvider.prototype._insert = function (item, callback) {
 
 PostProvider.prototype._upsert = function (item, callback) {
     "use strict";
-    
+
     var that    = this,
         id      = that._getId(item);
-    
+
     if (!id) {
         id = uuid.v1();
         item[this.options.identifier] = id;
     }
-    
+
     process.nextTick(function () {
         that.store[empty + id] = item;
         if (callback) {
@@ -60,14 +60,14 @@ PostProvider.prototype._upsert = function (item, callback) {
 
 PostProvider.prototype._update = function (item, callback) {
     "use strict";
-    
+
     var that    = this,
         id      = that._getId(item);
-    
+
     if (!id) {
         return this.handleError("Identifier not specified.", callback);
     }
-    
+
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
@@ -83,14 +83,14 @@ PostProvider.prototype._update = function (item, callback) {
 
 PostProvider.prototype._get = function (item, callback) {
     "use strict";
-    
+
     var that    = this,
         id      = that._getId(item);
-    
+
     if (!id) {
         return this.handleError("Identifier not specified.", callback);
     }
-    
+
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
@@ -105,14 +105,14 @@ PostProvider.prototype._get = function (item, callback) {
 
 PostProvider.prototype._delete = function (item, callback) {
     "use strict";
-    
+
     var that    = this,
         id      = that._getId(item);
-    
+
     if (!id) {
         return this.handleError("Identifier not specified.", callback);
     }
-    
+
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
@@ -135,4 +135,4 @@ PostProvider.prototype._select = function (args, callback) {
     }
 };
 
-module.exports = exports = PostProvider;
+module.exports = PostProvider;
