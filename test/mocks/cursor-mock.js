@@ -11,7 +11,7 @@ function CursorMock(provider, query, options) {
     if (query) {
         this.sifter = sift(query);
     }
-    this.items = _.values(provider.store);
+    this._items = _.values(provider.store);
 
     Cursor.call(this, provider, query, options);
 }
@@ -24,15 +24,6 @@ CursorMock.prototype.reset = function () {
     this.current = this.skipValue;
     if (this.current !== 0 && this.limitValue !== 0) {
         this.limitValue += this.current;
-    }
-
-    if (this.sortValue) {
-        if (_.isFunction(this.sortValue)) {
-
-        }
-        this.items.sort(function (a, b) {
-            // TODO:
-        });
     }
 
     if (this.mapping && !_.isArray(this.mapping)) {
@@ -68,12 +59,12 @@ CursorMock.prototype._nextObject = function (callback) {
     function nextItem() {
         var item;
         if (self.limitValue === 0 || self.current < self.limitValue) {
-            item = self.items[self.current++];
+            item = self._items[self.current++];
             while (item) {
                 if (self._isMatch(item)) {
                     break;
                 }
-                item = self.items[self.current++];
+                item = self._items[self.current++];
             }
 
             if (item && self.mapping) {
