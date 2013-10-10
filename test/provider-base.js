@@ -1,5 +1,6 @@
 /*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
 
+"use strict";
 debugger;
 
 var testCase        = require("nodeunit").testCase,
@@ -9,39 +10,86 @@ var testCase        = require("nodeunit").testCase,
         {
             title: "Calipso - Fading Away",
             author: "Claudia Rice",
-            age: 22
+            age: 22,
+            publisher: {
+                name: "TLC",
+                address: {
+                    street: "eram officia quis eram fugiat",
+                    number: 1544
+                },
+                priority: 0.5
+            }
         },
         {
             title: "Thoughts On Paper",
             author: "Adam Boil",
-            age: 36
+            age: 36,
+            publisher: {
+                name: "LBBL",
+                address: {
+                    street: "coniunctione officia eram ingeniis occaecat non",
+                    number: 1544
+                },
+                priority: 0.2
+            }
         },
         {
             title: "Neonatology Review",
             author: "Florance Downing",
-            age: 61
+            age: 61,
+            publisher: {
+                name: "CNBC",
+                address: {
+                    street: "malis labore aliquip labore nescius litteris",
+                    number: 278
+                },
+                priority: 1.5
+            }
         },
         {
             title: "A Hopeful Life",
             author: "Carlos Rivera",
-            age: 52
+            age: 52,
+            publisher: {
+                name: "ABB",
+                address: {
+                    street: "ingeniis lorem eiusmod illustriora eram incurreret",
+                    number: 963587
+                },
+                priority: 0.25
+            }
         },
         {
             title: "Second Chances",
             author: "Samantha  Morgan",
-            age: 22
+            age: 22,
+            publisher: {
+                name: "ABB",
+                address: {
+                    street: "",
+                    number: 336
+                },
+                priority: 2.5
+            }
         },
         {
             title: "Brotherhood Of Men",
             author: "John Smit",
-            age: 43
+            age: 43,
+            publisher: {
+                name: "BBA",
+                address: {
+                    street: "",
+                    number: 1544
+                },
+                priority: 0.5
+            }
         }
     ],
     provider,
     context;
 
 function assertFirstItem(test, err, result) {
-    "use strict";
 
     test.ok(!err);
     test.ok(result);
@@ -52,7 +100,6 @@ function assertFirstItem(test, err, result) {
 }
 
 function assertUpdatedItem(test, err, result) {
-    "use strict";
 
     test.ok(!err);
     test.ok(result);
@@ -63,11 +110,10 @@ function assertUpdatedItem(test, err, result) {
 }
 
 function insertTestData(callback) {
-    "use strict";
 
     var item = data.shift();
     if (item) {
-        provider.insert(context, item, function (err, item) {
+        provider.insert(context, item, function (err) {
             if (err) {
                 throw err;
             }
@@ -81,7 +127,6 @@ function insertTestData(callback) {
 
 module.exports = testCase({
     "Fixture Setup": function (test) {
-        "use strict";
 
         test.expect(2);
 
@@ -108,7 +153,6 @@ module.exports = testCase({
         test.done();
     },
     "Insert Item": function (test) {
-        "use strict";
 
         test.expect(6);
 
@@ -124,7 +168,6 @@ module.exports = testCase({
         });
     },
     "Get Item by Example": function (test) {
-        "use strict";
 
         test.expect(6);
 
@@ -137,7 +180,6 @@ module.exports = testCase({
         });
     },
     "Get Item by ID": function (test) {
-        "use strict";
 
         test.expect(6);
 
@@ -150,7 +192,6 @@ module.exports = testCase({
             });
     },
     "Update Item": function (test) {
-        "use strict";
 
         test.expect(6);
 
@@ -166,7 +207,6 @@ module.exports = testCase({
         });
     },
     "Get Updated Item by ID": function (test) {
-        "use strict";
 
         test.expect(6);
 
@@ -179,7 +219,6 @@ module.exports = testCase({
             });
     },
     "Delete Item by ID": function (test) {
-        "use strict";
 
         test.expect(2);
 
@@ -193,7 +232,6 @@ module.exports = testCase({
             });
     },
     "Get Deleted Item by ID": function (test) {
-        "use strict";
 
         test.expect(3);
 
@@ -208,7 +246,6 @@ module.exports = testCase({
             });
     },
     "Select Query Without Callback": function (test) {
-        "use strict";
 
         test.expect(4);
 
@@ -226,7 +263,6 @@ module.exports = testCase({
         });
     },
     "Select All With Callback": function (test) {
-        "use strict";
 
         test.expect(4);
 
@@ -244,7 +280,6 @@ module.exports = testCase({
         });
     },
     "Limit & Each": function (test) {
-        "use strict";
 
         test.expect(2);
 
@@ -262,7 +297,6 @@ module.exports = testCase({
         });
     },
     "Skip & Limit": function (test) {
-        "use strict";
 
         test.expect(5);
 
@@ -279,7 +313,6 @@ module.exports = testCase({
         });
     },
     "Fluent Skip & Limit": function (test) {
-        "use strict";
 
         test.expect(5);
 
@@ -297,7 +330,6 @@ module.exports = testCase({
             });
     },
     "Map": function (test) {
-        "use strict";
 
         test.expect(10);
 
@@ -319,7 +351,6 @@ module.exports = testCase({
         });
     },
     "Fluent Map": function (test) {
-        "use strict";
 
         test.expect(9);
 
@@ -340,7 +371,6 @@ module.exports = testCase({
             });
     },
     "Synchronous Select": function (test) {
-        "use strict";
 
         test.expect(3);
 
@@ -358,7 +388,6 @@ module.exports = testCase({
         });
     },
     "Interceptoin - Insert": function (test) {
-        "use strict";
 
         test.expect(11);
 
@@ -390,7 +419,6 @@ module.exports = testCase({
         });
     },
     "Interceptoin - Select": function (test) {
-        "use strict";
 
         test.expect(8);
 
@@ -416,7 +444,6 @@ module.exports = testCase({
         });
     },
     "Interceptoin - Select With Callback": function (test) {
-        "use strict";
 
         test.expect(9);
 
@@ -445,7 +472,6 @@ module.exports = testCase({
         });
     },
     "Interceptoin - Access Denied": function (test) {
-        "use strict";
 
         test.expect(3);
 
@@ -461,7 +487,6 @@ module.exports = testCase({
         });
     },
     "Interceptoin - Modify Data": function (test) {
-        "use strict";
 
         test.expect(6);
 
@@ -484,7 +509,6 @@ module.exports = testCase({
         });
     },
     "Interceptoin - Wrap Cursor": function (test) {
-        "use strict";
 
         test.expect(9);
 
@@ -498,6 +522,28 @@ module.exports = testCase({
                 var i;
                 for (i = 0; i < arr.length; i++) {
                     test.ok(arr[i].timestamp instanceof Date);
+                }
+
+                test.done();
+            });
+    },
+    "Sort One Field Ascending": function (test) {
+        test.expect(9);
+
+        provider
+            .select(context)
+            .sort({age: 1})
+            .toArray(function (err, arr) {
+
+                test.ok(!err);
+                test.equal(arr.length, 7);
+
+                var i, age;
+                for (i = 0; i < arr.length; i++) {
+                    if (age) {
+                        test.ok(age <= arr[i].age);
+                    }
+                    age = arr[i].age;
                 }
 
                 test.done();
