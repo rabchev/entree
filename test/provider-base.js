@@ -572,7 +572,7 @@ module.exports = testCase({
             });
     },
     "Sort Two Fields in Opposite Directions": function (test) {
-        test.expect(7);
+        test.expect(10);
 
         provider
             .select()
@@ -582,14 +582,41 @@ module.exports = testCase({
                 test.ok(!err);
                 test.equal(arr.length, 7);
 
-                var i, name;
+                var i, name, age;
                 for (i = 0; i < arr.length; i++) {
                     if (arr[i].publisher) {
                         if (name) {
                             test.ok(name <= arr[i].publisher.name);
                         }
+                        if (age && name === arr[i].publisher.name) {
+                            test.ok(age >= arr[i].age);
+                        }
                         name = arr[i].publisher.name;
+                        age = arr[i].age;
                     }
+                }
+
+                test.done();
+            });
+    },
+    "Select With Sort": function (test) {
+        test.expect(7);
+
+        provider
+            .select(null, {publisher: {name: "TLC"}})
+            .sort({age: 1})
+            .toArray(function (err, arr) {
+
+                test.ok(!err);
+                test.equal(arr.length, 3);
+
+                var i, age;
+                for (i = 0; i < arr.length; i++) {
+                    test.equal(arr[i].publisher.name, "TLC");
+                    if (age) {
+                        test.ok(age <= arr[i].age);
+                    }
+                    age = arr[i].age;
                 }
 
                 test.done();
