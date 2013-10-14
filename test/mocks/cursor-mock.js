@@ -82,23 +82,24 @@ CursorMock.prototype._nextObject = function (callback) {
 };
 
 CursorMock.prototype._exec = function (callback) {
+    var that = this;
     if (this.criteria) {
-        if (!this._sorting) {
-            this._sorting = true;
-            this.toArray(function (err, list) {
-                if (!err) {
-                    if (_.isFunction(this.criteria)) {
-                        list.sort(this.criteria);
-                    } else {
-                        list.sort(this.comparer);
-                    }
-                    this.items = list;
+        this.toArray(function (err, list) {
+            if (!err) {
+                if (_.isFunction(that.criteria)) {
+                    list.sort(that.criteria);
+                } else {
+                    list.sort(function (a, b) {
+                        return that.comparer(a, b);
+                    });
                 }
-                return callback(err);
-            });
-        }
+                that.items = list;
+            }
+            return callback(err);
+        });
+    } else {
+        callback();
     }
-    callback();
 };
 
 module.exports = CursorMock;

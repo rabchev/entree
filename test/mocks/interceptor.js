@@ -1,6 +1,8 @@
 /*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
 /*global require, exports, module */
 
+"use strict";
+
 var _               = require("underscore"),
     Cursor          = require("../../lib/cursor"),
     permissions     = {
@@ -26,10 +28,12 @@ var _               = require("underscore"),
 exports.logdata = [];
 
 exports.security = function (action, context, item, next, out) {
-    "use strict";
-    
     var perm;
-    
+
+    if (!context) {
+        return next(item, out);
+    }
+
     switch (action) {
     case "_insert":
         perm = "create";
@@ -46,12 +50,12 @@ exports.security = function (action, context, item, next, out) {
         perm = "read";
         break;
     }
-    
+
     var roles = context.user.roles || [],
         intersection = _.intersection(roles, permissions[perm]);
-            
+
     if (intersection.length === 0) {
-        
+
         var err = new Error("Access denied!");
         if (out) {
             out(err);
@@ -63,16 +67,15 @@ exports.security = function (action, context, item, next, out) {
         return next(item, out);
     }
 };
-            
+
 exports.logging = function (action, context, item, next, out) {
-    "use strict";
-    
+
     function handleResult(err, item) {
         var msg = err ? "failed:" + err.message : "success";
         exports.logdata.push({ action: action, message: msg });
         out(err, item);
     }
-    
+
     var result = next(item, out ? handleResult : null);
     if (result) {
         if (result instanceof Cursor) {
@@ -85,23 +88,22 @@ exports.logging = function (action, context, item, next, out) {
 };
 
 exports.timestamp = function (action, context, item, next, out) {
-    "use strict";
-    
+
     function wrapCursor(cursor) {
         var func = cursor._nextObject;
         cursor._nextObject = function (callback) {
-            
+
             function handleCallback(err, item, sync) {
                 if (item) {
                     item.timestamp = new Date();
                 }
                 callback(err, item, sync);
             }
-            
+
             func.call(cursor, handleCallback);
         };
     }
-    
+
     function handleResult(err, item) {
         if (!err && item) {
             switch (action) {
@@ -119,7 +121,7 @@ exports.timestamp = function (action, context, item, next, out) {
         }
         out(err, item);
     }
-    
+
     var result = next(item, out ? handleResult : null);
     if (result) {
         wrapCursor(result);

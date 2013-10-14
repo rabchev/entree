@@ -25,7 +25,7 @@ var testCase        = require("nodeunit").testCase,
             author: "Adam Boil",
             age: 36,
             publisher: {
-                name: "LBBL",
+                name: "TLC",
                 address: {
                     street: "coniunctione officia eram ingeniis occaecat non",
                     number: 1544
@@ -38,7 +38,7 @@ var testCase        = require("nodeunit").testCase,
             author: "Florance Downing",
             age: 61,
             publisher: {
-                name: "CNBC",
+                name: "TLC",
                 address: {
                     street: "malis labore aliquip labore nescius litteris",
                     number: 278
@@ -370,7 +370,7 @@ module.exports = testCase({
                 test.done();
             });
     },
-    "Synchronous Select": function (test) {
+    "Just Select": function (test) {
 
         test.expect(3);
 
@@ -513,7 +513,7 @@ module.exports = testCase({
         test.expect(9);
 
         provider
-            .select(context)
+            .select()
             .toArray(function (err, arr) {
 
                 test.ok(!err);
@@ -528,7 +528,7 @@ module.exports = testCase({
             });
     },
     "Sort One Field Ascending": function (test) {
-        test.expect(9);
+        test.expect(8);
 
         provider
             .select(context)
@@ -544,6 +544,52 @@ module.exports = testCase({
                         test.ok(age <= arr[i].age);
                     }
                     age = arr[i].age;
+                }
+
+                test.done();
+            });
+    },
+    "Sort One Field Descending": function (test) {
+        test.expect(8);
+
+        provider
+            .select()
+            .sort({age: -1})
+            .toArray(function (err, arr) {
+
+                test.ok(!err);
+                test.equal(arr.length, 7);
+
+                var i, age;
+                for (i = 0; i < arr.length; i++) {
+                    if (age) {
+                        test.ok(age >= arr[i].age);
+                    }
+                    age = arr[i].age;
+                }
+
+                test.done();
+            });
+    },
+    "Sort Two Fields in Opposite Directions": function (test) {
+        test.expect(7);
+
+        provider
+            .select()
+            .sort({"publisher.name": 1, age: -1})
+            .toArray(function (err, arr) {
+
+                test.ok(!err);
+                test.equal(arr.length, 7);
+
+                var i, name;
+                for (i = 0; i < arr.length; i++) {
+                    if (arr[i].publisher) {
+                        if (name) {
+                            test.ok(name <= arr[i].publisher.name);
+                        }
+                        name = arr[i].publisher.name;
+                    }
                 }
 
                 test.done();
