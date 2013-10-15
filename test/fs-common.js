@@ -3,8 +3,8 @@
 "use strict";
 
 var testCase    = require("./common-provider"),
-    provider    = "./mocks/post-provider",
-    connStr     = "test connection string",
-    options     = { identifier: "_id", option: 1, foo: "bar" };
+    provider    = "../lib/providers/file-system",
+    connStr     = __dirname + "/data",
+    options     = { typeName: "blogs", identifier: "_id", option: 1, foo: "bar" };
 
 module.exports = testCase.getTestCase(provider, connStr, options);

@@ -1,5 +1,4 @@
 /*jslint plusplus: true, devel: true, nomen: true, node: true, es5: true, indent: 4, maxerr: 50 */
-/*global require, exports, module */
 
 try {
     var reporter = require("nodeunit").reporters.default;
@@ -15,5 +14,6 @@ try {
 process.chdir(__dirname);
 reporter.run([
     "./provider-base.js",
-    "./file-system.js"
+    "./file-system.js",
+    "./fs-common.js"
 ]);

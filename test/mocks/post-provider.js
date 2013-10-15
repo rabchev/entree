@@ -71,7 +71,7 @@ PostProvider.prototype._update = function (item, callback) {
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            that.handleError("Item doesn't exist.", callback);
+            that.handleError("Item does not exist.", callback);
         } else {
             that.store[sid] = item;
             if (callback) {
@@ -94,7 +94,7 @@ PostProvider.prototype._get = function (item, callback) {
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            that.handleError("Item doesn't exist.", callback);
+            that.handleError("Item does not exist.", callback);
         } else {
             if (callback) {
                 callback(null, that.store[sid]);
@@ -116,7 +116,7 @@ PostProvider.prototype._delete = function (item, callback) {
     process.nextTick(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            that.handleError("Item doesn't exists.", callback);
+            that.handleError("Item does not exist.", callback);
         } else {
             delete that.store[sid];
             if (callback) {
