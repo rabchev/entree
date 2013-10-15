@@ -1,12 +1,18 @@
 /*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
 
 "use strict";
+debugger;
 
 var _               = require("underscore"),
     timers          = require("timers"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
-    data            = [
+    data,
+    provider,
+    context;
+
+function getData() {
+    return [
         {
             title: "Calipso - Fading Away",
             author: "Claudia Rice",
@@ -85,9 +91,8 @@ var _               = require("underscore"),
                 priority: 0.5
             }
         }
-    ],
-    provider,
-    context;
+    ];
+}
 
 function assertFirstItem(test, err, result) {
 
@@ -252,7 +257,7 @@ exports.getTestCase = function (Provider, connStr, options) {
         "Select Query Without Callback": function (test) {
 
             test.expect(4);
-
+            data = getData();
             insertTestData(function () {
 
                 var cursor = provider.select(context, { age: 22 });
