@@ -1,2374 +1,2419 @@
 /*!
-  * Reqwest! A general purpose XHR connection manager
-  * (c) Dustin Diaz 2013
-  * https://github.com/ded/reqwest
-  * license MIT
-  */
-!function (name, context, definition) {
-  if (typeof module != 'undefined' && module.exports) module.exports = definition()
-  else if (typeof define == 'function' && define.amd) define(definition)
-  else context[name] = definition()
+ * Reqwest! A general purpose XHR connection manager
+ * (c) Dustin Diaz 2013
+ * https://github.com/ded/reqwest
+ * license MIT
+ */! function (name, context, definition) {
+    if (typeof module != 'undefined' && module.exports) module.exports = definition()
+    else if (typeof define == 'function' && define.amd) define(definition)
+    else context[name] = definition()
 }('reqwest', this, function () {
 
-  var win = window
-    , doc = document
-    , twoHundo = /^20\d$/
-    , byTag = 'getElementsByTagName'
-    , readyState = 'readyState'
-    , contentType = 'Content-Type'
-    , requestedWith = 'X-Requested-With'
-    , head = doc[byTag]('head')[0]
-    , uniqid = 0
-    , callbackPrefix = 'reqwest_' + (+new Date())
-    , lastValue // data stored by the most recent JSONP callback
-    , xmlHttpRequest = 'XMLHttpRequest'
-    , noop = function () {}
+    var win = window,
+        doc = document,
+        twoHundo = /^20\d$/,
+        byTag = 'getElementsByTagName',
+        readyState = 'readyState',
+        contentType = 'Content-Type',
+        requestedWith = 'X-Requested-With',
+        head = doc[byTag]('head')[0],
+        uniqid = 0,
+        callbackPrefix = 'reqwest_' + (+new Date()),
+        lastValue // data stored by the most recent JSONP callback
+        , xmlHttpRequest = 'XMLHttpRequest',
+        noop = function () {}
 
-    , isArray = typeof Array.isArray == 'function'
-        ? Array.isArray
-        : function (a) {
+        , isArray = typeof Array.isArray == 'function' ? Array.isArray : function (a) {
             return a instanceof Array
-          }
+        }
 
-    , defaultHeaders = {
-          contentType: 'application/x-www-form-urlencoded'
-        , requestedWith: xmlHttpRequest
-        , accept: {
-              '*':  'text/javascript, text/html, application/xml, text/xml, */*'
-            , xml:  'application/xml, text/xml'
-            , html: 'text/html'
-            , text: 'text/plain'
-            , json: 'application/json, text/javascript'
-            , js:   'application/javascript, text/javascript'
-          }
-      }
+        , defaultHeaders = {
+            contentType: 'application/x-www-form-urlencoded',
+            requestedWith: xmlHttpRequest,
+            accept: {
+                '*': 'text/javascript, text/html, application/xml, text/xml, */*',
+                xml: 'application/xml, text/xml',
+                html: 'text/html',
+                text: 'text/plain',
+                json: 'application/json, text/javascript',
+                js: 'application/javascript, text/javascript'
+            }
+        }
 
-    , xhr = win[xmlHttpRequest]
-        ? function () {
+        , xhr = win[xmlHttpRequest] ? function () {
             return new XMLHttpRequest()
-          }
-        : function () {
+        } : function () {
             return new ActiveXObject('Microsoft.XMLHTTP')
-          }
-    , globalSetupOptions = {
-        dataFilter: function (data) {
-          return data
-        }
-      }
-
-  function handleReadyState(r, success, error) {
-    return function () {
-      // use _aborted to mitigate against IE err c00c023f
-      // (can't read props on aborted request objects)
-      if (r._aborted) return error(r.request)
-      if (r.request && r.request[readyState] == 4) {
-        r.request.onreadystatechange = noop
-        if (twoHundo.test(r.request.status))
-          success(r.request)
-        else
-          error(r.request)
-      }
-    }
-  }
-
-  function setHeaders(http, o) {
-    var headers = o.headers || {}
-      , h
-
-    headers.Accept = headers.Accept
-      || defaultHeaders.accept[o.type]
-      || defaultHeaders.accept['*']
-
-    // breaks cross-origin requests with legacy browsers
-    if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
-    if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
-    for (h in headers)
-      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
-  }
-
-  function setCredentials(http, o) {
-    if (typeof o.withCredentials !== 'undefined' && typeof http.withCredentials !== 'undefined') {
-      http.withCredentials = !!o.withCredentials
-    }
-  }
-
-  function generalCallback(data) {
-    lastValue = data
-  }
-
-  function urlappend (url, s) {
-    return url + (/\?/.test(url) ? '&' : '?') + s
-  }
-
-  function handleJsonp(o, fn, err, url) {
-    var reqId = uniqid++
-      , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
-      , cbval = o.jsonpCallbackName || reqwest.getcallbackPrefix(reqId)
-      // , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
-      , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
-      , match = url.match(cbreg)
-      , script = doc.createElement('script')
-      , loaded = 0
-      , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
-
-    if (match) {
-      if (match[3] === '?') {
-        url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
-      } else {
-        cbval = match[3] // provided callback func name
-      }
-    } else {
-      url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
-    }
-
-    win[cbval] = generalCallback
-
-    script.type = 'text/javascript'
-    script.src = url
-    script.async = true
-    if (typeof script.onreadystatechange !== 'undefined' && !isIE10) {
-      // need this for IE due to out-of-order onreadystatechange(), binding script
-      // execution to an event listener gives us control over when the script
-      // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
-      //
-      // if this hack is used in IE10 jsonp callback are never called
-      script.event = 'onclick'
-      script.htmlFor = script.id = '_reqwest_' + reqId
-    }
-
-    script.onload = script.onreadystatechange = function () {
-      if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
-        return false
-      }
-      script.onload = script.onreadystatechange = null
-      script.onclick && script.onclick()
-      // Call the user callback with the last value stored and clean up values and scripts.
-      o.success && o.success(lastValue)
-      lastValue = undefined
-      head.removeChild(script)
-      loaded = 1
-    }
-
-    // Add the script to the DOM head
-    head.appendChild(script)
-
-    // Enable JSONP timeout
-    return {
-      abort: function () {
-        script.onload = script.onreadystatechange = null
-        o.error && o.error({}, 'Request is aborted: timeout', {})
-        lastValue = undefined
-        head.removeChild(script)
-        loaded = 1
-      }
-    }
-  }
-
-  function getRequest(fn, err) {
-    var o = this.o
-      , method = (o.method || 'GET').toUpperCase()
-      , url = typeof o === 'string' ? o : o.url
-      // convert non-string objects to query-string form unless o.processData is false
-      , data = (o.processData !== false && o.data && typeof o.data !== 'string')
-        ? reqwest.toQueryString(o.data)
-        : (o.data || null)
-      , http
-
-    // if we're working on a GET request and we have data then we should append
-    // query string to end of URL and not post data
-    if ((o.type == 'jsonp' || method == 'GET') && data) {
-      url = urlappend(url, data)
-      data = null
-    }
-
-    if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
-
-    http = xhr()
-    http.open(method, url, true)
-    setHeaders(http, o)
-    setCredentials(http, o)
-    http.onreadystatechange = handleReadyState(this, fn, err)
-    o.before && o.before(http)
-    http.send(data)
-    return http
-  }
-
-  function Reqwest(o, fn) {
-    this.o = o
-    this.fn = fn
-
-    init.apply(this, arguments)
-  }
-
-  function setType(url) {
-    var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
-    return m ? m[1] : 'js'
-  }
-
-  function init(o, fn) {
-
-    this.url = typeof o == 'string' ? o : o.url
-    this.timeout = null
-
-    // whether request has been fulfilled for purpose
-    // of tracking the Promises
-    this._fulfilled = false
-    // success handlers
-    this._fulfillmentHandlers = []
-    // error handlers
-    this._errorHandlers = []
-    // complete (both success and fail) handlers
-    this._completeHandlers = []
-    this._erred = false
-    this._responseArgs = {}
-
-    var self = this
-      , type = o.type || setType(this.url)
-
-    fn = fn || function () {}
-
-    if (o.timeout) {
-      this.timeout = setTimeout(function () {
-        self.abort()
-      }, o.timeout)
-    }
-
-    if (o.success) {
-      this._fulfillmentHandlers.push(function () {
-        o.success.apply(o, arguments)
-      })
-    }
-
-    if (o.error) {
-      this._errorHandlers.push(function () {
-        o.error.apply(o, arguments)
-      })
-    }
-
-    if (o.complete) {
-      this._completeHandlers.push(function () {
-        o.complete.apply(o, arguments)
-      })
-    }
-
-    function complete (resp) {
-      o.timeout && clearTimeout(self.timeout)
-      self.timeout = null
-      while (self._completeHandlers.length > 0) {
-        self._completeHandlers.shift()(resp)
-      }
-    }
-
-    function success (resp) {
-      // use global data filter on response text
-      var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type)
-        , r = resp.responseText = filteredResponse
-      if (r) {
-        switch (type) {
-        case 'json':
-          try {
-            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
-          } catch (err) {
-            return error(resp, 'Could not parse JSON in response', err)
-          }
-          break
-        case 'js':
-          resp = eval(r)
-          break
-        case 'html':
-          resp = r
-          break
-        case 'xml':
-          resp = resp.responseXML
-              && resp.responseXML.parseError // IE trololo
-              && resp.responseXML.parseError.errorCode
-              && resp.responseXML.parseError.reason
-            ? null
-            : resp.responseXML
-          break
-        }
-      }
-
-      self._responseArgs.resp = resp
-      self._fulfilled = true
-      fn(resp)
-      while (self._fulfillmentHandlers.length > 0) {
-        self._fulfillmentHandlers.shift()(resp)
-      }
-
-      complete(resp)
-    }
-
-    function error(resp, msg, t) {
-      self._responseArgs.resp = resp
-      self._responseArgs.msg = msg
-      self._responseArgs.t = t
-      self._erred = true
-      while (self._errorHandlers.length > 0) {
-        self._errorHandlers.shift()(resp, msg, t)
-      }
-      complete(resp)
-    }
-
-    this.request = getRequest.call(this, success, error)
-  }
-
-  Reqwest.prototype = {
-    abort: function () {
-      this._aborted = true
-      this.request.abort()
-    }
-
-  , retry: function () {
-      init.call(this, this.o, this.fn)
-    }
-
-    /**
-     * Small deviation from the Promises A CommonJs specification
-     * http://wiki.commonjs.org/wiki/Promises/A
-     */
-
-    /**
-     * `then` will execute upon successful requests
-     */
-  , then: function (success, fail) {
-      if (this._fulfilled) {
-        success(this._responseArgs.resp)
-      } else if (this._erred) {
-        fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
-      } else {
-        this._fulfillmentHandlers.push(success)
-        this._errorHandlers.push(fail)
-      }
-      return this
-    }
-
-    /**
-     * `always` will execute whether the request succeeds or fails
-     */
-  , always: function (fn) {
-      if (this._fulfilled || this._erred) {
-        fn(this._responseArgs.resp)
-      } else {
-        this._completeHandlers.push(fn)
-      }
-      return this
-    }
-
-    /**
-     * `fail` will execute when the request fails
-     */
-  , fail: function (fn) {
-      if (this._erred) {
-        fn(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
-      } else {
-        this._errorHandlers.push(fn)
-      }
-      return this
-    }
-  }
-
-  function reqwest(o, fn) {
-    return new Reqwest(o, fn)
-  }
-
-  // normalize newline variants according to spec -> CRLF
-  function normalize(s) {
-    return s ? s.replace(/\r?\n/g, '\r\n') : ''
-  }
-
-  function serial(el, cb) {
-    var n = el.name
-      , t = el.tagName.toLowerCase()
-      , optCb = function (o) {
-          // IE gives value="" even where there is no value attribute
-          // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
-          if (o && !o.disabled)
-            cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
-        }
-      , ch, ra, val, i
-
-    // don't serialize elements that are disabled or without a name
-    if (el.disabled || !n) return
-
-    switch (t) {
-    case 'input':
-      if (!/reset|button|image|file/i.test(el.type)) {
-        ch = /checkbox/i.test(el.type)
-        ra = /radio/i.test(el.type)
-        val = el.value
-        // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
-        ;(!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
-      }
-      break
-    case 'textarea':
-      cb(n, normalize(el.value))
-      break
-    case 'select':
-      if (el.type.toLowerCase() === 'select-one') {
-        optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null)
-      } else {
-        for (i = 0; el.length && i < el.length; i++) {
-          el.options[i].selected && optCb(el.options[i])
-        }
-      }
-      break
-    }
-  }
-
-  // collect up all form elements found from the passed argument elements all
-  // the way down to child elements; pass a '<form>' or form fields.
-  // called with 'this'=callback to use for serial() on each element
-  function eachFormElement() {
-    var cb = this
-      , e, i
-      , serializeSubtags = function (e, tags) {
-          var i, j, fa
-          for (i = 0; i < tags.length; i++) {
-            fa = e[byTag](tags[i])
-            for (j = 0; j < fa.length; j++) serial(fa[j], cb)
-          }
+        }, globalSetupOptions = {
+            dataFilter: function (data) {
+                return data
+            }
         }
 
-    for (i = 0; i < arguments.length; i++) {
-      e = arguments[i]
-      if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
-      serializeSubtags(e, [ 'input', 'select', 'textarea' ])
-    }
-  }
-
-  // standard query string style serialization
-  function serializeQueryString() {
-    return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments))
-  }
-
-  // { 'name': 'value', ... } style serialization
-  function serializeHash() {
-    var hash = {}
-    eachFormElement.apply(function (name, value) {
-      if (name in hash) {
-        hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
-        hash[name].push(value)
-      } else hash[name] = value
-    }, arguments)
-    return hash
-  }
-
-  // [ { name: 'name', value: 'value' }, ... ] style serialization
-  reqwest.serializeArray = function () {
-    var arr = []
-    eachFormElement.apply(function (name, value) {
-      arr.push({name: name, value: value})
-    }, arguments)
-    return arr
-  }
-
-  reqwest.serialize = function () {
-    if (arguments.length === 0) return ''
-    var opt, fn
-      , args = Array.prototype.slice.call(arguments, 0)
-
-    opt = args.pop()
-    opt && opt.nodeType && args.push(opt) && (opt = null)
-    opt && (opt = opt.type)
-
-    if (opt == 'map') fn = serializeHash
-    else if (opt == 'array') fn = reqwest.serializeArray
-    else fn = serializeQueryString
-
-    return fn.apply(null, args)
-  }
-
-  reqwest.toQueryString = function (o) {
-    var qs = '', i
-      , enc = encodeURIComponent
-      , push = function (k, v) {
-          qs += enc(k) + '=' + enc(v) + '&'
+        function handleReadyState(r, success, error) {
+            return function () {
+                // use _aborted to mitigate against IE err c00c023f
+                // (can't read props on aborted request objects)
+                if (r._aborted) return error(r.request)
+                if (r.request && r.request[readyState] == 4) {
+                    r.request.onreadystatechange = noop
+                    if (twoHundo.test(r.request.status))
+                        success(r.request)
+                    else
+                        error(r.request)
+                }
+            }
         }
-      , k, v
 
-    if (isArray(o)) {
-      for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
-    } else {
-      for (k in o) {
-        if (!Object.hasOwnProperty.call(o, k)) continue
-        v = o[k]
-        if (isArray(v)) {
-          for (i = 0; i < v.length; i++) push(k, v[i])
-        } else push(k, o[k])
-      }
+        function setHeaders(http, o) {
+            var headers = o.headers || {}, h
+
+                headers.Accept = headers.Accept || defaultHeaders.accept[o.type] || defaultHeaders.accept['*']
+
+                // breaks cross-origin requests with legacy browsers
+            if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
+            if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
+            for (h in headers)
+                headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
+        }
+
+        function setCredentials(http, o) {
+            if (typeof o.withCredentials !== 'undefined' && typeof http.withCredentials !== 'undefined') {
+                http.withCredentials = !! o.withCredentials
+            }
+        }
+
+        function generalCallback(data) {
+            lastValue = data
+        }
+
+        function urlappend(url, s) {
+            return url + (/\?/.test(url) ? '&' : '?') + s
+        }
+
+        function handleJsonp(o, fn, err, url) {
+            var reqId = uniqid++,
+                cbkey = o.jsonpCallback || 'callback' // the 'callback' key
+                ,
+                cbval = o.jsonpCallbackName || reqwest.getcallbackPrefix(reqId)
+                // , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
+                ,
+                cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)'),
+                match = url.match(cbreg),
+                script = doc.createElement('script'),
+                loaded = 0,
+                isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
+
+            if (match) {
+                if (match[3] === '?') {
+                    url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
+                } else {
+                    cbval = match[3] // provided callback func name
+                }
+            } else {
+                url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
+            }
+
+            win[cbval] = generalCallback
+
+            script.type = 'text/javascript'
+            script.src = url
+            script.async = true
+            if (typeof script.onreadystatechange !== 'undefined' && !isIE10) {
+                // need this for IE due to out-of-order onreadystatechange(), binding script
+                // execution to an event listener gives us control over when the script
+                // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
+                //
+                // if this hack is used in IE10 jsonp callback are never called
+                script.event = 'onclick'
+                script.htmlFor = script.id = '_reqwest_' + reqId
+            }
+
+            script.onload = script.onreadystatechange = function () {
+                if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
+                    return false
+                }
+                script.onload = script.onreadystatechange = null
+                script.onclick && script.onclick()
+                // Call the user callback with the last value stored and clean up values and scripts.
+                o.success && o.success(lastValue)
+                lastValue = undefined
+                head.removeChild(script)
+                loaded = 1
+            }
+
+            // Add the script to the DOM head
+            head.appendChild(script)
+
+            // Enable JSONP timeout
+            return {
+                abort: function () {
+                    script.onload = script.onreadystatechange = null
+                    o.error && o.error({}, 'Request is aborted: timeout', {})
+                    lastValue = undefined
+                    head.removeChild(script)
+                    loaded = 1
+                }
+            }
+        }
+
+        function getRequest(fn, err) {
+            var o = this.o,
+                method = (o.method || 'GET').toUpperCase(),
+                url = typeof o === 'string' ? o : o.url
+                // convert non-string objects to query-string form unless o.processData is false
+                ,
+                data = (o.processData !== false && o.data && typeof o.data !== 'string') ? reqwest.toQueryString(o.data) : (o.data || null),
+                http
+
+                // if we're working on a GET request and we have data then we should append
+                // query string to end of URL and not post data
+            if ((o.type == 'jsonp' || method == 'GET') && data) {
+                url = urlappend(url, data)
+                data = null
+            }
+
+            if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
+
+            http = xhr()
+            http.open(method, url, true)
+            setHeaders(http, o)
+            setCredentials(http, o)
+            http.onreadystatechange = handleReadyState(this, fn, err)
+            o.before && o.before(http)
+            http.send(data)
+            return http
+        }
+
+        function Reqwest(o, fn) {
+            this.o = o
+            this.fn = fn
+
+            init.apply(this, arguments)
+        }
+
+        function setType(url) {
+            var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
+            return m ? m[1] : 'js'
+        }
+
+        function init(o, fn) {
+
+            this.url = typeof o == 'string' ? o : o.url
+            this.timeout = null
+
+            // whether request has been fulfilled for purpose
+            // of tracking the Promises
+            this._fulfilled = false
+            // success handlers
+            this._fulfillmentHandlers = []
+            // error handlers
+            this._errorHandlers = []
+            // complete (both success and fail) handlers
+            this._completeHandlers = []
+            this._erred = false
+            this._responseArgs = {}
+
+            var self = this,
+                type = o.type || setType(this.url)
+
+                fn = fn || function () {}
+
+            if (o.timeout) {
+                this.timeout = setTimeout(function () {
+                    self.abort()
+                }, o.timeout)
+            }
+
+            if (o.success) {
+                this._fulfillmentHandlers.push(function () {
+                    o.success.apply(o, arguments)
+                })
+            }
+
+            if (o.error) {
+                this._errorHandlers.push(function () {
+                    o.error.apply(o, arguments)
+                })
+            }
+
+            if (o.complete) {
+                this._completeHandlers.push(function () {
+                    o.complete.apply(o, arguments)
+                })
+            }
+
+            function complete(resp) {
+                o.timeout && clearTimeout(self.timeout)
+                self.timeout = null
+                while (self._completeHandlers.length > 0) {
+                    self._completeHandlers.shift()(resp)
+                }
+            }
+
+            function success(resp) {
+                // use global data filter on response text
+                var filteredResponse = globalSetupOptions.dataFilter(resp.responseText, type),
+                    r = resp.responseText = filteredResponse
+                if (r) {
+                    switch (type) {
+                    case 'json':
+                        try {
+                            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
+                        } catch (err) {
+                            return error(resp, 'Could not parse JSON in response', err)
+                        }
+                        break
+                    case 'js':
+                        resp = eval(r)
+                        break
+                    case 'html':
+                        resp = r
+                        break
+                    case 'xml':
+                        resp = resp.responseXML && resp.responseXML.parseError // IE trololo
+                        && resp.responseXML.parseError.errorCode && resp.responseXML.parseError.reason ? null : resp.responseXML
+                        break
+                    }
+                }
+
+                self._responseArgs.resp = resp
+                self._fulfilled = true
+                fn(resp)
+                while (self._fulfillmentHandlers.length > 0) {
+                    self._fulfillmentHandlers.shift()(resp)
+                }
+
+                complete(resp)
+            }
+
+            function error(resp, msg, t) {
+                self._responseArgs.resp = resp
+                self._responseArgs.msg = msg
+                self._responseArgs.t = t
+                self._erred = true
+                while (self._errorHandlers.length > 0) {
+                    self._errorHandlers.shift()(resp, msg, t)
+                }
+                complete(resp)
+            }
+
+            this.request = getRequest.call(this, success, error)
+        }
+
+    Reqwest.prototype = {
+        abort: function () {
+            this._aborted = true
+            this.request.abort()
+        }
+
+        ,
+        retry: function () {
+            init.call(this, this.o, this.fn)
+        }
+
+        /**
+         * Small deviation from the Promises A CommonJs specification
+         * http://wiki.commonjs.org/wiki/Promises/A
+         */
+
+        /**
+         * `then` will execute upon successful requests
+         */
+        ,
+        then: function (success, fail) {
+            if (this._fulfilled) {
+                success(this._responseArgs.resp)
+            } else if (this._erred) {
+                fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+            } else {
+                this._fulfillmentHandlers.push(success)
+                this._errorHandlers.push(fail)
+            }
+            return this
+        }
+
+        /**
+         * `always` will execute whether the request succeeds or fails
+         */
+        ,
+        always: function (fn) {
+            if (this._fulfilled || this._erred) {
+                fn(this._responseArgs.resp)
+            } else {
+                this._completeHandlers.push(fn)
+            }
+            return this
+        }
+
+        /**
+         * `fail` will execute when the request fails
+         */
+        ,
+        fail: function (fn) {
+            if (this._erred) {
+                fn(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+            } else {
+                this._errorHandlers.push(fn)
+            }
+            return this
+        }
     }
 
-    // spaces should be + according to spec
-    return qs.replace(/&$/, '').replace(/%20/g, '+')
-  }
-
-  reqwest.getcallbackPrefix = function () {
-    return callbackPrefix
-  }
-
-  // jQuery and Zepto compatibility, differences can be remapped here so you can call
-  // .ajax.compat(options, callback)
-  reqwest.compat = function (o, fn) {
-    if (o) {
-      o.type && (o.method = o.type) && delete o.type
-      o.dataType && (o.type = o.dataType)
-      o.jsonpCallback && (o.jsonpCallbackName = o.jsonpCallback) && delete o.jsonpCallback
-      o.jsonp && (o.jsonpCallback = o.jsonp)
+    function reqwest(o, fn) {
+        return new Reqwest(o, fn)
     }
-    return new Reqwest(o, fn)
-  }
 
-  reqwest.ajaxSetup = function (options) {
-    options = options || {}
-    for (var k in options) {
-      globalSetupOptions[k] = options[k]
+    // normalize newline variants according to spec -> CRLF
+
+    function normalize(s) {
+        return s ? s.replace(/\r?\n/g, '\r\n') : ''
     }
-  }
 
-  return reqwest
+    function serial(el, cb) {
+        var n = el.name,
+            t = el.tagName.toLowerCase(),
+            optCb = function (o) {
+                // IE gives value="" even where there is no value attribute
+                // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
+                if (o && !o.disabled)
+                    cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
+            }, ch, ra, val, i
+
+            // don't serialize elements that are disabled or without a name
+        if (el.disabled || !n) return
+
+        switch (t) {
+        case 'input':
+            if (!/reset|button|image|file/i.test(el.type)) {
+                ch = /checkbox/i.test(el.type)
+                ra = /radio/i.test(el.type)
+                val = el.value
+                // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
+                ;
+                (!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
+            }
+            break
+        case 'textarea':
+            cb(n, normalize(el.value))
+            break
+        case 'select':
+            if (el.type.toLowerCase() === 'select-one') {
+                optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null)
+            } else {
+                for (i = 0; el.length && i < el.length; i++) {
+                    el.options[i].selected && optCb(el.options[i])
+                }
+            }
+            break
+        }
+    }
+
+    // collect up all form elements found from the passed argument elements all
+    // the way down to child elements; pass a '<form>' or form fields.
+    // called with 'this'=callback to use for serial() on each element
+
+    function eachFormElement() {
+        var cb = this,
+            e, i, serializeSubtags = function (e, tags) {
+                var i, j, fa
+                for (i = 0; i < tags.length; i++) {
+                    fa = e[byTag](tags[i])
+                    for (j = 0; j < fa.length; j++) serial(fa[j], cb)
+                }
+            }
+
+        for (i = 0; i < arguments.length; i++) {
+            e = arguments[i]
+            if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
+            serializeSubtags(e, ['input', 'select', 'textarea'])
+        }
+    }
+
+    // standard query string style serialization
+
+    function serializeQueryString() {
+        return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments))
+    }
+
+    // { 'name': 'value', ... } style serialization
+
+    function serializeHash() {
+        var hash = {}
+        eachFormElement.apply(function (name, value) {
+            if (name in hash) {
+                hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
+                hash[name].push(value)
+            } else hash[name] = value
+        }, arguments)
+        return hash
+    }
+
+    // [ { name: 'name', value: 'value' }, ... ] style serialization
+    reqwest.serializeArray = function () {
+        var arr = []
+        eachFormElement.apply(function (name, value) {
+            arr.push({
+                name: name,
+                value: value
+            })
+        }, arguments)
+        return arr
+    }
+
+    reqwest.serialize = function () {
+        if (arguments.length === 0) return ''
+        var opt, fn, args = Array.prototype.slice.call(arguments, 0)
+
+            opt = args.pop()
+            opt && opt.nodeType && args.push(opt) && (opt = null)
+            opt && (opt = opt.type)
+
+            if (opt == 'map') fn = serializeHash
+            else if (opt == 'array') fn = reqwest.serializeArray
+            else fn = serializeQueryString
+
+                return fn.apply(null, args)
+    }
+
+    reqwest.toQueryString = function (o) {
+        var qs = '',
+            i, enc = encodeURIComponent,
+            push = function (k, v) {
+                qs += enc(k) + '=' + enc(v) + '&'
+            }, k, v
+
+        if (isArray(o)) {
+            for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
+        } else {
+            for (k in o) {
+                if (!Object.hasOwnProperty.call(o, k)) continue
+                v = o[k]
+                if (isArray(v)) {
+                    for (i = 0; i < v.length; i++) push(k, v[i])
+                } else push(k, o[k])
+            }
+        }
+
+        // spaces should be + according to spec
+        return qs.replace(/&$/, '').replace(/%20/g, '+')
+    }
+
+    reqwest.getcallbackPrefix = function () {
+        return callbackPrefix
+    }
+
+    // jQuery and Zepto compatibility, differences can be remapped here so you can call
+    // .ajax.compat(options, callback)
+    reqwest.compat = function (o, fn) {
+        if (o) {
+            o.type && (o.method = o.type) && delete o.type
+            o.dataType && (o.type = o.dataType)
+            o.jsonpCallback && (o.jsonpCallbackName = o.jsonpCallback) && delete o.jsonpCallback
+            o.jsonp && (o.jsonpCallback = o.jsonp)
+        }
+        return new Reqwest(o, fn)
+    }
+
+    reqwest.ajaxSetup = function (options) {
+        options = options || {}
+        for (var k in options) {
+            globalSetupOptions[k] = options[k]
+        }
+    }
+
+    return reqwest
 });
 // RSVP.js provides simple tools for organizing asynchronous code.
 // https://github.com/tildeio/rsvp.js
 // Copyright (c) 2013 Yehuda Katz, Tom Dale, and contributors
-(function() {
-var define, requireModule;
+(function () {
+    var define, requireModule;
 
-(function() {
-  var registry = {}, seen = {};
+    (function () {
+        var registry = {}, seen = {};
 
-  define = function(name, deps, callback) {
-    registry[name] = { deps: deps, callback: callback };
-  };
-
-  requireModule = function(name) {
-    if (seen[name]) { return seen[name]; }
-    seen[name] = {};
-
-    var mod = registry[name],
-        deps = mod.deps,
-        callback = mod.callback,
-        reified = [],
-        exports;
-
-    for (var i=0, l=deps.length; i<l; i++) {
-      if (deps[i] === 'exports') {
-        reified.push(exports = {});
-      } else {
-        reified.push(requireModule(deps[i]));
-      }
-    }
-
-    var value = callback.apply(this, reified);
-    return seen[name] = exports || value;
-  };
-})();
-
-define("rsvp/all",
-  ["rsvp/defer","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var defer = __dependency1__.defer;
-
-    function all(promises) {
-      var results = [], deferred = defer(), remaining = promises.length;
-
-      if (remaining === 0) {
-        deferred.resolve([]);
-      }
-
-      var resolver = function(index) {
-        return function(value) {
-          resolveAll(index, value);
+        define = function (name, deps, callback) {
+            registry[name] = {
+                deps: deps,
+                callback: callback
+            };
         };
-      };
 
-      var resolveAll = function(index, value) {
-        results[index] = value;
-        if (--remaining === 0) {
-          deferred.resolve(results);
-        }
-      };
+        requireModule = function (name) {
+            if (seen[name]) {
+                return seen[name];
+            }
+            seen[name] = {};
 
-      var rejectAll = function(error) {
-        deferred.reject(error);
-      };
+            var mod = registry[name],
+                deps = mod.deps,
+                callback = mod.callback,
+                reified = [],
+                exports;
 
-      for (var i = 0; i < promises.length; i++) {
-        if (promises[i] && typeof promises[i].then === 'function') {
-          promises[i].then(resolver(i), rejectAll);
-        } else {
-          resolveAll(i, promises[i]);
-        }
-      }
-      return deferred.promise;
-    }
-
-    __exports__.all = all;
-  });
-
-define("rsvp/async",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var browserGlobal = (typeof window !== 'undefined') ? window : {};
-
-    var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
-    var async;
-
-    if (typeof process !== 'undefined' &&
-      {}.toString.call(process) === '[object process]') {
-      async = function(callback, binding) {
-        process.nextTick(function() {
-          callback.call(binding);
-        });
-      };
-    } else if (BrowserMutationObserver) {
-      var queue = [];
-
-      var observer = new BrowserMutationObserver(function() {
-        var toProcess = queue.slice();
-        queue = [];
-
-        toProcess.forEach(function(tuple) {
-          var callback = tuple[0], binding = tuple[1];
-          callback.call(binding);
-        });
-      });
-
-      var element = document.createElement('div');
-      observer.observe(element, { attributes: true });
-
-      // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
-      window.addEventListener('unload', function(){
-        observer.disconnect();
-        observer = null;
-      });
-
-      async = function(callback, binding) {
-        queue.push([callback, binding]);
-        element.setAttribute('drainQueue', 'drainQueue');
-      };
-    } else {
-      async = function(callback, binding) {
-        setTimeout(function() {
-          callback.call(binding);
-        }, 1);
-      };
-    }
-
-
-    __exports__.async = async;
-  });
-
-define("rsvp/config",
-  ["rsvp/async","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var async = __dependency1__.async;
-
-    var config = {};
-    config.async = async;
-
-    __exports__.config = config;
-  });
-
-define("rsvp/defer",
-  ["rsvp/promise","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Promise = __dependency1__.Promise;
-
-    function defer() {
-      var deferred = {};
-
-      var promise = new Promise(function(resolve, reject) {
-        deferred.resolve = resolve;
-        deferred.reject = reject;
-      });
-
-      deferred.promise = promise;
-      return deferred;
-    }
-
-    __exports__.defer = defer;
-  });
-
-define("rsvp/events",
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var Event = function(type, options) {
-      this.type = type;
-
-      for (var option in options) {
-        if (!options.hasOwnProperty(option)) { continue; }
-
-        this[option] = options[option];
-      }
-    };
-
-    var indexOf = function(callbacks, callback) {
-      for (var i=0, l=callbacks.length; i<l; i++) {
-        if (callbacks[i][0] === callback) { return i; }
-      }
-
-      return -1;
-    };
-
-    var callbacksFor = function(object) {
-      var callbacks = object._promiseCallbacks;
-
-      if (!callbacks) {
-        callbacks = object._promiseCallbacks = {};
-      }
-
-      return callbacks;
-    };
-
-    var EventTarget = {
-      mixin: function(object) {
-        object.on = this.on;
-        object.off = this.off;
-        object.trigger = this.trigger;
-        return object;
-      },
-
-      on: function(eventNames, callback, binding) {
-        var allCallbacks = callbacksFor(this), callbacks, eventName;
-        eventNames = eventNames.split(/\s+/);
-        binding = binding || this;
-
-        while (eventName = eventNames.shift()) {
-          callbacks = allCallbacks[eventName];
-
-          if (!callbacks) {
-            callbacks = allCallbacks[eventName] = [];
-          }
-
-          if (indexOf(callbacks, callback) === -1) {
-            callbacks.push([callback, binding]);
-          }
-        }
-      },
-
-      off: function(eventNames, callback) {
-        var allCallbacks = callbacksFor(this), callbacks, eventName, index;
-        eventNames = eventNames.split(/\s+/);
-
-        while (eventName = eventNames.shift()) {
-          if (!callback) {
-            allCallbacks[eventName] = [];
-            continue;
-          }
-
-          callbacks = allCallbacks[eventName];
-
-          index = indexOf(callbacks, callback);
-
-          if (index !== -1) { callbacks.splice(index, 1); }
-        }
-      },
-
-      trigger: function(eventName, options) {
-        var allCallbacks = callbacksFor(this),
-            callbacks, callbackTuple, callback, binding, event;
-
-        if (callbacks = allCallbacks[eventName]) {
-          // Don't cache the callbacks.length since it may grow
-          for (var i=0; i<callbacks.length; i++) {
-            callbackTuple = callbacks[i];
-            callback = callbackTuple[0];
-            binding = callbackTuple[1];
-
-            if (typeof options !== 'object') {
-              options = { detail: options };
+            for (var i = 0, l = deps.length; i < l; i++) {
+                if (deps[i] === 'exports') {
+                    reified.push(exports = {});
+                } else {
+                    reified.push(requireModule(deps[i]));
+                }
             }
 
-            event = new Event(eventName, options);
-            callback.call(binding, event);
-          }
-        }
-      }
-    };
-
-
-    __exports__.EventTarget = EventTarget;
-  });
-
-define("rsvp/hash",
-  ["rsvp/defer","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var defer = __dependency1__.defer;
-
-    function size(object) {
-      var size = 0;
-
-      for (var prop in object) {
-        size++;
-      }
-
-      return size;
-    }
-
-    function hash(promises) {
-      var results = {}, deferred = defer(), remaining = size(promises);
-
-      if (remaining === 0) {
-        deferred.resolve({});
-      }
-
-      var resolver = function(prop) {
-        return function(value) {
-          resolveAll(prop, value);
+            var value = callback.apply(this, reified);
+            return seen[name] = exports || value;
         };
-      };
+    })();
 
-      var resolveAll = function(prop, value) {
-        results[prop] = value;
-        if (--remaining === 0) {
-          deferred.resolve(results);
+    define("rsvp/all", ["rsvp/defer", "exports"], function (__dependency1__, __exports__) {
+        "use strict";
+        var defer = __dependency1__.defer;
+
+        function all(promises) {
+            var results = [],
+                deferred = defer(),
+                remaining = promises.length;
+
+            if (remaining === 0) {
+                deferred.resolve([]);
+            }
+
+            var resolver = function (index) {
+                return function (value) {
+                    resolveAll(index, value);
+                };
+            };
+
+            var resolveAll = function (index, value) {
+                results[index] = value;
+                if (--remaining === 0) {
+                    deferred.resolve(results);
+                }
+            };
+
+            var rejectAll = function (error) {
+                deferred.reject(error);
+            };
+
+            for (var i = 0; i < promises.length; i++) {
+                if (promises[i] && typeof promises[i].then === 'function') {
+                    promises[i].then(resolver(i), rejectAll);
+                } else {
+                    resolveAll(i, promises[i]);
+                }
+            }
+            return deferred.promise;
         }
-      };
 
-      var rejectAll = function(error) {
-        deferred.reject(error);
-      };
+        __exports__.all = all;
+    });
 
-      for (var prop in promises) {
-        if (promises[prop] && typeof promises[prop].then === 'function') {
-          promises[prop].then(resolver(prop), rejectAll);
+    define("rsvp/async", ["exports"], function (__exports__) {
+        "use strict";
+        var browserGlobal = (typeof window !== 'undefined') ? window : {};
+
+        var BrowserMutationObserver = browserGlobal.MutationObserver || browserGlobal.WebKitMutationObserver;
+        var async;
+
+        if (typeof process !== 'undefined' && {}.toString.call(process) === '[object process]') {
+            async = function (callback, binding) {
+                process.nextTick(function () {
+                    callback.call(binding);
+                });
+            };
+        } else if (BrowserMutationObserver) {
+            var queue = [];
+
+            var observer = new BrowserMutationObserver(function () {
+                var toProcess = queue.slice();
+                queue = [];
+
+                toProcess.forEach(function (tuple) {
+                    var callback = tuple[0],
+                        binding = tuple[1];
+                    callback.call(binding);
+                });
+            });
+
+            var element = document.createElement('div');
+            observer.observe(element, {
+                attributes: true
+            });
+
+            // Chrome Memory Leak: https://bugs.webkit.org/show_bug.cgi?id=93661
+            window.addEventListener('unload', function () {
+                observer.disconnect();
+                observer = null;
+            });
+
+            async = function (callback, binding) {
+                queue.push([callback, binding]);
+                element.setAttribute('drainQueue', 'drainQueue');
+            };
         } else {
-          resolveAll(prop, promises[prop]);
-        }
-      }
-
-      return deferred.promise;
-    }
-
-    __exports__.hash = hash;
-  });
-
-define("rsvp/node",
-  ["rsvp/promise","rsvp/all","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var Promise = __dependency1__.Promise;
-    var all = __dependency2__.all;
-
-    function makeNodeCallbackFor(resolve, reject) {
-      return function (error, value) {
-        if (error) {
-          reject(error);
-        } else if (arguments.length > 2) {
-          resolve(Array.prototype.slice.call(arguments, 1));
-        } else {
-          resolve(value);
-        }
-      };
-    }
-
-    function denodeify(nodeFunc) {
-      return function()  {
-        var nodeArgs = Array.prototype.slice.call(arguments), resolve, reject;
-
-        var promise = new Promise(function(nodeResolve, nodeReject) {
-          resolve = nodeResolve;
-          reject = nodeReject;
-        });
-
-        all(nodeArgs).then(function(nodeArgs) {
-          nodeArgs.push(makeNodeCallbackFor(resolve, reject));
-
-          try {
-            nodeFunc.apply(this, nodeArgs);
-          } catch(e) {
-            reject(e);
-          }
-        });
-
-        return promise;
-      };
-    }
-
-    __exports__.denodeify = denodeify;
-  });
-
-define("rsvp/promise",
-  ["rsvp/config","rsvp/events","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var config = __dependency1__.config;
-    var EventTarget = __dependency2__.EventTarget;
-
-    function objectOrFunction(x) {
-      return isFunction(x) || (typeof x === "object" && x !== null);
-    }
-
-    function isFunction(x){
-      return typeof x === "function";
-    }
-
-    var Promise = function(resolver) {
-      var promise = this,
-      resolved = false;
-
-      if (typeof resolver !== 'function') {
-        throw new TypeError('You must pass a resolver function as the sole argument to the promise constructor');
-      }
-
-      if (!(promise instanceof Promise)) {
-        return new Promise(resolver);
-      }
-
-      var resolvePromise = function(value) {
-        if (resolved) { return; }
-        resolved = true;
-        resolve(promise, value);
-      };
-
-      var rejectPromise = function(value) {
-        if (resolved) { return; }
-        resolved = true;
-        reject(promise, value);
-      };
-
-      this.on('promise:resolved', function(event) {
-        this.trigger('success', { detail: event.detail });
-      }, this);
-
-      this.on('promise:failed', function(event) {
-        this.trigger('error', { detail: event.detail });
-      }, this);
-
-      resolver(resolvePromise, rejectPromise);
-    };
-
-    var invokeCallback = function(type, promise, callback, event) {
-      var hasCallback = isFunction(callback),
-          value, error, succeeded, failed;
-
-      if (hasCallback) {
-        try {
-          value = callback(event.detail);
-          succeeded = true;
-        } catch(e) {
-          failed = true;
-          error = e;
-        }
-      } else {
-        value = event.detail;
-        succeeded = true;
-      }
-
-      if (objectOrFunction(value) && isFunction(value.then)) {
-        value.then(function(value) {
-          resolve(promise, value);
-        }, function(error) {
-          reject(promise, error);
-        });
-      } else if (hasCallback && succeeded) {
-        resolve(promise, value);
-      } else if (failed) {
-        reject(promise, error);
-      } else if (type === 'resolve') {
-        resolve(promise, value);
-      } else if (type === 'reject') {
-        reject(promise, value);
-      }
-    };
-
-    Promise.prototype = {
-      constructor: Promise,
-
-      then: function(done, fail) {
-        var thenPromise = new Promise(function() {});
-
-        if (this.isFulfilled) {
-          config.async(function() {
-            invokeCallback('resolve', thenPromise, done, { detail: this.fulfillmentValue });
-          }, this);
+            async = function (callback, binding) {
+                setTimeout(function () {
+                    callback.call(binding);
+                }, 1);
+            };
         }
 
-        if (this.isRejected) {
-          config.async(function() {
-            invokeCallback('reject', thenPromise, fail, { detail: this.rejectedReason });
-          }, this);
+
+        __exports__.async = async;
+    });
+
+    define("rsvp/config", ["rsvp/async", "exports"], function (__dependency1__, __exports__) {
+        "use strict";
+        var async = __dependency1__.async;
+
+        var config = {};
+        config.async = async;
+
+        __exports__.config = config;
+    });
+
+    define("rsvp/defer", ["rsvp/promise", "exports"], function (__dependency1__, __exports__) {
+        "use strict";
+        var Promise = __dependency1__.Promise;
+
+        function defer() {
+            var deferred = {};
+
+            var promise = new Promise(function (resolve, reject) {
+                deferred.resolve = resolve;
+                deferred.reject = reject;
+            });
+
+            deferred.promise = promise;
+            return deferred;
         }
 
-        this.on('promise:resolved', function(event) {
-          invokeCallback('resolve', thenPromise, done, event);
-        });
+        __exports__.defer = defer;
+    });
 
-        this.on('promise:failed', function(event) {
-          invokeCallback('reject', thenPromise, fail, event);
-        });
+    define("rsvp/events", ["exports"], function (__exports__) {
+        "use strict";
+        var Event = function (type, options) {
+            this.type = type;
 
-        return thenPromise;
-      }
-    };
+            for (var option in options) {
+                if (!options.hasOwnProperty(option)) {
+                    continue;
+                }
 
-    EventTarget.mixin(Promise.prototype);
+                this[option] = options[option];
+            }
+        };
 
-    function resolve(promise, value) {
+        var indexOf = function (callbacks, callback) {
+            for (var i = 0, l = callbacks.length; i < l; i++) {
+                if (callbacks[i][0] === callback) {
+                    return i;
+                }
+            }
 
-      if (promise === value) {
-        fulfill(promise, value);
-      } else if (objectOrFunction(value) && isFunction(value.then)) {
-        value.then(function(val) {
-          if (value !== val) {
-            resolve(promise, val);
-          } else {
-            fulfill(promise, val);
-          }
-        }, function(val) {
-          reject(promise, val);
-        });
-      } else {
-        fulfill(promise, value);
-      }
-    }
+            return -1;
+        };
 
-    function fulfill(promise, value) {
-      config.async(function() {
-        promise.trigger('promise:resolved', { detail: value });
-        promise.isFulfilled = true;
-        promise.fulfillmentValue = value;
-      });
-    }
+        var callbacksFor = function (object) {
+            var callbacks = object._promiseCallbacks;
 
-    function reject(promise, value) {
-      config.async(function() {
-        promise.trigger('promise:failed', { detail: value });
-        promise.isRejected = true;
-        promise.rejectedReason = value;
-      });
-    }
+            if (!callbacks) {
+                callbacks = object._promiseCallbacks = {};
+            }
+
+            return callbacks;
+        };
+
+        var EventTarget = {
+            mixin: function (object) {
+                object.on = this.on;
+                object.off = this.off;
+                object.trigger = this.trigger;
+                return object;
+            },
+
+            on: function (eventNames, callback, binding) {
+                var allCallbacks = callbacksFor(this),
+                    callbacks, eventName;
+                eventNames = eventNames.split(/\s+/);
+                binding = binding || this;
+
+                while (eventName = eventNames.shift()) {
+                    callbacks = allCallbacks[eventName];
+
+                    if (!callbacks) {
+                        callbacks = allCallbacks[eventName] = [];
+                    }
+
+                    if (indexOf(callbacks, callback) === -1) {
+                        callbacks.push([callback, binding]);
+                    }
+                }
+            },
+
+            off: function (eventNames, callback) {
+                var allCallbacks = callbacksFor(this),
+                    callbacks, eventName, index;
+                eventNames = eventNames.split(/\s+/);
+
+                while (eventName = eventNames.shift()) {
+                    if (!callback) {
+                        allCallbacks[eventName] = [];
+                        continue;
+                    }
+
+                    callbacks = allCallbacks[eventName];
+
+                    index = indexOf(callbacks, callback);
+
+                    if (index !== -1) {
+                        callbacks.splice(index, 1);
+                    }
+                }
+            },
+
+            trigger: function (eventName, options) {
+                var allCallbacks = callbacksFor(this),
+                    callbacks, callbackTuple, callback, binding, event;
+
+                if (callbacks = allCallbacks[eventName]) {
+                    // Don't cache the callbacks.length since it may grow
+                    for (var i = 0; i < callbacks.length; i++) {
+                        callbackTuple = callbacks[i];
+                        callback = callbackTuple[0];
+                        binding = callbackTuple[1];
+
+                        if (typeof options !== 'object') {
+                            options = {
+                                detail: options
+                            };
+                        }
+
+                        event = new Event(eventName, options);
+                        callback.call(binding, event);
+                    }
+                }
+            }
+        };
 
 
-    __exports__.Promise = Promise;
-  });
+        __exports__.EventTarget = EventTarget;
+    });
 
-define("rsvp/resolve",
-  ["rsvp/promise","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Promise = __dependency1__.Promise;
+    define("rsvp/hash", ["rsvp/defer", "exports"], function (__dependency1__, __exports__) {
+        "use strict";
+        var defer = __dependency1__.defer;
 
+        function size(object) {
+            var size = 0;
 
-    function objectOrFunction(x) {
-      return typeof x === "function" || (typeof x === "object" && x !== null);
-    }
+            for (var prop in object) {
+                size++;
+            }
 
-    function resolve(thenable){
-      var promise = new Promise(function(resolve, reject){
-        var then;
+            return size;
+        }
 
-        try {
-          if ( objectOrFunction(thenable) ) {
-            then = thenable.then;
+        function hash(promises) {
+            var results = {}, deferred = defer(),
+                remaining = size(promises);
 
-            if (typeof then === "function") {
-              then.call(thenable, resolve, reject);
+            if (remaining === 0) {
+                deferred.resolve({});
+            }
+
+            var resolver = function (prop) {
+                return function (value) {
+                    resolveAll(prop, value);
+                };
+            };
+
+            var resolveAll = function (prop, value) {
+                results[prop] = value;
+                if (--remaining === 0) {
+                    deferred.resolve(results);
+                }
+            };
+
+            var rejectAll = function (error) {
+                deferred.reject(error);
+            };
+
+            for (var prop in promises) {
+                if (promises[prop] && typeof promises[prop].then === 'function') {
+                    promises[prop].then(resolver(prop), rejectAll);
+                } else {
+                    resolveAll(prop, promises[prop]);
+                }
+            }
+
+            return deferred.promise;
+        }
+
+        __exports__.hash = hash;
+    });
+
+    define("rsvp/node", ["rsvp/promise", "rsvp/all", "exports"], function (__dependency1__, __dependency2__, __exports__) {
+        "use strict";
+        var Promise = __dependency1__.Promise;
+        var all = __dependency2__.all;
+
+        function makeNodeCallbackFor(resolve, reject) {
+            return function (error, value) {
+                if (error) {
+                    reject(error);
+                } else if (arguments.length > 2) {
+                    resolve(Array.prototype.slice.call(arguments, 1));
+                } else {
+                    resolve(value);
+                }
+            };
+        }
+
+        function denodeify(nodeFunc) {
+            return function () {
+                var nodeArgs = Array.prototype.slice.call(arguments),
+                    resolve, reject;
+
+                var promise = new Promise(function (nodeResolve, nodeReject) {
+                    resolve = nodeResolve;
+                    reject = nodeReject;
+                });
+
+                all(nodeArgs).then(function (nodeArgs) {
+                    nodeArgs.push(makeNodeCallbackFor(resolve, reject));
+
+                    try {
+                        nodeFunc.apply(this, nodeArgs);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+
+                return promise;
+            };
+        }
+
+        __exports__.denodeify = denodeify;
+    });
+
+    define("rsvp/promise", ["rsvp/config", "rsvp/events", "exports"], function (__dependency1__, __dependency2__, __exports__) {
+        "use strict";
+        var config = __dependency1__.config;
+        var EventTarget = __dependency2__.EventTarget;
+
+        function objectOrFunction(x) {
+            return isFunction(x) || (typeof x === "object" && x !== null);
+        }
+
+        function isFunction(x) {
+            return typeof x === "function";
+        }
+
+        var Promise = function (resolver) {
+            var promise = this,
+                resolved = false;
+
+            if (typeof resolver !== 'function') {
+                throw new TypeError('You must pass a resolver function as the sole argument to the promise constructor');
+            }
+
+            if (!(promise instanceof Promise)) {
+                return new Promise(resolver);
+            }
+
+            var resolvePromise = function (value) {
+                if (resolved) {
+                    return;
+                }
+                resolved = true;
+                resolve(promise, value);
+            };
+
+            var rejectPromise = function (value) {
+                if (resolved) {
+                    return;
+                }
+                resolved = true;
+                reject(promise, value);
+            };
+
+            this.on('promise:resolved', function (event) {
+                this.trigger('success', {
+                    detail: event.detail
+                });
+            }, this);
+
+            this.on('promise:failed', function (event) {
+                this.trigger('error', {
+                    detail: event.detail
+                });
+            }, this);
+
+            resolver(resolvePromise, rejectPromise);
+        };
+
+        var invokeCallback = function (type, promise, callback, event) {
+            var hasCallback = isFunction(callback),
+                value, error, succeeded, failed;
+
+            if (hasCallback) {
+                try {
+                    value = callback(event.detail);
+                    succeeded = true;
+                } catch (e) {
+                    failed = true;
+                    error = e;
+                }
             } else {
-              resolve(thenable);
+                value = event.detail;
+                succeeded = true;
             }
 
-          } else {
-            resolve(thenable);
-          }
+            if (objectOrFunction(value) && isFunction(value.then)) {
+                value.then(function (value) {
+                    resolve(promise, value);
+                }, function (error) {
+                    reject(promise, error);
+                });
+            } else if (hasCallback && succeeded) {
+                resolve(promise, value);
+            } else if (failed) {
+                reject(promise, error);
+            } else if (type === 'resolve') {
+                resolve(promise, value);
+            } else if (type === 'reject') {
+                reject(promise, value);
+            }
+        };
 
-        } catch(error) {
-          reject(error);
+        Promise.prototype = {
+            constructor: Promise,
+
+            then: function (done, fail) {
+                var thenPromise = new Promise(function () {});
+
+                if (this.isFulfilled) {
+                    config.async(function () {
+                        invokeCallback('resolve', thenPromise, done, {
+                            detail: this.fulfillmentValue
+                        });
+                    }, this);
+                }
+
+                if (this.isRejected) {
+                    config.async(function () {
+                        invokeCallback('reject', thenPromise, fail, {
+                            detail: this.rejectedReason
+                        });
+                    }, this);
+                }
+
+                this.on('promise:resolved', function (event) {
+                    invokeCallback('resolve', thenPromise, done, event);
+                });
+
+                this.on('promise:failed', function (event) {
+                    invokeCallback('reject', thenPromise, fail, event);
+                });
+
+                return thenPromise;
+            }
+        };
+
+        EventTarget.mixin(Promise.prototype);
+
+        function resolve(promise, value) {
+
+            if (promise === value) {
+                fulfill(promise, value);
+            } else if (objectOrFunction(value) && isFunction(value.then)) {
+                value.then(function (val) {
+                    if (value !== val) {
+                        resolve(promise, val);
+                    } else {
+                        fulfill(promise, val);
+                    }
+                }, function (val) {
+                    reject(promise, val);
+                });
+            } else {
+                fulfill(promise, value);
+            }
         }
-      });
 
-      return promise;
-    }
+        function fulfill(promise, value) {
+            config.async(function () {
+                promise.trigger('promise:resolved', {
+                    detail: value
+                });
+                promise.isFulfilled = true;
+                promise.fulfillmentValue = value;
+            });
+        }
 
-
-    __exports__.resolve = resolve;
-  });
-
-define("rsvp",
-  ["rsvp/events","rsvp/promise","rsvp/node","rsvp/all","rsvp/hash","rsvp/defer","rsvp/config","rsvp/resolve","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
-    "use strict";
-    var EventTarget = __dependency1__.EventTarget;
-    var Promise = __dependency2__.Promise;
-    var denodeify = __dependency3__.denodeify;
-    var all = __dependency4__.all;
-    var hash = __dependency5__.hash;
-    var defer = __dependency6__.defer;
-    var config = __dependency7__.config;
-    var resolve = __dependency8__.resolve;
-
-    function configure(name, value) {
-      config[name] = value;
-    }
+        function reject(promise, value) {
+            config.async(function () {
+                promise.trigger('promise:failed', {
+                    detail: value
+                });
+                promise.isRejected = true;
+                promise.rejectedReason = value;
+            });
+        }
 
 
-    __exports__.Promise = Promise;
-    __exports__.EventTarget = EventTarget;
-    __exports__.all = all;
-    __exports__.hash = hash;
-    __exports__.defer = defer;
-    __exports__.denodeify = denodeify;
-    __exports__.configure = configure;
-    __exports__.resolve = resolve;
-  });
+        __exports__.Promise = Promise;
+    });
 
-window.RSVP = requireModule('rsvp');
+    define("rsvp/resolve", ["rsvp/promise", "exports"], function (__dependency1__, __exports__) {
+        "use strict";
+        var Promise = __dependency1__.Promise;
+
+
+        function objectOrFunction(x) {
+            return typeof x === "function" || (typeof x === "object" && x !== null);
+        }
+
+        function resolve(thenable) {
+            var promise = new Promise(function (resolve, reject) {
+                var then;
+
+                try {
+                    if (objectOrFunction(thenable)) {
+                        then = thenable.then;
+
+                        if (typeof then === "function") {
+                            then.call(thenable, resolve, reject);
+                        } else {
+                            resolve(thenable);
+                        }
+
+                    } else {
+                        resolve(thenable);
+                    }
+
+                } catch (error) {
+                    reject(error);
+                }
+            });
+
+            return promise;
+        }
+
+
+        __exports__.resolve = resolve;
+    });
+
+    define("rsvp", ["rsvp/events", "rsvp/promise", "rsvp/node", "rsvp/all", "rsvp/hash", "rsvp/defer", "rsvp/config", "rsvp/resolve", "exports"], function (__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __exports__) {
+        "use strict";
+        var EventTarget = __dependency1__.EventTarget;
+        var Promise = __dependency2__.Promise;
+        var denodeify = __dependency3__.denodeify;
+        var all = __dependency4__.all;
+        var hash = __dependency5__.hash;
+        var defer = __dependency6__.defer;
+        var config = __dependency7__.config;
+        var resolve = __dependency8__.resolve;
+
+        function configure(name, value) {
+            config[name] = value;
+        }
+
+
+        __exports__.Promise = Promise;
+        __exports__.EventTarget = EventTarget;
+        __exports__.all = all;
+        __exports__.hash = hash;
+        __exports__.defer = defer;
+        __exports__.denodeify = denodeify;
+        __exports__.configure = configure;
+        __exports__.resolve = resolve;
+    });
+
+    window.RSVP = requireModule('rsvp');
 })();
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
 //     Underscore may be freely distributed under the MIT license.
 
-(function() {
+(function () {
 
-  // Baseline setup
-  // --------------
+    // Baseline setup
+    // --------------
 
-  // Establish the root object, `window` in the browser, or `global` on the server.
-  var root = this;
+    // Establish the root object, `window` in the browser, or `global` on the server.
+    var root = this;
 
-  // Save the previous value of the `_` variable.
-  var previousUnderscore = root._;
+    // Save the previous value of the `_` variable.
+    var previousUnderscore = root._;
 
-  // Establish the object that gets returned to break out of a loop iteration.
-  var breaker = {};
+    // Establish the object that gets returned to break out of a loop iteration.
+    var breaker = {};
 
-  // Save bytes in the minified (but not gzipped) version:
-  var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
+    // Save bytes in the minified (but not gzipped) version:
+    var ArrayProto = Array.prototype,
+        ObjProto = Object.prototype,
+        FuncProto = Function.prototype;
 
-  // Create quick reference variables for speed access to core prototypes.
-  var
-    push             = ArrayProto.push,
-    slice            = ArrayProto.slice,
-    concat           = ArrayProto.concat,
-    toString         = ObjProto.toString,
-    hasOwnProperty   = ObjProto.hasOwnProperty;
+    // Create quick reference variables for speed access to core prototypes.
+    var
+    push = ArrayProto.push,
+        slice = ArrayProto.slice,
+        concat = ArrayProto.concat,
+        toString = ObjProto.toString,
+        hasOwnProperty = ObjProto.hasOwnProperty;
 
-  // All **ECMAScript 5** native function implementations that we hope to use
-  // are declared here.
-  var
-    nativeForEach      = ArrayProto.forEach,
-    nativeMap          = ArrayProto.map,
-    nativeReduce       = ArrayProto.reduce,
-    nativeReduceRight  = ArrayProto.reduceRight,
-    nativeFilter       = ArrayProto.filter,
-    nativeEvery        = ArrayProto.every,
-    nativeSome         = ArrayProto.some,
-    nativeIndexOf      = ArrayProto.indexOf,
-    nativeLastIndexOf  = ArrayProto.lastIndexOf,
-    nativeIsArray      = Array.isArray,
-    nativeKeys         = Object.keys,
-    nativeBind         = FuncProto.bind;
+    // All **ECMAScript 5** native function implementations that we hope to use
+    // are declared here.
+    var
+    nativeForEach = ArrayProto.forEach,
+        nativeMap = ArrayProto.map,
+        nativeReduce = ArrayProto.reduce,
+        nativeReduceRight = ArrayProto.reduceRight,
+        nativeFilter = ArrayProto.filter,
+        nativeEvery = ArrayProto.every,
+        nativeSome = ArrayProto.some,
+        nativeIndexOf = ArrayProto.indexOf,
+        nativeLastIndexOf = ArrayProto.lastIndexOf,
+        nativeIsArray = Array.isArray,
+        nativeKeys = Object.keys,
+        nativeBind = FuncProto.bind;
 
-  // Create a safe reference to the Underscore object for use below.
-  var _ = function(obj) {
-    if (obj instanceof _) return obj;
-    if (!(this instanceof _)) return new _(obj);
-    this._wrapped = obj;
-  };
+    // Create a safe reference to the Underscore object for use below.
+    var _ = function (obj) {
+        if (obj instanceof _) return obj;
+        if (!(this instanceof _)) return new _(obj);
+        this._wrapped = obj;
+    };
 
-  // Export the Underscore object for **Node.js**, with
-  // backwards-compatibility for the old `require()` API. If we're in
-  // the browser, add `_` as a global object via a string identifier,
-  // for Closure Compiler "advanced" mode.
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
-      exports = module.exports = _;
-    }
-    exports._ = _;
-  } else {
-    root._ = _;
-  }
-
-  // Current version.
-  _.VERSION = '1.4.4';
-
-  // Collection Functions
-  // --------------------
-
-  // The cornerstone, an `each` implementation, aka `forEach`.
-  // Handles objects with the built-in `forEach`, arrays, and raw objects.
-  // Delegates to **ECMAScript 5**'s native `forEach` if available.
-  var each = _.each = _.forEach = function(obj, iterator, context) {
-    if (obj == null) return;
-    if (nativeForEach && obj.forEach === nativeForEach) {
-      obj.forEach(iterator, context);
-    } else if (obj.length === +obj.length) {
-      for (var i = 0, l = obj.length; i < l; i++) {
-        if (iterator.call(context, obj[i], i, obj) === breaker) return;
-      }
-    } else {
-      for (var key in obj) {
-        if (_.has(obj, key)) {
-          if (iterator.call(context, obj[key], key, obj) === breaker) return;
+    // Export the Underscore object for **Node.js**, with
+    // backwards-compatibility for the old `require()` API. If we're in
+    // the browser, add `_` as a global object via a string identifier,
+    // for Closure Compiler "advanced" mode.
+    if (typeof exports !== 'undefined') {
+        if (typeof module !== 'undefined' && module.exports) {
+            exports = module.exports = _;
         }
-      }
+        exports._ = _;
+    } else {
+        root._ = _;
     }
-  };
 
-  // Return the results of applying the iterator to each element.
-  // Delegates to **ECMAScript 5**'s native `map` if available.
-  _.map = _.collect = function(obj, iterator, context) {
-    var results = [];
-    if (obj == null) return results;
-    if (nativeMap && obj.map === nativeMap) return obj.map(iterator, context);
-    each(obj, function(value, index, list) {
-      results.push(iterator.call(context, value, index, list));
-    });
-    return results;
-  };
+    // Current version.
+    _.VERSION = '1.4.4';
 
-  var reduceError = 'Reduce of empty array with no initial value';
+    // Collection Functions
+    // --------------------
 
-  // **Reduce** builds up a single result from a list of values, aka `inject`,
-  // or `foldl`. Delegates to **ECMAScript 5**'s native `reduce` if available.
-  _.reduce = _.foldl = _.inject = function(obj, iterator, memo, context) {
-    var initial = arguments.length > 2;
-    if (obj == null) obj = [];
-    if (nativeReduce && obj.reduce === nativeReduce) {
-      if (context) iterator = _.bind(iterator, context);
-      return initial ? obj.reduce(iterator, memo) : obj.reduce(iterator);
-    }
-    each(obj, function(value, index, list) {
-      if (!initial) {
-        memo = value;
-        initial = true;
-      } else {
-        memo = iterator.call(context, memo, value, index, list);
-      }
-    });
-    if (!initial) throw new TypeError(reduceError);
-    return memo;
-  };
+    // The cornerstone, an `each` implementation, aka `forEach`.
+    // Handles objects with the built-in `forEach`, arrays, and raw objects.
+    // Delegates to **ECMAScript 5**'s native `forEach` if available.
+    var each = _.each = _.forEach = function (obj, iterator, context) {
+        if (obj == null) return;
+        if (nativeForEach && obj.forEach === nativeForEach) {
+            obj.forEach(iterator, context);
+        } else if (obj.length === +obj.length) {
+            for (var i = 0, l = obj.length; i < l; i++) {
+                if (iterator.call(context, obj[i], i, obj) === breaker) return;
+            }
+        } else {
+            for (var key in obj) {
+                if (_.has(obj, key)) {
+                    if (iterator.call(context, obj[key], key, obj) === breaker) return;
+                }
+            }
+        }
+    };
 
-  // The right-associative version of reduce, also known as `foldr`.
-  // Delegates to **ECMAScript 5**'s native `reduceRight` if available.
-  _.reduceRight = _.foldr = function(obj, iterator, memo, context) {
-    var initial = arguments.length > 2;
-    if (obj == null) obj = [];
-    if (nativeReduceRight && obj.reduceRight === nativeReduceRight) {
-      if (context) iterator = _.bind(iterator, context);
-      return initial ? obj.reduceRight(iterator, memo) : obj.reduceRight(iterator);
-    }
-    var length = obj.length;
-    if (length !== +length) {
-      var keys = _.keys(obj);
-      length = keys.length;
-    }
-    each(obj, function(value, index, list) {
-      index = keys ? keys[--length] : --length;
-      if (!initial) {
-        memo = obj[index];
-        initial = true;
-      } else {
-        memo = iterator.call(context, memo, obj[index], index, list);
-      }
-    });
-    if (!initial) throw new TypeError(reduceError);
-    return memo;
-  };
+    // Return the results of applying the iterator to each element.
+    // Delegates to **ECMAScript 5**'s native `map` if available.
+    _.map = _.collect = function (obj, iterator, context) {
+        var results = [];
+        if (obj == null) return results;
+        if (nativeMap && obj.map === nativeMap) return obj.map(iterator, context);
+        each(obj, function (value, index, list) {
+            results.push(iterator.call(context, value, index, list));
+        });
+        return results;
+    };
 
-  // Return the first value which passes a truth test. Aliased as `detect`.
-  _.find = _.detect = function(obj, iterator, context) {
-    var result;
-    any(obj, function(value, index, list) {
-      if (iterator.call(context, value, index, list)) {
-        result = value;
+    var reduceError = 'Reduce of empty array with no initial value';
+
+    // **Reduce** builds up a single result from a list of values, aka `inject`,
+    // or `foldl`. Delegates to **ECMAScript 5**'s native `reduce` if available.
+    _.reduce = _.foldl = _.inject = function (obj, iterator, memo, context) {
+        var initial = arguments.length > 2;
+        if (obj == null) obj = [];
+        if (nativeReduce && obj.reduce === nativeReduce) {
+            if (context) iterator = _.bind(iterator, context);
+            return initial ? obj.reduce(iterator, memo) : obj.reduce(iterator);
+        }
+        each(obj, function (value, index, list) {
+            if (!initial) {
+                memo = value;
+                initial = true;
+            } else {
+                memo = iterator.call(context, memo, value, index, list);
+            }
+        });
+        if (!initial) throw new TypeError(reduceError);
+        return memo;
+    };
+
+    // The right-associative version of reduce, also known as `foldr`.
+    // Delegates to **ECMAScript 5**'s native `reduceRight` if available.
+    _.reduceRight = _.foldr = function (obj, iterator, memo, context) {
+        var initial = arguments.length > 2;
+        if (obj == null) obj = [];
+        if (nativeReduceRight && obj.reduceRight === nativeReduceRight) {
+            if (context) iterator = _.bind(iterator, context);
+            return initial ? obj.reduceRight(iterator, memo) : obj.reduceRight(iterator);
+        }
+        var length = obj.length;
+        if (length !== +length) {
+            var keys = _.keys(obj);
+            length = keys.length;
+        }
+        each(obj, function (value, index, list) {
+            index = keys ? keys[--length] : --length;
+            if (!initial) {
+                memo = obj[index];
+                initial = true;
+            } else {
+                memo = iterator.call(context, memo, obj[index], index, list);
+            }
+        });
+        if (!initial) throw new TypeError(reduceError);
+        return memo;
+    };
+
+    // Return the first value which passes a truth test. Aliased as `detect`.
+    _.find = _.detect = function (obj, iterator, context) {
+        var result;
+        any(obj, function (value, index, list) {
+            if (iterator.call(context, value, index, list)) {
+                result = value;
+                return true;
+            }
+        });
+        return result;
+    };
+
+    // Return all the elements that pass a truth test.
+    // Delegates to **ECMAScript 5**'s native `filter` if available.
+    // Aliased as `select`.
+    _.filter = _.select = function (obj, iterator, context) {
+        var results = [];
+        if (obj == null) return results;
+        if (nativeFilter && obj.filter === nativeFilter) return obj.filter(iterator, context);
+        each(obj, function (value, index, list) {
+            if (iterator.call(context, value, index, list)) results.push(value);
+        });
+        return results;
+    };
+
+    // Return all the elements for which a truth test fails.
+    _.reject = function (obj, iterator, context) {
+        return _.filter(obj, function (value, index, list) {
+            return !iterator.call(context, value, index, list);
+        }, context);
+    };
+
+    // Determine whether all of the elements match a truth test.
+    // Delegates to **ECMAScript 5**'s native `every` if available.
+    // Aliased as `all`.
+    _.every = _.all = function (obj, iterator, context) {
+        iterator || (iterator = _.identity);
+        var result = true;
+        if (obj == null) return result;
+        if (nativeEvery && obj.every === nativeEvery) return obj.every(iterator, context);
+        each(obj, function (value, index, list) {
+            if (!(result = result && iterator.call(context, value, index, list))) return breaker;
+        });
+        return !!result;
+    };
+
+    // Determine if at least one element in the object matches a truth test.
+    // Delegates to **ECMAScript 5**'s native `some` if available.
+    // Aliased as `any`.
+    var any = _.some = _.any = function (obj, iterator, context) {
+        iterator || (iterator = _.identity);
+        var result = false;
+        if (obj == null) return result;
+        if (nativeSome && obj.some === nativeSome) return obj.some(iterator, context);
+        each(obj, function (value, index, list) {
+            if (result || (result = iterator.call(context, value, index, list))) return breaker;
+        });
+        return !!result;
+    };
+
+    // Determine if the array or object contains a given value (using `===`).
+    // Aliased as `include`.
+    _.contains = _.include = function (obj, target) {
+        if (obj == null) return false;
+        if (nativeIndexOf && obj.indexOf === nativeIndexOf) return obj.indexOf(target) != -1;
+        return any(obj, function (value) {
+            return value === target;
+        });
+    };
+
+    // Invoke a method (with arguments) on every item in a collection.
+    _.invoke = function (obj, method) {
+        var args = slice.call(arguments, 2);
+        var isFunc = _.isFunction(method);
+        return _.map(obj, function (value) {
+            return (isFunc ? method : value[method]).apply(value, args);
+        });
+    };
+
+    // Convenience version of a common use case of `map`: fetching a property.
+    _.pluck = function (obj, key) {
+        return _.map(obj, function (value) {
+            return value[key];
+        });
+    };
+
+    // Convenience version of a common use case of `filter`: selecting only objects
+    // containing specific `key:value` pairs.
+    _.where = function (obj, attrs, first) {
+        if (_.isEmpty(attrs)) return first ? void 0 : [];
+        return _[first ? 'find' : 'filter'](obj, function (value) {
+            for (var key in attrs) {
+                if (attrs[key] !== value[key]) return false;
+            }
+            return true;
+        });
+    };
+
+    // Convenience version of a common use case of `find`: getting the first object
+    // containing specific `key:value` pairs.
+    _.findWhere = function (obj, attrs) {
+        return _.where(obj, attrs, true);
+    };
+
+    // Return the maximum element or (element-based computation).
+    // Can't optimize arrays of integers longer than 65,535 elements.
+    // See [WebKit Bug 80797](https://bugs.webkit.org/show_bug.cgi?id=80797)
+    _.max = function (obj, iterator, context) {
+        if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
+            return Math.max.apply(Math, obj);
+        }
+        if (!iterator && _.isEmpty(obj)) return -Infinity;
+        var result = {
+            computed: -Infinity,
+            value: -Infinity
+        };
+        each(obj, function (value, index, list) {
+            var computed = iterator ? iterator.call(context, value, index, list) : value;
+            computed >= result.computed && (result = {
+                value: value,
+                computed: computed
+            });
+        });
+        return result.value;
+    };
+
+    // Return the minimum element (or element-based computation).
+    _.min = function (obj, iterator, context) {
+        if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
+            return Math.min.apply(Math, obj);
+        }
+        if (!iterator && _.isEmpty(obj)) return Infinity;
+        var result = {
+            computed: Infinity,
+            value: Infinity
+        };
+        each(obj, function (value, index, list) {
+            var computed = iterator ? iterator.call(context, value, index, list) : value;
+            computed < result.computed && (result = {
+                value: value,
+                computed: computed
+            });
+        });
+        return result.value;
+    };
+
+    // Shuffle an array.
+    _.shuffle = function (obj) {
+        var rand;
+        var index = 0;
+        var shuffled = [];
+        each(obj, function (value) {
+            rand = _.random(index++);
+            shuffled[index - 1] = shuffled[rand];
+            shuffled[rand] = value;
+        });
+        return shuffled;
+    };
+
+    // An internal function to generate lookup iterators.
+    var lookupIterator = function (value) {
+        return _.isFunction(value) ? value : function (obj) {
+            return obj[value];
+        };
+    };
+
+    // Sort the object's values by a criterion produced by an iterator.
+    _.sortBy = function (obj, value, context) {
+        var iterator = lookupIterator(value);
+        return _.pluck(_.map(obj, function (value, index, list) {
+            return {
+                value: value,
+                index: index,
+                criteria: iterator.call(context, value, index, list)
+            };
+        }).sort(function (left, right) {
+            var a = left.criteria;
+            var b = right.criteria;
+            if (a !== b) {
+                if (a > b || a === void 0) return 1;
+                if (a < b || b === void 0) return -1;
+            }
+            return left.index < right.index ? -1 : 1;
+        }), 'value');
+    };
+
+    // An internal function used for aggregate "group by" operations.
+    var group = function (obj, value, context, behavior) {
+        var result = {};
+        var iterator = lookupIterator(value == null ? _.identity : value);
+        each(obj, function (value, index) {
+            var key = iterator.call(context, value, index, obj);
+            behavior(result, key, value);
+        });
+        return result;
+    };
+
+    // Groups the object's values by a criterion. Pass either a string attribute
+    // to group by, or a function that returns the criterion.
+    _.groupBy = function (obj, value, context) {
+        return group(obj, value, context, function (result, key, value) {
+            (_.has(result, key) ? result[key] : (result[key] = [])).push(value);
+        });
+    };
+
+    // Counts instances of an object that group by a certain criterion. Pass
+    // either a string attribute to count by, or a function that returns the
+    // criterion.
+    _.countBy = function (obj, value, context) {
+        return group(obj, value, context, function (result, key) {
+            if (!_.has(result, key)) result[key] = 0;
+            result[key]++;
+        });
+    };
+
+    // Use a comparator function to figure out the smallest index at which
+    // an object should be inserted so as to maintain order. Uses binary search.
+    _.sortedIndex = function (array, obj, iterator, context) {
+        iterator = iterator == null ? _.identity : lookupIterator(iterator);
+        var value = iterator.call(context, obj);
+        var low = 0,
+            high = array.length;
+        while (low < high) {
+            var mid = (low + high) >>> 1;
+            iterator.call(context, array[mid]) < value ? low = mid + 1 : high = mid;
+        }
+        return low;
+    };
+
+    // Safely convert anything iterable into a real, live array.
+    _.toArray = function (obj) {
+        if (!obj) return [];
+        if (_.isArray(obj)) return slice.call(obj);
+        if (obj.length === +obj.length) return _.map(obj, _.identity);
+        return _.values(obj);
+    };
+
+    // Return the number of elements in an object.
+    _.size = function (obj) {
+        if (obj == null) return 0;
+        return (obj.length === +obj.length) ? obj.length : _.keys(obj).length;
+    };
+
+    // Array Functions
+    // ---------------
+
+    // Get the first element of an array. Passing **n** will return the first N
+    // values in the array. Aliased as `head` and `take`. The **guard** check
+    // allows it to work with `_.map`.
+    _.first = _.head = _.take = function (array, n, guard) {
+        if (array == null) return void 0;
+        return (n != null) && !guard ? slice.call(array, 0, n) : array[0];
+    };
+
+    // Returns everything but the last entry of the array. Especially useful on
+    // the arguments object. Passing **n** will return all the values in
+    // the array, excluding the last N. The **guard** check allows it to work with
+    // `_.map`.
+    _.initial = function (array, n, guard) {
+        return slice.call(array, 0, array.length - ((n == null) || guard ? 1 : n));
+    };
+
+    // Get the last element of an array. Passing **n** will return the last N
+    // values in the array. The **guard** check allows it to work with `_.map`.
+    _.last = function (array, n, guard) {
+        if (array == null) return void 0;
+        if ((n != null) && !guard) {
+            return slice.call(array, Math.max(array.length - n, 0));
+        } else {
+            return array[array.length - 1];
+        }
+    };
+
+    // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
+    // Especially useful on the arguments object. Passing an **n** will return
+    // the rest N values in the array. The **guard**
+    // check allows it to work with `_.map`.
+    _.rest = _.tail = _.drop = function (array, n, guard) {
+        return slice.call(array, (n == null) || guard ? 1 : n);
+    };
+
+    // Trim out all falsy values from an array.
+    _.compact = function (array) {
+        return _.filter(array, _.identity);
+    };
+
+    // Internal implementation of a recursive `flatten` function.
+    var flatten = function (input, shallow, output) {
+        each(input, function (value) {
+            if (_.isArray(value)) {
+                shallow ? push.apply(output, value) : flatten(value, shallow, output);
+            } else {
+                output.push(value);
+            }
+        });
+        return output;
+    };
+
+    // Return a completely flattened version of an array.
+    _.flatten = function (array, shallow) {
+        return flatten(array, shallow, []);
+    };
+
+    // Return a version of the array that does not contain the specified value(s).
+    _.without = function (array) {
+        return _.difference(array, slice.call(arguments, 1));
+    };
+
+    // Produce a duplicate-free version of the array. If the array has already
+    // been sorted, you have the option of using a faster algorithm.
+    // Aliased as `unique`.
+    _.uniq = _.unique = function (array, isSorted, iterator, context) {
+        if (_.isFunction(isSorted)) {
+            context = iterator;
+            iterator = isSorted;
+            isSorted = false;
+        }
+        var initial = iterator ? _.map(array, iterator, context) : array;
+        var results = [];
+        var seen = [];
+        each(initial, function (value, index) {
+            if (isSorted ? (!index || seen[seen.length - 1] !== value) : !_.contains(seen, value)) {
+                seen.push(value);
+                results.push(array[index]);
+            }
+        });
+        return results;
+    };
+
+    // Produce an array that contains the union: each distinct element from all of
+    // the passed-in arrays.
+    _.union = function () {
+        return _.uniq(concat.apply(ArrayProto, arguments));
+    };
+
+    // Produce an array that contains every item shared between all the
+    // passed-in arrays.
+    _.intersection = function (array) {
+        var rest = slice.call(arguments, 1);
+        return _.filter(_.uniq(array), function (item) {
+            return _.every(rest, function (other) {
+                return _.indexOf(other, item) >= 0;
+            });
+        });
+    };
+
+    // Take the difference between one array and a number of other arrays.
+    // Only the elements present in just the first array will remain.
+    _.difference = function (array) {
+        var rest = concat.apply(ArrayProto, slice.call(arguments, 1));
+        return _.filter(array, function (value) {
+            return !_.contains(rest, value);
+        });
+    };
+
+    // Zip together multiple lists into a single array -- elements that share
+    // an index go together.
+    _.zip = function () {
+        var args = slice.call(arguments);
+        var length = _.max(_.pluck(args, 'length'));
+        var results = new Array(length);
+        for (var i = 0; i < length; i++) {
+            results[i] = _.pluck(args, "" + i);
+        }
+        return results;
+    };
+
+    // The inverse operation to `_.zip`. If given an array of pairs it
+    // returns an array of the paired elements split into two left and
+    // right element arrays, if given an array of triples it returns a
+    // three element array and so on. For example, `_.unzip` given
+    // `[['a',1],['b',2],['c',3]]` returns the array
+    // [['a','b','c'],[1,2,3]].
+    _.unzip = function (tuples) {
+        var maxLen = _.max(_.pluck(tuples, "length"))
+        return _.times(maxLen, _.partial(_.pluck, tuples));
+    };
+
+    // Converts lists into objects. Pass either a single array of `[key, value]`
+    // pairs, or two parallel arrays of the same length -- one of keys, and one of
+    // the corresponding values.
+    _.object = function (list, values) {
+        if (list == null) return {};
+        var result = {};
+        for (var i = 0, l = list.length; i < l; i++) {
+            if (values) {
+                result[list[i]] = values[i];
+            } else {
+                result[list[i][0]] = list[i][1];
+            }
+        }
+        return result;
+    };
+
+    // If the browser doesn't supply us with indexOf (I'm looking at you, **MSIE**),
+    // we need this function. Return the position of the first occurrence of an
+    // item in an array, or -1 if the item is not included in the array.
+    // Delegates to **ECMAScript 5**'s native `indexOf` if available.
+    // If the array is large and already in sort order, pass `true`
+    // for **isSorted** to use binary search.
+    _.indexOf = function (array, item, isSorted) {
+        if (array == null) return -1;
+        var i = 0,
+            l = array.length;
+        if (isSorted) {
+            if (typeof isSorted == 'number') {
+                i = (isSorted < 0 ? Math.max(0, l + isSorted) : isSorted);
+            } else {
+                i = _.sortedIndex(array, item);
+                return array[i] === item ? i : -1;
+            }
+        }
+        if (nativeIndexOf && array.indexOf === nativeIndexOf) return array.indexOf(item, isSorted);
+        for (; i < l; i++) if (array[i] === item) return i;
+        return -1;
+    };
+
+    // Delegates to **ECMAScript 5**'s native `lastIndexOf` if available.
+    _.lastIndexOf = function (array, item, from) {
+        if (array == null) return -1;
+        var hasIndex = from != null;
+        if (nativeLastIndexOf && array.lastIndexOf === nativeLastIndexOf) {
+            return hasIndex ? array.lastIndexOf(item, from) : array.lastIndexOf(item);
+        }
+        var i = (hasIndex ? from : array.length);
+        while (i--) if (array[i] === item) return i;
+        return -1;
+    };
+
+    // Generate an integer Array containing an arithmetic progression. A port of
+    // the native Python `range()` function. See
+    // [the Python documentation](http://docs.python.org/library/functions.html#range).
+    _.range = function (start, stop, step) {
+        if (arguments.length <= 1) {
+            stop = start || 0;
+            start = 0;
+        }
+        step = arguments[2] || 1;
+
+        var len = Math.max(Math.ceil((stop - start) / step), 0);
+        var idx = 0;
+        var range = new Array(len);
+
+        while (idx < len) {
+            range[idx++] = start;
+            start += step;
+        }
+
+        return range;
+    };
+
+    // Function (ahem) Functions
+    // ------------------
+
+    // Reusable constructor function for prototype setting.
+    var ctor = function () {};
+
+    // Create a function bound to a given object (assigning `this`, and arguments,
+    // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
+    // available.
+    _.bind = function (func, context) {
+        var args, bound;
+        if (func.bind === nativeBind && nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
+        if (!_.isFunction(func)) throw new TypeError;
+        args = slice.call(arguments, 2);
+        return bound = function () {
+            if (!(this instanceof bound)) return func.apply(context, args.concat(slice.call(arguments)));
+            ctor.prototype = func.prototype;
+            var self = new ctor;
+            ctor.prototype = null;
+            var result = func.apply(self, args.concat(slice.call(arguments)));
+            if (Object(result) === result) return result;
+            return self;
+        };
+    };
+
+    // Partially apply a function by creating a version that has had some of its
+    // arguments pre-filled, without changing its dynamic `this` context.
+    _.partial = function (func) {
+        var args = slice.call(arguments, 1);
+        return function () {
+            return func.apply(this, args.concat(slice.call(arguments)));
+        };
+    };
+
+    // Bind all of an object's methods to that object. Useful for ensuring that
+    // all callbacks defined on an object belong to it.
+    _.bindAll = function (obj) {
+        var funcs = slice.call(arguments, 1);
+        if (funcs.length === 0) throw new Error("bindAll must be passed function names");
+        each(funcs, function (f) {
+            obj[f] = _.bind(obj[f], obj);
+        });
+        return obj;
+    };
+
+    // Memoize an expensive function by storing its results.
+    _.memoize = function (func, hasher) {
+        var memo = {};
+        hasher || (hasher = _.identity);
+        return function () {
+            var key = hasher.apply(this, arguments);
+            return _.has(memo, key) ? memo[key] : (memo[key] = func.apply(this, arguments));
+        };
+    };
+
+    // Delays a function for the given number of milliseconds, and then calls
+    // it with the arguments supplied.
+    _.delay = function (func, wait) {
+        var args = slice.call(arguments, 2);
+        return setTimeout(function () {
+            return func.apply(null, args);
+        }, wait);
+    };
+
+    // Defers a function, scheduling it to run after the current call stack has
+    // cleared.
+    _.defer = function (func) {
+        return _.delay.apply(_, [func, 1].concat(slice.call(arguments, 1)));
+    };
+
+    // Returns a function, that, when invoked, will only be triggered at most once
+    // during a given window of time.
+    _.throttle = function (func, wait, immediate) {
+        var context, args, timeout, result;
+        var previous = 0;
+        var later = function () {
+            previous = new Date;
+            timeout = null;
+            result = func.apply(context, args);
+        };
+        return function () {
+            var now = new Date;
+            if (!previous && immediate === false) previous = now;
+            var remaining = wait - (now - previous);
+            context = this;
+            args = arguments;
+            if (remaining <= 0) {
+                clearTimeout(timeout);
+                timeout = null;
+                previous = now;
+                result = func.apply(context, args);
+            } else if (!timeout) {
+                timeout = setTimeout(later, remaining);
+            }
+            return result;
+        };
+    };
+
+    // Returns a function, that, as long as it continues to be invoked, will not
+    // be triggered. The function will be called after it stops being called for
+    // N milliseconds. If `immediate` is passed, trigger the function on the
+    // leading edge, instead of the trailing.
+    _.debounce = function (func, wait, immediate) {
+        var timeout, result;
+        return function () {
+            var context = this,
+                args = arguments;
+            var later = function () {
+                timeout = null;
+                if (!immediate) result = func.apply(context, args);
+            };
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) result = func.apply(context, args);
+            return result;
+        };
+    };
+
+    // Returns a function that will be executed at most one time, no matter how
+    // often you call it. Useful for lazy initialization.
+    _.once = function (func) {
+        var ran = false,
+            memo;
+        return function () {
+            if (ran) return memo;
+            ran = true;
+            memo = func.apply(this, arguments);
+            func = null;
+            return memo;
+        };
+    };
+
+    // Returns the first function passed as an argument to the second,
+    // allowing you to adjust arguments, run code before and after, and
+    // conditionally execute the original function.
+    _.wrap = function (func, wrapper) {
+        return function () {
+            var args = [func];
+            push.apply(args, arguments);
+            return wrapper.apply(this, args);
+        };
+    };
+
+    // Returns a function that is the composition of a list of functions, each
+    // consuming the return value of the function that follows.
+    _.compose = function () {
+        var funcs = arguments;
+        return function () {
+            var args = arguments;
+            for (var i = funcs.length - 1; i >= 0; i--) {
+                args = [funcs[i].apply(this, args)];
+            }
+            return args[0];
+        };
+    };
+
+    // Returns a function that will only be executed after being called N times.
+    _.after = function (times, func) {
+        if (times <= 0) return func();
+        return function () {
+            if (--times < 1) {
+                return func.apply(this, arguments);
+            }
+        };
+    };
+
+    // Object Functions
+    // ----------------
+
+    // Retrieve the names of an object's properties.
+    // Delegates to **ECMAScript 5**'s native `Object.keys`
+    _.keys = nativeKeys || function (obj) {
+        if (obj !== Object(obj)) throw new TypeError('Invalid object');
+        var keys = [];
+        for (var key in obj) if (_.has(obj, key)) keys.push(key);
+        return keys;
+    };
+
+    // Retrieve the values of an object's properties.
+    _.values = function (obj) {
+        var values = [];
+        for (var key in obj) if (_.has(obj, key)) values.push(obj[key]);
+        return values;
+    };
+
+    // Convert an object into a list of `[key, value]` pairs.
+    _.pairs = function (obj) {
+        var pairs = [];
+        for (var key in obj) if (_.has(obj, key)) pairs.push([key, obj[key]]);
+        return pairs;
+    };
+
+    // Invert the keys and values of an object. The values must be serializable.
+    _.invert = function (obj) {
+        var result = {};
+        for (var key in obj) if (_.has(obj, key)) result[obj[key]] = key;
+        return result;
+    };
+
+    // Return a sorted list of the function names available on the object.
+    // Aliased as `methods`
+    _.functions = _.methods = function (obj) {
+        var names = [];
+        for (var key in obj) {
+            if (_.isFunction(obj[key])) names.push(key);
+        }
+        return names.sort();
+    };
+
+    // Extend a given object with all the properties in passed-in object(s).
+    _.extend = function (obj) {
+        each(slice.call(arguments, 1), function (source) {
+            if (source) {
+                for (var prop in source) {
+                    obj[prop] = source[prop];
+                }
+            }
+        });
+        return obj;
+    };
+
+    // Return a copy of the object only containing the whitelisted properties.
+    _.pick = function (obj) {
+        var copy = {};
+        var keys = concat.apply(ArrayProto, slice.call(arguments, 1));
+        each(keys, function (key) {
+            if (key in obj) copy[key] = obj[key];
+        });
+        return copy;
+    };
+
+    // Return a copy of the object without the blacklisted properties.
+    _.omit = function (obj) {
+        var copy = {};
+        var keys = concat.apply(ArrayProto, slice.call(arguments, 1));
+        for (var key in obj) {
+            if (!_.contains(keys, key)) copy[key] = obj[key];
+        }
+        return copy;
+    };
+
+    // Fill in a given object with default properties.
+    _.defaults = function (obj) {
+        each(slice.call(arguments, 1), function (source) {
+            if (source) {
+                for (var prop in source) {
+                    if (obj[prop] === void 0) obj[prop] = source[prop];
+                }
+            }
+        });
+        return obj;
+    };
+
+    // Create a (shallow-cloned) duplicate of an object.
+    _.clone = function (obj) {
+        if (!_.isObject(obj)) return obj;
+        return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
+    };
+
+    // Invokes interceptor with the obj, and then returns obj.
+    // The primary purpose of this method is to "tap into" a method chain, in
+    // order to perform operations on intermediate results within the chain.
+    _.tap = function (obj, interceptor) {
+        interceptor(obj);
+        return obj;
+    };
+
+    // Internal recursive comparison function for `isEqual`.
+    var eq = function (a, b, aStack, bStack) {
+        // Identical objects are equal. `0 === -0`, but they aren't identical.
+        // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
+        if (a === b) return a !== 0 || 1 / a == 1 / b;
+        // A strict comparison is necessary because `null == undefined`.
+        if (a == null || b == null) return a === b;
+        // Unwrap any wrapped objects.
+        if (a instanceof _) a = a._wrapped;
+        if (b instanceof _) b = b._wrapped;
+        // Compare `[[Class]]` names.
+        var className = toString.call(a);
+        if (className != toString.call(b)) return false;
+        switch (className) {
+            // Strings, numbers, dates, and booleans are compared by value.
+        case '[object String]':
+            // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
+            // equivalent to `new String("5")`.
+            return a == String(b);
+        case '[object Number]':
+            // `NaN`s are equivalent, but non-reflexive. An `egal` comparison is performed for
+            // other numeric values.
+            return a != +a ? b != +b : (a == 0 ? 1 / a == 1 / b : a == +b);
+        case '[object Date]':
+        case '[object Boolean]':
+            // Coerce dates and booleans to numeric primitive values. Dates are compared by their
+            // millisecond representations. Note that invalid dates with millisecond representations
+            // of `NaN` are not equivalent.
+            return +a == +b;
+            // RegExps are compared by their source patterns and flags.
+        case '[object RegExp]':
+            return a.source == b.source &&
+                a.global == b.global &&
+                a.multiline == b.multiline &&
+                a.ignoreCase == b.ignoreCase;
+        }
+        if (typeof a != 'object' || typeof b != 'object') return false;
+        // Assume equality for cyclic structures. The algorithm for detecting cyclic
+        // structures is adapted from ES 5.1 section 15.12.3, abstract operation `JO`.
+        var length = aStack.length;
+        while (length--) {
+            // Linear search. Performance is inversely proportional to the number of
+            // unique nested structures.
+            if (aStack[length] == a) return bStack[length] == b;
+        }
+        // Add the first object to the stack of traversed objects.
+        aStack.push(a);
+        bStack.push(b);
+        var size = 0,
+            result = true;
+        // Recursively compare objects and arrays.
+        if (className == '[object Array]') {
+            // Compare array lengths to determine if a deep comparison is necessary.
+            size = a.length;
+            result = size == b.length;
+            if (result) {
+                // Deep compare the contents, ignoring non-numeric properties.
+                while (size--) {
+                    if (!(result = eq(a[size], b[size], aStack, bStack))) break;
+                }
+            }
+        } else {
+            // Objects with different constructors are not equivalent, but `Object`s
+            // from different frames are.
+            var aCtor = a.constructor,
+                bCtor = b.constructor;
+            if (aCtor !== bCtor && !(_.isFunction(aCtor) && (aCtor instanceof aCtor) &&
+                _.isFunction(bCtor) && (bCtor instanceof bCtor))) {
+                return false;
+            }
+            // Deep compare objects.
+            for (var key in a) {
+                if (_.has(a, key)) {
+                    // Count the expected number of properties.
+                    size++;
+                    // Deep compare each member.
+                    if (!(result = _.has(b, key) && eq(a[key], b[key], aStack, bStack))) break;
+                }
+            }
+            // Ensure that both objects contain the same number of properties.
+            if (result) {
+                for (key in b) {
+                    if (_.has(b, key) && !(size--)) break;
+                }
+                result = !size;
+            }
+        }
+        // Remove the first object from the stack of traversed objects.
+        aStack.pop();
+        bStack.pop();
+        return result;
+    };
+
+    // Perform a deep comparison to check if two objects are equal.
+    _.isEqual = function (a, b) {
+        return eq(a, b, [], []);
+    };
+
+    // Is a given array, string, or object empty?
+    // An "empty" object has no enumerable own-properties.
+    _.isEmpty = function (obj) {
+        if (obj == null) return true;
+        if (_.isArray(obj) || _.isString(obj)) return obj.length === 0;
+        for (var key in obj) if (_.has(obj, key)) return false;
         return true;
-      }
-    });
-    return result;
-  };
-
-  // Return all the elements that pass a truth test.
-  // Delegates to **ECMAScript 5**'s native `filter` if available.
-  // Aliased as `select`.
-  _.filter = _.select = function(obj, iterator, context) {
-    var results = [];
-    if (obj == null) return results;
-    if (nativeFilter && obj.filter === nativeFilter) return obj.filter(iterator, context);
-    each(obj, function(value, index, list) {
-      if (iterator.call(context, value, index, list)) results.push(value);
-    });
-    return results;
-  };
-
-  // Return all the elements for which a truth test fails.
-  _.reject = function(obj, iterator, context) {
-    return _.filter(obj, function(value, index, list) {
-      return !iterator.call(context, value, index, list);
-    }, context);
-  };
-
-  // Determine whether all of the elements match a truth test.
-  // Delegates to **ECMAScript 5**'s native `every` if available.
-  // Aliased as `all`.
-  _.every = _.all = function(obj, iterator, context) {
-    iterator || (iterator = _.identity);
-    var result = true;
-    if (obj == null) return result;
-    if (nativeEvery && obj.every === nativeEvery) return obj.every(iterator, context);
-    each(obj, function(value, index, list) {
-      if (!(result = result && iterator.call(context, value, index, list))) return breaker;
-    });
-    return !!result;
-  };
-
-  // Determine if at least one element in the object matches a truth test.
-  // Delegates to **ECMAScript 5**'s native `some` if available.
-  // Aliased as `any`.
-  var any = _.some = _.any = function(obj, iterator, context) {
-    iterator || (iterator = _.identity);
-    var result = false;
-    if (obj == null) return result;
-    if (nativeSome && obj.some === nativeSome) return obj.some(iterator, context);
-    each(obj, function(value, index, list) {
-      if (result || (result = iterator.call(context, value, index, list))) return breaker;
-    });
-    return !!result;
-  };
-
-  // Determine if the array or object contains a given value (using `===`).
-  // Aliased as `include`.
-  _.contains = _.include = function(obj, target) {
-    if (obj == null) return false;
-    if (nativeIndexOf && obj.indexOf === nativeIndexOf) return obj.indexOf(target) != -1;
-    return any(obj, function(value) {
-      return value === target;
-    });
-  };
-
-  // Invoke a method (with arguments) on every item in a collection.
-  _.invoke = function(obj, method) {
-    var args = slice.call(arguments, 2);
-    var isFunc = _.isFunction(method);
-    return _.map(obj, function(value) {
-      return (isFunc ? method : value[method]).apply(value, args);
-    });
-  };
-
-  // Convenience version of a common use case of `map`: fetching a property.
-  _.pluck = function(obj, key) {
-    return _.map(obj, function(value){ return value[key]; });
-  };
-
-  // Convenience version of a common use case of `filter`: selecting only objects
-  // containing specific `key:value` pairs.
-  _.where = function(obj, attrs, first) {
-    if (_.isEmpty(attrs)) return first ? void 0 : [];
-    return _[first ? 'find' : 'filter'](obj, function(value) {
-      for (var key in attrs) {
-        if (attrs[key] !== value[key]) return false;
-      }
-      return true;
-    });
-  };
-
-  // Convenience version of a common use case of `find`: getting the first object
-  // containing specific `key:value` pairs.
-  _.findWhere = function(obj, attrs) {
-    return _.where(obj, attrs, true);
-  };
-
-  // Return the maximum element or (element-based computation).
-  // Can't optimize arrays of integers longer than 65,535 elements.
-  // See [WebKit Bug 80797](https://bugs.webkit.org/show_bug.cgi?id=80797)
-  _.max = function(obj, iterator, context) {
-    if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
-      return Math.max.apply(Math, obj);
-    }
-    if (!iterator && _.isEmpty(obj)) return -Infinity;
-    var result = {computed : -Infinity, value: -Infinity};
-    each(obj, function(value, index, list) {
-      var computed = iterator ? iterator.call(context, value, index, list) : value;
-      computed >= result.computed && (result = {value : value, computed : computed});
-    });
-    return result.value;
-  };
-
-  // Return the minimum element (or element-based computation).
-  _.min = function(obj, iterator, context) {
-    if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
-      return Math.min.apply(Math, obj);
-    }
-    if (!iterator && _.isEmpty(obj)) return Infinity;
-    var result = {computed : Infinity, value: Infinity};
-    each(obj, function(value, index, list) {
-      var computed = iterator ? iterator.call(context, value, index, list) : value;
-      computed < result.computed && (result = {value : value, computed : computed});
-    });
-    return result.value;
-  };
-
-  // Shuffle an array.
-  _.shuffle = function(obj) {
-    var rand;
-    var index = 0;
-    var shuffled = [];
-    each(obj, function(value) {
-      rand = _.random(index++);
-      shuffled[index - 1] = shuffled[rand];
-      shuffled[rand] = value;
-    });
-    return shuffled;
-  };
-
-  // An internal function to generate lookup iterators.
-  var lookupIterator = function(value) {
-    return _.isFunction(value) ? value : function(obj){ return obj[value]; };
-  };
-
-  // Sort the object's values by a criterion produced by an iterator.
-  _.sortBy = function(obj, value, context) {
-    var iterator = lookupIterator(value);
-    return _.pluck(_.map(obj, function(value, index, list) {
-      return {
-        value : value,
-        index : index,
-        criteria : iterator.call(context, value, index, list)
-      };
-    }).sort(function(left, right) {
-      var a = left.criteria;
-      var b = right.criteria;
-      if (a !== b) {
-        if (a > b || a === void 0) return 1;
-        if (a < b || b === void 0) return -1;
-      }
-      return left.index < right.index ? -1 : 1;
-    }), 'value');
-  };
-
-  // An internal function used for aggregate "group by" operations.
-  var group = function(obj, value, context, behavior) {
-    var result = {};
-    var iterator = lookupIterator(value == null ? _.identity : value);
-    each(obj, function(value, index) {
-      var key = iterator.call(context, value, index, obj);
-      behavior(result, key, value);
-    });
-    return result;
-  };
-
-  // Groups the object's values by a criterion. Pass either a string attribute
-  // to group by, or a function that returns the criterion.
-  _.groupBy = function(obj, value, context) {
-    return group(obj, value, context, function(result, key, value) {
-      (_.has(result, key) ? result[key] : (result[key] = [])).push(value);
-    });
-  };
-
-  // Counts instances of an object that group by a certain criterion. Pass
-  // either a string attribute to count by, or a function that returns the
-  // criterion.
-  _.countBy = function(obj, value, context) {
-    return group(obj, value, context, function(result, key) {
-      if (!_.has(result, key)) result[key] = 0;
-      result[key]++;
-    });
-  };
-
-  // Use a comparator function to figure out the smallest index at which
-  // an object should be inserted so as to maintain order. Uses binary search.
-  _.sortedIndex = function(array, obj, iterator, context) {
-    iterator = iterator == null ? _.identity : lookupIterator(iterator);
-    var value = iterator.call(context, obj);
-    var low = 0, high = array.length;
-    while (low < high) {
-      var mid = (low + high) >>> 1;
-      iterator.call(context, array[mid]) < value ? low = mid + 1 : high = mid;
-    }
-    return low;
-  };
-
-  // Safely convert anything iterable into a real, live array.
-  _.toArray = function(obj) {
-    if (!obj) return [];
-    if (_.isArray(obj)) return slice.call(obj);
-    if (obj.length === +obj.length) return _.map(obj, _.identity);
-    return _.values(obj);
-  };
-
-  // Return the number of elements in an object.
-  _.size = function(obj) {
-    if (obj == null) return 0;
-    return (obj.length === +obj.length) ? obj.length : _.keys(obj).length;
-  };
-
-  // Array Functions
-  // ---------------
-
-  // Get the first element of an array. Passing **n** will return the first N
-  // values in the array. Aliased as `head` and `take`. The **guard** check
-  // allows it to work with `_.map`.
-  _.first = _.head = _.take = function(array, n, guard) {
-    if (array == null) return void 0;
-    return (n != null) && !guard ? slice.call(array, 0, n) : array[0];
-  };
-
-  // Returns everything but the last entry of the array. Especially useful on
-  // the arguments object. Passing **n** will return all the values in
-  // the array, excluding the last N. The **guard** check allows it to work with
-  // `_.map`.
-  _.initial = function(array, n, guard) {
-    return slice.call(array, 0, array.length - ((n == null) || guard ? 1 : n));
-  };
-
-  // Get the last element of an array. Passing **n** will return the last N
-  // values in the array. The **guard** check allows it to work with `_.map`.
-  _.last = function(array, n, guard) {
-    if (array == null) return void 0;
-    if ((n != null) && !guard) {
-      return slice.call(array, Math.max(array.length - n, 0));
-    } else {
-      return array[array.length - 1];
-    }
-  };
-
-  // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
-  // Especially useful on the arguments object. Passing an **n** will return
-  // the rest N values in the array. The **guard**
-  // check allows it to work with `_.map`.
-  _.rest = _.tail = _.drop = function(array, n, guard) {
-    return slice.call(array, (n == null) || guard ? 1 : n);
-  };
-
-  // Trim out all falsy values from an array.
-  _.compact = function(array) {
-    return _.filter(array, _.identity);
-  };
-
-  // Internal implementation of a recursive `flatten` function.
-  var flatten = function(input, shallow, output) {
-    each(input, function(value) {
-      if (_.isArray(value)) {
-        shallow ? push.apply(output, value) : flatten(value, shallow, output);
-      } else {
-        output.push(value);
-      }
-    });
-    return output;
-  };
-
-  // Return a completely flattened version of an array.
-  _.flatten = function(array, shallow) {
-    return flatten(array, shallow, []);
-  };
-
-  // Return a version of the array that does not contain the specified value(s).
-  _.without = function(array) {
-    return _.difference(array, slice.call(arguments, 1));
-  };
-
-  // Produce a duplicate-free version of the array. If the array has already
-  // been sorted, you have the option of using a faster algorithm.
-  // Aliased as `unique`.
-  _.uniq = _.unique = function(array, isSorted, iterator, context) {
-    if (_.isFunction(isSorted)) {
-      context = iterator;
-      iterator = isSorted;
-      isSorted = false;
-    }
-    var initial = iterator ? _.map(array, iterator, context) : array;
-    var results = [];
-    var seen = [];
-    each(initial, function(value, index) {
-      if (isSorted ? (!index || seen[seen.length - 1] !== value) : !_.contains(seen, value)) {
-        seen.push(value);
-        results.push(array[index]);
-      }
-    });
-    return results;
-  };
-
-  // Produce an array that contains the union: each distinct element from all of
-  // the passed-in arrays.
-  _.union = function() {
-    return _.uniq(concat.apply(ArrayProto, arguments));
-  };
-
-  // Produce an array that contains every item shared between all the
-  // passed-in arrays.
-  _.intersection = function(array) {
-    var rest = slice.call(arguments, 1);
-    return _.filter(_.uniq(array), function(item) {
-      return _.every(rest, function(other) {
-        return _.indexOf(other, item) >= 0;
-      });
-    });
-  };
-
-  // Take the difference between one array and a number of other arrays.
-  // Only the elements present in just the first array will remain.
-  _.difference = function(array) {
-    var rest = concat.apply(ArrayProto, slice.call(arguments, 1));
-    return _.filter(array, function(value){ return !_.contains(rest, value); });
-  };
-
-  // Zip together multiple lists into a single array -- elements that share
-  // an index go together.
-  _.zip = function() {
-    var args = slice.call(arguments);
-    var length = _.max(_.pluck(args, 'length'));
-    var results = new Array(length);
-    for (var i = 0; i < length; i++) {
-      results[i] = _.pluck(args, "" + i);
-    }
-    return results;
-  };
-
-  // The inverse operation to `_.zip`. If given an array of pairs it
-  // returns an array of the paired elements split into two left and
-  // right element arrays, if given an array of triples it returns a
-  // three element array and so on. For example, `_.unzip` given
-  // `[['a',1],['b',2],['c',3]]` returns the array
-  // [['a','b','c'],[1,2,3]].
-  _.unzip = function(tuples) {
-      var maxLen = _.max(_.pluck(tuples, "length"))
-      return _.times(maxLen, _.partial(_.pluck, tuples));
-  };
-
-  // Converts lists into objects. Pass either a single array of `[key, value]`
-  // pairs, or two parallel arrays of the same length -- one of keys, and one of
-  // the corresponding values.
-  _.object = function(list, values) {
-    if (list == null) return {};
-    var result = {};
-    for (var i = 0, l = list.length; i < l; i++) {
-      if (values) {
-        result[list[i]] = values[i];
-      } else {
-        result[list[i][0]] = list[i][1];
-      }
-    }
-    return result;
-  };
-
-  // If the browser doesn't supply us with indexOf (I'm looking at you, **MSIE**),
-  // we need this function. Return the position of the first occurrence of an
-  // item in an array, or -1 if the item is not included in the array.
-  // Delegates to **ECMAScript 5**'s native `indexOf` if available.
-  // If the array is large and already in sort order, pass `true`
-  // for **isSorted** to use binary search.
-  _.indexOf = function(array, item, isSorted) {
-    if (array == null) return -1;
-    var i = 0, l = array.length;
-    if (isSorted) {
-      if (typeof isSorted == 'number') {
-        i = (isSorted < 0 ? Math.max(0, l + isSorted) : isSorted);
-      } else {
-        i = _.sortedIndex(array, item);
-        return array[i] === item ? i : -1;
-      }
-    }
-    if (nativeIndexOf && array.indexOf === nativeIndexOf) return array.indexOf(item, isSorted);
-    for (; i < l; i++) if (array[i] === item) return i;
-    return -1;
-  };
-
-  // Delegates to **ECMAScript 5**'s native `lastIndexOf` if available.
-  _.lastIndexOf = function(array, item, from) {
-    if (array == null) return -1;
-    var hasIndex = from != null;
-    if (nativeLastIndexOf && array.lastIndexOf === nativeLastIndexOf) {
-      return hasIndex ? array.lastIndexOf(item, from) : array.lastIndexOf(item);
-    }
-    var i = (hasIndex ? from : array.length);
-    while (i--) if (array[i] === item) return i;
-    return -1;
-  };
-
-  // Generate an integer Array containing an arithmetic progression. A port of
-  // the native Python `range()` function. See
-  // [the Python documentation](http://docs.python.org/library/functions.html#range).
-  _.range = function(start, stop, step) {
-    if (arguments.length <= 1) {
-      stop = start || 0;
-      start = 0;
-    }
-    step = arguments[2] || 1;
-
-    var len = Math.max(Math.ceil((stop - start) / step), 0);
-    var idx = 0;
-    var range = new Array(len);
-
-    while(idx < len) {
-      range[idx++] = start;
-      start += step;
-    }
-
-    return range;
-  };
-
-  // Function (ahem) Functions
-  // ------------------
-
-  // Reusable constructor function for prototype setting.
-  var ctor = function(){};
-
-  // Create a function bound to a given object (assigning `this`, and arguments,
-  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
-  // available.
-  _.bind = function(func, context) {
-    var args, bound;
-    if (func.bind === nativeBind && nativeBind) return nativeBind.apply(func, slice.call(arguments, 1));
-    if (!_.isFunction(func)) throw new TypeError;
-    args = slice.call(arguments, 2);
-    return bound = function() {
-      if (!(this instanceof bound)) return func.apply(context, args.concat(slice.call(arguments)));
-      ctor.prototype = func.prototype;
-      var self = new ctor;
-      ctor.prototype = null;
-      var result = func.apply(self, args.concat(slice.call(arguments)));
-      if (Object(result) === result) return result;
-      return self;
     };
-  };
 
-  // Partially apply a function by creating a version that has had some of its
-  // arguments pre-filled, without changing its dynamic `this` context.
-  _.partial = function(func) {
-    var args = slice.call(arguments, 1);
-    return function() {
-      return func.apply(this, args.concat(slice.call(arguments)));
+    // Is a given value a DOM element?
+    _.isElement = function (obj) {
+        return !!(obj && obj.nodeType === 1);
     };
-  };
 
-  // Bind all of an object's methods to that object. Useful for ensuring that
-  // all callbacks defined on an object belong to it.
-  _.bindAll = function(obj) {
-    var funcs = slice.call(arguments, 1);
-    if (funcs.length === 0) throw new Error("bindAll must be passed function names");
-    each(funcs, function(f) { obj[f] = _.bind(obj[f], obj); });
-    return obj;
-  };
-
-  // Memoize an expensive function by storing its results.
-  _.memoize = function(func, hasher) {
-    var memo = {};
-    hasher || (hasher = _.identity);
-    return function() {
-      var key = hasher.apply(this, arguments);
-      return _.has(memo, key) ? memo[key] : (memo[key] = func.apply(this, arguments));
+    // Is a given value an array?
+    // Delegates to ECMA5's native Array.isArray
+    _.isArray = nativeIsArray || function (obj) {
+        return toString.call(obj) == '[object Array]';
     };
-  };
 
-  // Delays a function for the given number of milliseconds, and then calls
-  // it with the arguments supplied.
-  _.delay = function(func, wait) {
-    var args = slice.call(arguments, 2);
-    return setTimeout(function(){ return func.apply(null, args); }, wait);
-  };
-
-  // Defers a function, scheduling it to run after the current call stack has
-  // cleared.
-  _.defer = function(func) {
-    return _.delay.apply(_, [func, 1].concat(slice.call(arguments, 1)));
-  };
-
-  // Returns a function, that, when invoked, will only be triggered at most once
-  // during a given window of time.
-  _.throttle = function(func, wait, immediate) {
-    var context, args, timeout, result;
-    var previous = 0;
-    var later = function() {
-      previous = new Date;
-      timeout = null;
-      result = func.apply(context, args);
+    // Is a given variable an object?
+    _.isObject = function (obj) {
+        return obj === Object(obj);
     };
-    return function() {
-      var now = new Date;
-      if (!previous && immediate === false) previous = now;
-      var remaining = wait - (now - previous);
-      context = this;
-      args = arguments;
-      if (remaining <= 0) {
-        clearTimeout(timeout);
-        timeout = null;
-        previous = now;
-        result = func.apply(context, args);
-      } else if (!timeout) {
-        timeout = setTimeout(later, remaining);
-      }
-      return result;
-    };
-  };
 
-  // Returns a function, that, as long as it continues to be invoked, will not
-  // be triggered. The function will be called after it stops being called for
-  // N milliseconds. If `immediate` is passed, trigger the function on the
-  // leading edge, instead of the trailing.
-  _.debounce = function(func, wait, immediate) {
-    var timeout, result;
-    return function() {
-      var context = this, args = arguments;
-      var later = function() {
-        timeout = null;
-        if (!immediate) result = func.apply(context, args);
-      };
-      var callNow = immediate && !timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-      if (callNow) result = func.apply(context, args);
-      return result;
-    };
-  };
+    // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp.
+    each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp'], function (name) {
+        _['is' + name] = function (obj) {
+            return toString.call(obj) == '[object ' + name + ']';
+        };
+    });
 
-  // Returns a function that will be executed at most one time, no matter how
-  // often you call it. Useful for lazy initialization.
-  _.once = function(func) {
-    var ran = false, memo;
-    return function() {
-      if (ran) return memo;
-      ran = true;
-      memo = func.apply(this, arguments);
-      func = null;
-      return memo;
-    };
-  };
-
-  // Returns the first function passed as an argument to the second,
-  // allowing you to adjust arguments, run code before and after, and
-  // conditionally execute the original function.
-  _.wrap = function(func, wrapper) {
-    return function() {
-      var args = [func];
-      push.apply(args, arguments);
-      return wrapper.apply(this, args);
-    };
-  };
-
-  // Returns a function that is the composition of a list of functions, each
-  // consuming the return value of the function that follows.
-  _.compose = function() {
-    var funcs = arguments;
-    return function() {
-      var args = arguments;
-      for (var i = funcs.length - 1; i >= 0; i--) {
-        args = [funcs[i].apply(this, args)];
-      }
-      return args[0];
-    };
-  };
-
-  // Returns a function that will only be executed after being called N times.
-  _.after = function(times, func) {
-    if (times <= 0) return func();
-    return function() {
-      if (--times < 1) {
-        return func.apply(this, arguments);
-      }
-    };
-  };
-
-  // Object Functions
-  // ----------------
-
-  // Retrieve the names of an object's properties.
-  // Delegates to **ECMAScript 5**'s native `Object.keys`
-  _.keys = nativeKeys || function(obj) {
-    if (obj !== Object(obj)) throw new TypeError('Invalid object');
-    var keys = [];
-    for (var key in obj) if (_.has(obj, key)) keys.push(key);
-    return keys;
-  };
-
-  // Retrieve the values of an object's properties.
-  _.values = function(obj) {
-    var values = [];
-    for (var key in obj) if (_.has(obj, key)) values.push(obj[key]);
-    return values;
-  };
-
-  // Convert an object into a list of `[key, value]` pairs.
-  _.pairs = function(obj) {
-    var pairs = [];
-    for (var key in obj) if (_.has(obj, key)) pairs.push([key, obj[key]]);
-    return pairs;
-  };
-
-  // Invert the keys and values of an object. The values must be serializable.
-  _.invert = function(obj) {
-    var result = {};
-    for (var key in obj) if (_.has(obj, key)) result[obj[key]] = key;
-    return result;
-  };
-
-  // Return a sorted list of the function names available on the object.
-  // Aliased as `methods`
-  _.functions = _.methods = function(obj) {
-    var names = [];
-    for (var key in obj) {
-      if (_.isFunction(obj[key])) names.push(key);
+    // Define a fallback version of the method in browsers (ahem, IE), where
+    // there isn't any inspectable "Arguments" type.
+    if (!_.isArguments(arguments)) {
+        _.isArguments = function (obj) {
+            return !!(obj && _.has(obj, 'callee'));
+        };
     }
-    return names.sort();
-  };
 
-  // Extend a given object with all the properties in passed-in object(s).
-  _.extend = function(obj) {
-    each(slice.call(arguments, 1), function(source) {
-      if (source) {
-        for (var prop in source) {
-          obj[prop] = source[prop];
+    // Optimize `isFunction` if appropriate.
+    if (typeof (/./) !== 'function') {
+        _.isFunction = function (obj) {
+            return typeof obj === 'function';
+        };
+    }
+
+    // Is a given object a finite number?
+    _.isFinite = function (obj) {
+        return isFinite(obj) && !isNaN(parseFloat(obj));
+    };
+
+    // Is the given value `NaN`? (NaN is the only number which does not equal itself).
+    _.isNaN = function (obj) {
+        return _.isNumber(obj) && obj != +obj;
+    };
+
+    // Is a given value a boolean?
+    _.isBoolean = function (obj) {
+        return obj === true || obj === false || toString.call(obj) == '[object Boolean]';
+    };
+
+    // Is a given value equal to null?
+    _.isNull = function (obj) {
+        return obj === null;
+    };
+
+    // Is a given variable undefined?
+    _.isUndefined = function (obj) {
+        return obj === void 0;
+    };
+
+    // Shortcut function for checking if an object has a given property directly
+    // on itself (in other words, not on a prototype).
+    _.has = function (obj, key) {
+        return hasOwnProperty.call(obj, key);
+    };
+
+    // Utility Functions
+    // -----------------
+
+    // Run Underscore.js in *noConflict* mode, returning the `_` variable to its
+    // previous owner. Returns a reference to the Underscore object.
+    _.noConflict = function () {
+        root._ = previousUnderscore;
+        return this;
+    };
+
+    // Keep the identity function around for default iterators.
+    _.identity = function (value) {
+        return value;
+    };
+
+    // Run a function **n** times.
+    _.times = function (n, iterator, context) {
+        var accum = Array(Math.max(0, n));
+        for (var i = 0; i < n; i++) accum[i] = iterator.call(context, i);
+        return accum;
+    };
+
+    // Return a random integer between min and max (inclusive).
+    _.random = function (min, max) {
+        if (max == null) {
+            max = min;
+            min = 0;
         }
-      }
-    });
-    return obj;
-  };
+        return min + Math.floor(Math.random() * (max - min + 1));
+    };
 
-  // Return a copy of the object only containing the whitelisted properties.
-  _.pick = function(obj) {
-    var copy = {};
-    var keys = concat.apply(ArrayProto, slice.call(arguments, 1));
-    each(keys, function(key) {
-      if (key in obj) copy[key] = obj[key];
-    });
-    return copy;
-  };
-
-   // Return a copy of the object without the blacklisted properties.
-  _.omit = function(obj) {
-    var copy = {};
-    var keys = concat.apply(ArrayProto, slice.call(arguments, 1));
-    for (var key in obj) {
-      if (!_.contains(keys, key)) copy[key] = obj[key];
-    }
-    return copy;
-  };
-
-  // Fill in a given object with default properties.
-  _.defaults = function(obj) {
-    each(slice.call(arguments, 1), function(source) {
-      if (source) {
-        for (var prop in source) {
-          if (obj[prop] === void 0) obj[prop] = source[prop];
+    // List of HTML entities for escaping.
+    var entityMap = {
+        escape: {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#x27;',
+            '/': '&#x2F;'
         }
-      }
+    };
+    entityMap.unescape = _.invert(entityMap.escape);
+
+    // Regexes containing the keys and values listed immediately above.
+    var entityRegexes = {
+        escape: new RegExp('[' + _.keys(entityMap.escape).join('') + ']', 'g'),
+        unescape: new RegExp('(' + _.keys(entityMap.unescape).join('|') + ')', 'g')
+    };
+
+    // Functions for escaping and unescaping strings to/from HTML interpolation.
+    _.each(['escape', 'unescape'], function (method) {
+        _[method] = function (string) {
+            if (string == null) return '';
+            return ('' + string).replace(entityRegexes[method], function (match) {
+                return entityMap[method][match];
+            });
+        };
     });
-    return obj;
-  };
 
-  // Create a (shallow-cloned) duplicate of an object.
-  _.clone = function(obj) {
-    if (!_.isObject(obj)) return obj;
-    return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
-  };
+    // If the value of the named `property` is a function then invoke it with the
+    // `object` as context; otherwise, return it.
+    _.result = function (object, property) {
+        if (object == null) return void 0;
+        var value = object[property];
+        return _.isFunction(value) ? value.call(object) : value;
+    };
 
-  // Invokes interceptor with the obj, and then returns obj.
-  // The primary purpose of this method is to "tap into" a method chain, in
-  // order to perform operations on intermediate results within the chain.
-  _.tap = function(obj, interceptor) {
-    interceptor(obj);
-    return obj;
-  };
+    // Add your own custom functions to the Underscore object.
+    _.mixin = function (obj) {
+        each(_.functions(obj), function (name) {
+            var func = _[name] = obj[name];
+            _.prototype[name] = function () {
+                var args = [this._wrapped];
+                push.apply(args, arguments);
+                return result.call(this, func.apply(_, args));
+            };
+        });
+    };
 
-  // Internal recursive comparison function for `isEqual`.
-  var eq = function(a, b, aStack, bStack) {
-    // Identical objects are equal. `0 === -0`, but they aren't identical.
-    // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
-    if (a === b) return a !== 0 || 1 / a == 1 / b;
-    // A strict comparison is necessary because `null == undefined`.
-    if (a == null || b == null) return a === b;
-    // Unwrap any wrapped objects.
-    if (a instanceof _) a = a._wrapped;
-    if (b instanceof _) b = b._wrapped;
-    // Compare `[[Class]]` names.
-    var className = toString.call(a);
-    if (className != toString.call(b)) return false;
-    switch (className) {
-      // Strings, numbers, dates, and booleans are compared by value.
-      case '[object String]':
-        // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
-        // equivalent to `new String("5")`.
-        return a == String(b);
-      case '[object Number]':
-        // `NaN`s are equivalent, but non-reflexive. An `egal` comparison is performed for
-        // other numeric values.
-        return a != +a ? b != +b : (a == 0 ? 1 / a == 1 / b : a == +b);
-      case '[object Date]':
-      case '[object Boolean]':
-        // Coerce dates and booleans to numeric primitive values. Dates are compared by their
-        // millisecond representations. Note that invalid dates with millisecond representations
-        // of `NaN` are not equivalent.
-        return +a == +b;
-      // RegExps are compared by their source patterns and flags.
-      case '[object RegExp]':
-        return a.source == b.source &&
-               a.global == b.global &&
-               a.multiline == b.multiline &&
-               a.ignoreCase == b.ignoreCase;
-    }
-    if (typeof a != 'object' || typeof b != 'object') return false;
-    // Assume equality for cyclic structures. The algorithm for detecting cyclic
-    // structures is adapted from ES 5.1 section 15.12.3, abstract operation `JO`.
-    var length = aStack.length;
-    while (length--) {
-      // Linear search. Performance is inversely proportional to the number of
-      // unique nested structures.
-      if (aStack[length] == a) return bStack[length] == b;
-    }
-    // Add the first object to the stack of traversed objects.
-    aStack.push(a);
-    bStack.push(b);
-    var size = 0, result = true;
-    // Recursively compare objects and arrays.
-    if (className == '[object Array]') {
-      // Compare array lengths to determine if a deep comparison is necessary.
-      size = a.length;
-      result = size == b.length;
-      if (result) {
-        // Deep compare the contents, ignoring non-numeric properties.
-        while (size--) {
-          if (!(result = eq(a[size], b[size], aStack, bStack))) break;
+    // Generate a unique integer id (unique within the entire client session).
+    // Useful for temporary DOM ids.
+    var idCounter = 0;
+    _.uniqueId = function (prefix) {
+        var id = ++idCounter + '';
+        return prefix ? prefix + id : id;
+    };
+
+    // By default, Underscore uses ERB-style template delimiters, change the
+    // following template settings to use alternative delimiters.
+    _.templateSettings = {
+        evaluate: /<%([\s\S]+?)%>/g,
+        interpolate: /<%=([\s\S]+?)%>/g,
+        escape: /<%-([\s\S]+?)%>/g
+    };
+
+    // When customizing `templateSettings`, if you don't want to define an
+    // interpolation, evaluation or escaping regex, we need one that is
+    // guaranteed not to match.
+    var noMatch = /(.)^/;
+
+    // Certain characters need to be escaped so that they can be put into a
+    // string literal.
+    var escapes = {
+        "'": "'",
+        '\\': '\\',
+        '\r': 'r',
+        '\n': 'n',
+        '\t': 't',
+        '\u2028': 'u2028',
+        '\u2029': 'u2029'
+    };
+
+    var escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g;
+
+    // JavaScript micro-templating, similar to John Resig's implementation.
+    // Underscore templating handles arbitrary delimiters, preserves whitespace,
+    // and correctly escapes quotes within interpolated code.
+    _.template = function (text, data, settings) {
+        var render;
+        settings = _.defaults({}, settings, _.templateSettings);
+
+        // Combine delimiters into one regular expression via alternation.
+        var matcher = new RegExp([
+            (settings.escape || noMatch).source,
+            (settings.interpolate || noMatch).source,
+            (settings.evaluate || noMatch).source
+        ].join('|') + '|$', 'g');
+
+        // Compile the template source, escaping string literals appropriately.
+        var index = 0;
+        var source = "__p+='";
+        text.replace(matcher, function (match, escape, interpolate, evaluate, offset) {
+            source += text.slice(index, offset)
+                .replace(escaper, function (match) {
+                return '\\' + escapes[match];
+            });
+
+            if (escape) {
+                source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
+            }
+            if (interpolate) {
+                source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+            }
+            if (evaluate) {
+                source += "';\n" + evaluate + "\n__p+='";
+            }
+            index = offset + match.length;
+            return match;
+        });
+        source += "';\n";
+
+        // If a variable is not specified, place data values in local scope.
+        if (!settings.variable) source = 'with(obj||{}){\n' + source + '}\n';
+
+        source = "var __t,__p='',__j=Array.prototype.join," +
+            "print=function(){__p+=__j.call(arguments,'');};\n" +
+            source + "return __p;\n";
+
+        try {
+            render = new Function(settings.variable || 'obj', '_', source);
+        } catch (e) {
+            e.source = source;
+            throw e;
         }
-      }
-    } else {
-      // Objects with different constructors are not equivalent, but `Object`s
-      // from different frames are.
-      var aCtor = a.constructor, bCtor = b.constructor;
-      if (aCtor !== bCtor && !(_.isFunction(aCtor) && (aCtor instanceof aCtor) &&
-                               _.isFunction(bCtor) && (bCtor instanceof bCtor))) {
-        return false;
-      }
-      // Deep compare objects.
-      for (var key in a) {
-        if (_.has(a, key)) {
-          // Count the expected number of properties.
-          size++;
-          // Deep compare each member.
-          if (!(result = _.has(b, key) && eq(a[key], b[key], aStack, bStack))) break;
-        }
-      }
-      // Ensure that both objects contain the same number of properties.
-      if (result) {
-        for (key in b) {
-          if (_.has(b, key) && !(size--)) break;
-        }
-        result = !size;
-      }
-    }
-    // Remove the first object from the stack of traversed objects.
-    aStack.pop();
-    bStack.pop();
-    return result;
-  };
 
-  // Perform a deep comparison to check if two objects are equal.
-  _.isEqual = function(a, b) {
-    return eq(a, b, [], []);
-  };
+        if (data) return render(data, _);
+        var template = function (data) {
+            return render.call(this, data, _);
+        };
 
-  // Is a given array, string, or object empty?
-  // An "empty" object has no enumerable own-properties.
-  _.isEmpty = function(obj) {
-    if (obj == null) return true;
-    if (_.isArray(obj) || _.isString(obj)) return obj.length === 0;
-    for (var key in obj) if (_.has(obj, key)) return false;
-    return true;
-  };
+        // Provide the compiled function source as a convenience for precompilation.
+        template.source = 'function(' + (settings.variable || 'obj') + '){\n' + source + '}';
 
-  // Is a given value a DOM element?
-  _.isElement = function(obj) {
-    return !!(obj && obj.nodeType === 1);
-  };
-
-  // Is a given value an array?
-  // Delegates to ECMA5's native Array.isArray
-  _.isArray = nativeIsArray || function(obj) {
-    return toString.call(obj) == '[object Array]';
-  };
-
-  // Is a given variable an object?
-  _.isObject = function(obj) {
-    return obj === Object(obj);
-  };
-
-  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp.
-  each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp'], function(name) {
-    _['is' + name] = function(obj) {
-      return toString.call(obj) == '[object ' + name + ']';
+        return template;
     };
-  });
 
-  // Define a fallback version of the method in browsers (ahem, IE), where
-  // there isn't any inspectable "Arguments" type.
-  if (!_.isArguments(arguments)) {
-    _.isArguments = function(obj) {
-      return !!(obj && _.has(obj, 'callee'));
+    // Add a "chain" function, which will delegate to the wrapper.
+    _.chain = function (obj) {
+        return _(obj).chain();
     };
-  }
 
-  // Optimize `isFunction` if appropriate.
-  if (typeof (/./) !== 'function') {
-    _.isFunction = function(obj) {
-      return typeof obj === 'function';
+    // OOP
+    // ---------------
+    // If Underscore is called as a function, it returns a wrapped object that
+    // can be used OO-style. This wrapper holds altered versions of all the
+    // underscore functions. Wrapped objects may be chained.
+
+    // Helper function to continue chaining intermediate results.
+    var result = function (obj) {
+        return this._chain ? _(obj).chain() : obj;
     };
-  }
 
-  // Is a given object a finite number?
-  _.isFinite = function(obj) {
-    return isFinite(obj) && !isNaN(parseFloat(obj));
-  };
+    // Add all of the Underscore functions to the wrapper object.
+    _.mixin(_);
 
-  // Is the given value `NaN`? (NaN is the only number which does not equal itself).
-  _.isNaN = function(obj) {
-    return _.isNumber(obj) && obj != +obj;
-  };
-
-  // Is a given value a boolean?
-  _.isBoolean = function(obj) {
-    return obj === true || obj === false || toString.call(obj) == '[object Boolean]';
-  };
-
-  // Is a given value equal to null?
-  _.isNull = function(obj) {
-    return obj === null;
-  };
-
-  // Is a given variable undefined?
-  _.isUndefined = function(obj) {
-    return obj === void 0;
-  };
-
-  // Shortcut function for checking if an object has a given property directly
-  // on itself (in other words, not on a prototype).
-  _.has = function(obj, key) {
-    return hasOwnProperty.call(obj, key);
-  };
-
-  // Utility Functions
-  // -----------------
-
-  // Run Underscore.js in *noConflict* mode, returning the `_` variable to its
-  // previous owner. Returns a reference to the Underscore object.
-  _.noConflict = function() {
-    root._ = previousUnderscore;
-    return this;
-  };
-
-  // Keep the identity function around for default iterators.
-  _.identity = function(value) {
-    return value;
-  };
-
-  // Run a function **n** times.
-  _.times = function(n, iterator, context) {
-    var accum = Array(Math.max(0, n));
-    for (var i = 0; i < n; i++) accum[i] = iterator.call(context, i);
-    return accum;
-  };
-
-  // Return a random integer between min and max (inclusive).
-  _.random = function(min, max) {
-    if (max == null) {
-      max = min;
-      min = 0;
-    }
-    return min + Math.floor(Math.random() * (max - min + 1));
-  };
-
-  // List of HTML entities for escaping.
-  var entityMap = {
-    escape: {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#x27;',
-      '/': '&#x2F;'
-    }
-  };
-  entityMap.unescape = _.invert(entityMap.escape);
-
-  // Regexes containing the keys and values listed immediately above.
-  var entityRegexes = {
-    escape:   new RegExp('[' + _.keys(entityMap.escape).join('') + ']', 'g'),
-    unescape: new RegExp('(' + _.keys(entityMap.unescape).join('|') + ')', 'g')
-  };
-
-  // Functions for escaping and unescaping strings to/from HTML interpolation.
-  _.each(['escape', 'unescape'], function(method) {
-    _[method] = function(string) {
-      if (string == null) return '';
-      return ('' + string).replace(entityRegexes[method], function(match) {
-        return entityMap[method][match];
-      });
-    };
-  });
-
-  // If the value of the named `property` is a function then invoke it with the
-  // `object` as context; otherwise, return it.
-  _.result = function(object, property) {
-    if (object == null) return void 0;
-    var value = object[property];
-    return _.isFunction(value) ? value.call(object) : value;
-  };
-
-  // Add your own custom functions to the Underscore object.
-  _.mixin = function(obj) {
-    each(_.functions(obj), function(name){
-      var func = _[name] = obj[name];
-      _.prototype[name] = function() {
-        var args = [this._wrapped];
-        push.apply(args, arguments);
-        return result.call(this, func.apply(_, args));
-      };
+    // Add all mutator Array functions to the wrapper.
+    each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function (name) {
+        var method = ArrayProto[name];
+        _.prototype[name] = function () {
+            var obj = this._wrapped;
+            method.apply(obj, arguments);
+            if ((name == 'shift' || name == 'splice') && obj.length === 0) delete obj[0];
+            return result.call(this, obj);
+        };
     });
-  };
 
-  // Generate a unique integer id (unique within the entire client session).
-  // Useful for temporary DOM ids.
-  var idCounter = 0;
-  _.uniqueId = function(prefix) {
-    var id = ++idCounter + '';
-    return prefix ? prefix + id : id;
-  };
-
-  // By default, Underscore uses ERB-style template delimiters, change the
-  // following template settings to use alternative delimiters.
-  _.templateSettings = {
-    evaluate    : /<%([\s\S]+?)%>/g,
-    interpolate : /<%=([\s\S]+?)%>/g,
-    escape      : /<%-([\s\S]+?)%>/g
-  };
-
-  // When customizing `templateSettings`, if you don't want to define an
-  // interpolation, evaluation or escaping regex, we need one that is
-  // guaranteed not to match.
-  var noMatch = /(.)^/;
-
-  // Certain characters need to be escaped so that they can be put into a
-  // string literal.
-  var escapes = {
-    "'":      "'",
-    '\\':     '\\',
-    '\r':     'r',
-    '\n':     'n',
-    '\t':     't',
-    '\u2028': 'u2028',
-    '\u2029': 'u2029'
-  };
-
-  var escaper = /\\|'|\r|\n|\t|\u2028|\u2029/g;
-
-  // JavaScript micro-templating, similar to John Resig's implementation.
-  // Underscore templating handles arbitrary delimiters, preserves whitespace,
-  // and correctly escapes quotes within interpolated code.
-  _.template = function(text, data, settings) {
-    var render;
-    settings = _.defaults({}, settings, _.templateSettings);
-
-    // Combine delimiters into one regular expression via alternation.
-    var matcher = new RegExp([
-      (settings.escape || noMatch).source,
-      (settings.interpolate || noMatch).source,
-      (settings.evaluate || noMatch).source
-    ].join('|') + '|$', 'g');
-
-    // Compile the template source, escaping string literals appropriately.
-    var index = 0;
-    var source = "__p+='";
-    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
-      source += text.slice(index, offset)
-        .replace(escaper, function(match) { return '\\' + escapes[match]; });
-
-      if (escape) {
-        source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
-      }
-      if (interpolate) {
-        source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
-      }
-      if (evaluate) {
-        source += "';\n" + evaluate + "\n__p+='";
-      }
-      index = offset + match.length;
-      return match;
+    // Add all accessor Array functions to the wrapper.
+    each(['concat', 'join', 'slice'], function (name) {
+        var method = ArrayProto[name];
+        _.prototype[name] = function () {
+            return result.call(this, method.apply(this._wrapped, arguments));
+        };
     });
-    source += "';\n";
 
-    // If a variable is not specified, place data values in local scope.
-    if (!settings.variable) source = 'with(obj||{}){\n' + source + '}\n';
+    _.extend(_.prototype, {
 
-    source = "var __t,__p='',__j=Array.prototype.join," +
-      "print=function(){__p+=__j.call(arguments,'');};\n" +
-      source + "return __p;\n";
+        // Start chaining a wrapped Underscore object.
+        chain: function () {
+            this._chain = true;
+            return this;
+        },
 
-    try {
-      render = new Function(settings.variable || 'obj', '_', source);
-    } catch (e) {
-      e.source = source;
-      throw e;
-    }
+        // Extracts the result from a wrapped and chained object.
+        value: function () {
+            return this._wrapped;
+        }
 
-    if (data) return render(data, _);
-    var template = function(data) {
-      return render.call(this, data, _);
-    };
-
-    // Provide the compiled function source as a convenience for precompilation.
-    template.source = 'function(' + (settings.variable || 'obj') + '){\n' + source + '}';
-
-    return template;
-  };
-
-  // Add a "chain" function, which will delegate to the wrapper.
-  _.chain = function(obj) {
-    return _(obj).chain();
-  };
-
-  // OOP
-  // ---------------
-  // If Underscore is called as a function, it returns a wrapped object that
-  // can be used OO-style. This wrapper holds altered versions of all the
-  // underscore functions. Wrapped objects may be chained.
-
-  // Helper function to continue chaining intermediate results.
-  var result = function(obj) {
-    return this._chain ? _(obj).chain() : obj;
-  };
-
-  // Add all of the Underscore functions to the wrapper object.
-  _.mixin(_);
-
-  // Add all mutator Array functions to the wrapper.
-  each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
-    var method = ArrayProto[name];
-    _.prototype[name] = function() {
-      var obj = this._wrapped;
-      method.apply(obj, arguments);
-      if ((name == 'shift' || name == 'splice') && obj.length === 0) delete obj[0];
-      return result.call(this, obj);
-    };
-  });
-
-  // Add all accessor Array functions to the wrapper.
-  each(['concat', 'join', 'slice'], function(name) {
-    var method = ArrayProto[name];
-    _.prototype[name] = function() {
-      return result.call(this, method.apply(this._wrapped, arguments));
-    };
-  });
-
-  _.extend(_.prototype, {
-
-    // Start chaining a wrapped Underscore object.
-    chain: function() {
-      this._chain = true;
-      return this;
-    },
-
-    // Extracts the result from a wrapped and chained object.
-    value: function() {
-      return this._wrapped;
-    }
-
-  });
+    });
 
 }).call(this);
 /**
@@ -2388,174 +2433,174 @@ window.RSVP = requireModule('rsvp');
 /*jslint undef: true */
 /*global console, exports*/
 
-(function(root) {
-  /**
-   * Namespace to hold all the code for timezone detection.
-   */
-  var jstz = (function () {
-      'use strict';
-      var HEMISPHERE_SOUTH = 's',
-          
-          /**
-           * Gets the offset in minutes from UTC for a certain date.
-           * @param {Date} date
-           * @returns {Number}
-           */
-          get_date_offset = function (date) {
-              var offset = -date.getTimezoneOffset();
-              return (offset !== null ? offset : 0);
-          },
+(function (root) {
+    /**
+     * Namespace to hold all the code for timezone detection.
+     */
+    var jstz = (function () {
+        'use strict';
+        var HEMISPHERE_SOUTH = 's',
 
-          get_date = function (year, month, date) {
-              var d = new Date();
-              if (year !== undefined) {
-                d.setFullYear(year);
-              }
-              d.setMonth(month);
-              d.setDate(date);
-              return d;
-          },
+            /**
+             * Gets the offset in minutes from UTC for a certain date.
+             * @param {Date} date
+             * @returns {Number}
+             */
+            get_date_offset = function (date) {
+                var offset = -date.getTimezoneOffset();
+                return (offset !== null ? offset : 0);
+            },
 
-          get_january_offset = function (year) {
-              return get_date_offset(get_date(year, 0 ,2));
-          },
+            get_date = function (year, month, date) {
+                var d = new Date();
+                if (year !== undefined) {
+                    d.setFullYear(year);
+                }
+                d.setMonth(month);
+                d.setDate(date);
+                return d;
+            },
 
-          get_june_offset = function (year) {
-              return get_date_offset(get_date(year, 5, 2));
-          },
+            get_january_offset = function (year) {
+                return get_date_offset(get_date(year, 0, 2));
+            },
 
-          /**
-           * Private method.
-           * Checks whether a given date is in daylight saving time.
-           * If the date supplied is after august, we assume that we're checking
-           * for southern hemisphere DST.
-           * @param {Date} date
-           * @returns {Boolean}
-           */
-          date_is_dst = function (date) {
-              var is_southern = date.getMonth() > 7,
-                  base_offset = is_southern ? get_june_offset(date.getFullYear()) : 
-                                              get_january_offset(date.getFullYear()),
-                  date_offset = get_date_offset(date),
-                  is_west = base_offset < 0,
-                  dst_offset = base_offset - date_offset;
-                  
-              if (!is_west && !is_southern) {
-                  return dst_offset < 0;
-              }
+            get_june_offset = function (year) {
+                return get_date_offset(get_date(year, 5, 2));
+            },
 
-              return dst_offset !== 0;
-          },
+            /**
+             * Private method.
+             * Checks whether a given date is in daylight saving time.
+             * If the date supplied is after august, we assume that we're checking
+             * for southern hemisphere DST.
+             * @param {Date} date
+             * @returns {Boolean}
+             */
+            date_is_dst = function (date) {
+                var is_southern = date.getMonth() > 7,
+                    base_offset = is_southern ? get_june_offset(date.getFullYear()) :
+                        get_january_offset(date.getFullYear()),
+                    date_offset = get_date_offset(date),
+                    is_west = base_offset < 0,
+                    dst_offset = base_offset - date_offset;
 
-          /**
-           * This function does some basic calculations to create information about
-           * the user's timezone. It uses REFERENCE_YEAR as a solid year for which
-           * the script has been tested rather than depend on the year set by the
-           * client device.
-           *
-           * Returns a key that can be used to do lookups in jstz.olson.timezones.
-           * eg: "720,1,2". 
-           *
-           * @returns {String}
-           */
+                if (!is_west && !is_southern) {
+                    return dst_offset < 0;
+                }
 
-          lookup_key = function () {
-              var january_offset = get_january_offset(),
-                  june_offset = get_june_offset(),
-                  diff = january_offset - june_offset;
+                return dst_offset !== 0;
+            },
 
-              if (diff < 0) {
-                  return january_offset + ",1";
-              } else if (diff > 0) {
-                  return june_offset + ",1," + HEMISPHERE_SOUTH;
-              }
+            /**
+             * This function does some basic calculations to create information about
+             * the user's timezone. It uses REFERENCE_YEAR as a solid year for which
+             * the script has been tested rather than depend on the year set by the
+             * client device.
+             *
+             * Returns a key that can be used to do lookups in jstz.olson.timezones.
+             * eg: "720,1,2".
+             *
+             * @returns {String}
+             */
 
-              return january_offset + ",0";
-          },
+            lookup_key = function () {
+                var january_offset = get_january_offset(),
+                    june_offset = get_june_offset(),
+                    diff = january_offset - june_offset;
 
-          /**
-           * Uses get_timezone_info() to formulate a key to use in the olson.timezones dictionary.
-           *
-           * Returns a primitive object on the format:
-           * {'timezone': TimeZone, 'key' : 'the key used to find the TimeZone object'}
-           *
-           * @returns Object
-           */
-          determine = function () {
-              var key = lookup_key();
-              return new jstz.TimeZone(jstz.olson.timezones[key]);
-          },
+                if (diff < 0) {
+                    return january_offset + ",1";
+                } else if (diff > 0) {
+                    return june_offset + ",1," + HEMISPHERE_SOUTH;
+                }
 
-          /**
-           * This object contains information on when daylight savings starts for
-           * different timezones.
-           *
-           * The list is short for a reason. Often we do not have to be very specific
-           * to single out the correct timezone. But when we do, this list comes in
-           * handy.
-           *
-           * Each value is a date denoting when daylight savings starts for that timezone.
-           */
-          dst_start_for = function (tz_name) {
+                return january_offset + ",0";
+            },
 
-            var ru_pre_dst_change = new Date(2010, 6, 15, 1, 0, 0, 0), // In 2010 Russia had DST, this allows us to detect Russia :)
-                dst_starts = {
-                    'America/Denver': new Date(2011, 2, 13, 3, 0, 0, 0),
-                    'America/Mazatlan': new Date(2011, 3, 3, 3, 0, 0, 0),
-                    'America/Chicago': new Date(2011, 2, 13, 3, 0, 0, 0),
-                    'America/Mexico_City': new Date(2011, 3, 3, 3, 0, 0, 0),
-                    'America/Asuncion': new Date(2012, 9, 7, 3, 0, 0, 0),
-                    'America/Santiago': new Date(2012, 9, 3, 3, 0, 0, 0),
-                    'America/Campo_Grande': new Date(2012, 9, 21, 5, 0, 0, 0),
-                    'America/Montevideo': new Date(2011, 9, 2, 3, 0, 0, 0),
-                    'America/Sao_Paulo': new Date(2011, 9, 16, 5, 0, 0, 0),
-                    'America/Los_Angeles': new Date(2011, 2, 13, 8, 0, 0, 0),
-                    'America/Santa_Isabel': new Date(2011, 3, 5, 8, 0, 0, 0),
-                    'America/Havana': new Date(2012, 2, 10, 2, 0, 0, 0),
-                    'America/New_York': new Date(2012, 2, 10, 7, 0, 0, 0),
-                    'Europe/Helsinki': new Date(2013, 2, 31, 5, 0, 0, 0),
-                    'Pacific/Auckland': new Date(2011, 8, 26, 7, 0, 0, 0),
-                    'America/Halifax': new Date(2011, 2, 13, 6, 0, 0, 0),
-                    'America/Goose_Bay': new Date(2011, 2, 13, 2, 1, 0, 0),
-                    'America/Miquelon': new Date(2011, 2, 13, 5, 0, 0, 0),
-                    'America/Godthab': new Date(2011, 2, 27, 1, 0, 0, 0),
-                    'Europe/Moscow': ru_pre_dst_change,
-                    'Asia/Amman': new Date(2013, 2, 29, 1, 0, 0, 0),
-                    'Asia/Beirut': new Date(2013, 2, 31, 2, 0, 0, 0),
-                    'Asia/Damascus': new Date(2013, 3, 6, 2, 0, 0, 0),
-                    'Asia/Jerusalem': new Date(2013, 2, 29, 5, 0, 0, 0),
-                    'Asia/Yekaterinburg': ru_pre_dst_change,
-                    'Asia/Omsk': ru_pre_dst_change,
-                    'Asia/Krasnoyarsk': ru_pre_dst_change,
-                    'Asia/Irkutsk': ru_pre_dst_change,
-                    'Asia/Yakutsk': ru_pre_dst_change,
-                    'Asia/Vladivostok': ru_pre_dst_change,
-                    'Asia/Baku': new Date(2013, 2, 31, 4, 0, 0),
-                    'Asia/Yerevan': new Date(2013, 2, 31, 3, 0, 0),
-                    'Asia/Kamchatka': ru_pre_dst_change,
-                    'Asia/Gaza': new Date(2010, 2, 27, 4, 0, 0),
-                    'Africa/Cairo': new Date(2010, 4, 1, 3, 0, 0),
-                    'Europe/Minsk': ru_pre_dst_change,
-                    'Pacific/Apia': new Date(2010, 10, 1, 1, 0, 0, 0),
-                    'Pacific/Fiji': new Date(2010, 11, 1, 0, 0, 0),
-                    'Australia/Perth': new Date(2008, 10, 1, 1, 0, 0, 0)
-                };
+            /**
+             * Uses get_timezone_info() to formulate a key to use in the olson.timezones dictionary.
+             *
+             * Returns a primitive object on the format:
+             * {'timezone': TimeZone, 'key' : 'the key used to find the TimeZone object'}
+             *
+             * @returns Object
+             */
+            determine = function () {
+                var key = lookup_key();
+                return new jstz.TimeZone(jstz.olson.timezones[key]);
+            },
 
-              return dst_starts[tz_name];
-          };
+            /**
+             * This object contains information on when daylight savings starts for
+             * different timezones.
+             *
+             * The list is short for a reason. Often we do not have to be very specific
+             * to single out the correct timezone. But when we do, this list comes in
+             * handy.
+             *
+             * Each value is a date denoting when daylight savings starts for that timezone.
+             */
+            dst_start_for = function (tz_name) {
 
-      return {
-          determine: determine,
-          date_is_dst: date_is_dst,
-          dst_start_for: dst_start_for 
-      };
-  }());
+                var ru_pre_dst_change = new Date(2010, 6, 15, 1, 0, 0, 0), // In 2010 Russia had DST, this allows us to detect Russia :)
+                    dst_starts = {
+                        'America/Denver': new Date(2011, 2, 13, 3, 0, 0, 0),
+                        'America/Mazatlan': new Date(2011, 3, 3, 3, 0, 0, 0),
+                        'America/Chicago': new Date(2011, 2, 13, 3, 0, 0, 0),
+                        'America/Mexico_City': new Date(2011, 3, 3, 3, 0, 0, 0),
+                        'America/Asuncion': new Date(2012, 9, 7, 3, 0, 0, 0),
+                        'America/Santiago': new Date(2012, 9, 3, 3, 0, 0, 0),
+                        'America/Campo_Grande': new Date(2012, 9, 21, 5, 0, 0, 0),
+                        'America/Montevideo': new Date(2011, 9, 2, 3, 0, 0, 0),
+                        'America/Sao_Paulo': new Date(2011, 9, 16, 5, 0, 0, 0),
+                        'America/Los_Angeles': new Date(2011, 2, 13, 8, 0, 0, 0),
+                        'America/Santa_Isabel': new Date(2011, 3, 5, 8, 0, 0, 0),
+                        'America/Havana': new Date(2012, 2, 10, 2, 0, 0, 0),
+                        'America/New_York': new Date(2012, 2, 10, 7, 0, 0, 0),
+                        'Europe/Helsinki': new Date(2013, 2, 31, 5, 0, 0, 0),
+                        'Pacific/Auckland': new Date(2011, 8, 26, 7, 0, 0, 0),
+                        'America/Halifax': new Date(2011, 2, 13, 6, 0, 0, 0),
+                        'America/Goose_Bay': new Date(2011, 2, 13, 2, 1, 0, 0),
+                        'America/Miquelon': new Date(2011, 2, 13, 5, 0, 0, 0),
+                        'America/Godthab': new Date(2011, 2, 27, 1, 0, 0, 0),
+                        'Europe/Moscow': ru_pre_dst_change,
+                        'Asia/Amman': new Date(2013, 2, 29, 1, 0, 0, 0),
+                        'Asia/Beirut': new Date(2013, 2, 31, 2, 0, 0, 0),
+                        'Asia/Damascus': new Date(2013, 3, 6, 2, 0, 0, 0),
+                        'Asia/Jerusalem': new Date(2013, 2, 29, 5, 0, 0, 0),
+                        'Asia/Yekaterinburg': ru_pre_dst_change,
+                        'Asia/Omsk': ru_pre_dst_change,
+                        'Asia/Krasnoyarsk': ru_pre_dst_change,
+                        'Asia/Irkutsk': ru_pre_dst_change,
+                        'Asia/Yakutsk': ru_pre_dst_change,
+                        'Asia/Vladivostok': ru_pre_dst_change,
+                        'Asia/Baku': new Date(2013, 2, 31, 4, 0, 0),
+                        'Asia/Yerevan': new Date(2013, 2, 31, 3, 0, 0),
+                        'Asia/Kamchatka': ru_pre_dst_change,
+                        'Asia/Gaza': new Date(2010, 2, 27, 4, 0, 0),
+                        'Africa/Cairo': new Date(2010, 4, 1, 3, 0, 0),
+                        'Europe/Minsk': ru_pre_dst_change,
+                        'Pacific/Apia': new Date(2010, 10, 1, 1, 0, 0, 0),
+                        'Pacific/Fiji': new Date(2010, 11, 1, 0, 0, 0),
+                        'Australia/Perth': new Date(2008, 10, 1, 1, 0, 0, 0)
+                    };
 
-  /**
-   * Simple object to perform ambiguity check and to return name of time zone.
-   */
-  jstz.TimeZone = function (tz_name) {
-      'use strict';
+                return dst_starts[tz_name];
+            };
+
+        return {
+            determine: determine,
+            date_is_dst: date_is_dst,
+            dst_start_for: dst_start_for
+        };
+    }());
+
+    /**
+     * Simple object to perform ambiguity check and to return name of time zone.
+     */
+    jstz.TimeZone = function (tz_name) {
+        'use strict';
         /**
          * The keys in this object are timezones that we know may be ambiguous after
          * a preliminary scan through the olson_tz object.
@@ -2563,171 +2608,171 @@ window.RSVP = requireModule('rsvp');
          * The array of timezones to compare must be in the order that daylight savings
          * starts for the regions.
          */
-      var AMBIGUITIES = {
-              'America/Denver':       ['America/Denver', 'America/Mazatlan'],
-              'America/Chicago':      ['America/Chicago', 'America/Mexico_City'],
-              'America/Santiago':     ['America/Santiago', 'America/Asuncion', 'America/Campo_Grande'],
-              'America/Montevideo':   ['America/Montevideo', 'America/Sao_Paulo'],
-              'Asia/Beirut':          ['Asia/Amman', 'Asia/Jerusalem', 'Asia/Beirut', 'Europe/Helsinki','Asia/Damascus'],
-              'Pacific/Auckland':     ['Pacific/Auckland', 'Pacific/Fiji'],
-              'America/Los_Angeles':  ['America/Los_Angeles', 'America/Santa_Isabel'],
-              'America/New_York':     ['America/Havana', 'America/New_York'],
-              'America/Halifax':      ['America/Goose_Bay', 'America/Halifax'],
-              'America/Godthab':      ['America/Miquelon', 'America/Godthab'],
-              'Asia/Dubai':           ['Europe/Moscow'],
-              'Asia/Dhaka':           ['Asia/Yekaterinburg'],
-              'Asia/Jakarta':         ['Asia/Omsk'],
-              'Asia/Shanghai':        ['Asia/Krasnoyarsk', 'Australia/Perth'],
-              'Asia/Tokyo':           ['Asia/Irkutsk'],
-              'Australia/Brisbane':   ['Asia/Yakutsk'],
-              'Pacific/Noumea':       ['Asia/Vladivostok'],
-              'Pacific/Tarawa':       ['Asia/Kamchatka', 'Pacific/Fiji'],
-              'Pacific/Tongatapu':    ['Pacific/Apia'],
-              'Asia/Baghdad':         ['Europe/Minsk'],
-              'Asia/Baku':            ['Asia/Yerevan','Asia/Baku'],
-              'Africa/Johannesburg':  ['Asia/Gaza', 'Africa/Cairo']
-          },
+        var AMBIGUITIES = {
+            'America/Denver': ['America/Denver', 'America/Mazatlan'],
+            'America/Chicago': ['America/Chicago', 'America/Mexico_City'],
+            'America/Santiago': ['America/Santiago', 'America/Asuncion', 'America/Campo_Grande'],
+            'America/Montevideo': ['America/Montevideo', 'America/Sao_Paulo'],
+            'Asia/Beirut': ['Asia/Amman', 'Asia/Jerusalem', 'Asia/Beirut', 'Europe/Helsinki', 'Asia/Damascus'],
+            'Pacific/Auckland': ['Pacific/Auckland', 'Pacific/Fiji'],
+            'America/Los_Angeles': ['America/Los_Angeles', 'America/Santa_Isabel'],
+            'America/New_York': ['America/Havana', 'America/New_York'],
+            'America/Halifax': ['America/Goose_Bay', 'America/Halifax'],
+            'America/Godthab': ['America/Miquelon', 'America/Godthab'],
+            'Asia/Dubai': ['Europe/Moscow'],
+            'Asia/Dhaka': ['Asia/Yekaterinburg'],
+            'Asia/Jakarta': ['Asia/Omsk'],
+            'Asia/Shanghai': ['Asia/Krasnoyarsk', 'Australia/Perth'],
+            'Asia/Tokyo': ['Asia/Irkutsk'],
+            'Australia/Brisbane': ['Asia/Yakutsk'],
+            'Pacific/Noumea': ['Asia/Vladivostok'],
+            'Pacific/Tarawa': ['Asia/Kamchatka', 'Pacific/Fiji'],
+            'Pacific/Tongatapu': ['Pacific/Apia'],
+            'Asia/Baghdad': ['Europe/Minsk'],
+            'Asia/Baku': ['Asia/Yerevan', 'Asia/Baku'],
+            'Africa/Johannesburg': ['Asia/Gaza', 'Africa/Cairo']
+        },
 
-          timezone_name = tz_name,
-          
-          /**
-           * Checks if a timezone has possible ambiguities. I.e timezones that are similar.
-           *
-           * For example, if the preliminary scan determines that we're in America/Denver.
-           * We double check here that we're really there and not in America/Mazatlan.
-           *
-           * This is done by checking known dates for when daylight savings start for different
-           * timezones during 2010 and 2011.
-           */
-          ambiguity_check = function () {
-              var ambiguity_list = AMBIGUITIES[timezone_name],
-                  length = ambiguity_list.length,
-                  i = 0,
-                  tz = ambiguity_list[0];
+            timezone_name = tz_name,
 
-              for (; i < length; i += 1) {
-                  tz = ambiguity_list[i];
+            /**
+             * Checks if a timezone has possible ambiguities. I.e timezones that are similar.
+             *
+             * For example, if the preliminary scan determines that we're in America/Denver.
+             * We double check here that we're really there and not in America/Mazatlan.
+             *
+             * This is done by checking known dates for when daylight savings start for different
+             * timezones during 2010 and 2011.
+             */
+            ambiguity_check = function () {
+                var ambiguity_list = AMBIGUITIES[timezone_name],
+                    length = ambiguity_list.length,
+                    i = 0,
+                    tz = ambiguity_list[0];
 
-                  if (jstz.date_is_dst(jstz.dst_start_for(tz))) {
-                      timezone_name = tz;
-                      return;
-                  }
-              }
-          },
+                for (; i < length; i += 1) {
+                    tz = ambiguity_list[i];
 
-          /**
-           * Checks if it is possible that the timezone is ambiguous.
-           */
-          is_ambiguous = function () {
-              return typeof (AMBIGUITIES[timezone_name]) !== 'undefined';
-          };
+                    if (jstz.date_is_dst(jstz.dst_start_for(tz))) {
+                        timezone_name = tz;
+                        return;
+                    }
+                }
+            },
 
-      if (is_ambiguous()) {
-          ambiguity_check();
-      }
+            /**
+             * Checks if it is possible that the timezone is ambiguous.
+             */
+            is_ambiguous = function () {
+                return typeof (AMBIGUITIES[timezone_name]) !== 'undefined';
+            };
 
-      return {
-          name: function () {
-              return timezone_name;
-          }
-      };
-  };
+        if (is_ambiguous()) {
+            ambiguity_check();
+        }
 
-  jstz.olson = {};
+        return {
+            name: function () {
+                return timezone_name;
+            }
+        };
+    };
 
-  /*
-   * The keys in this dictionary are comma separated as such:
-   *
-   * First the offset compared to UTC time in minutes.
-   *
-   * Then a flag which is 0 if the timezone does not take daylight savings into account and 1 if it
-   * does.
-   *
-   * Thirdly an optional 's' signifies that the timezone is in the southern hemisphere,
-   * only interesting for timezones with DST.
-   *
-   * The mapped arrays is used for constructing the jstz.TimeZone object from within
-   * jstz.determine_timezone();
-   */
-  jstz.olson.timezones = {
-      '-720,0'   : 'Pacific/Majuro',
-      '-660,0'   : 'Pacific/Pago_Pago',
-      '-600,1'   : 'America/Adak',
-      '-600,0'   : 'Pacific/Honolulu',
-      '-570,0'   : 'Pacific/Marquesas',
-      '-540,0'   : 'Pacific/Gambier',
-      '-540,1'   : 'America/Anchorage',
-      '-480,1'   : 'America/Los_Angeles',
-      '-480,0'   : 'Pacific/Pitcairn',
-      '-420,0'   : 'America/Phoenix',
-      '-420,1'   : 'America/Denver',
-      '-360,0'   : 'America/Guatemala',
-      '-360,1'   : 'America/Chicago',
-      '-360,1,s' : 'Pacific/Easter',
-      '-300,0'   : 'America/Bogota',
-      '-300,1'   : 'America/New_York',
-      '-270,0'   : 'America/Caracas',
-      '-240,1'   : 'America/Halifax',
-      '-240,0'   : 'America/Santo_Domingo',
-      '-240,1,s' : 'America/Santiago',
-      '-210,1'   : 'America/St_Johns',
-      '-180,1'   : 'America/Godthab',
-      '-180,0'   : 'America/Argentina/Buenos_Aires',
-      '-180,1,s' : 'America/Montevideo',
-      '-120,0'   : 'America/Noronha',
-      '-120,1'   : 'America/Noronha',
-      '-60,1'    : 'Atlantic/Azores',
-      '-60,0'    : 'Atlantic/Cape_Verde',
-      '0,0'      : 'UTC',
-      '0,1'      : 'Europe/London',
-      '60,1'     : 'Europe/Berlin',
-      '60,0'     : 'Africa/Lagos',
-      '60,1,s'   : 'Africa/Windhoek',
-      '120,1'    : 'Asia/Beirut',
-      '120,0'    : 'Africa/Johannesburg',
-      '180,0'    : 'Asia/Baghdad',
-      '180,1'    : 'Europe/Moscow',
-      '210,1'    : 'Asia/Tehran',
-      '240,0'    : 'Asia/Dubai',
-      '240,1'    : 'Asia/Baku',
-      '270,0'    : 'Asia/Kabul',
-      '300,1'    : 'Asia/Yekaterinburg',
-      '300,0'    : 'Asia/Karachi',
-      '330,0'    : 'Asia/Kolkata',
-      '345,0'    : 'Asia/Kathmandu',
-      '360,0'    : 'Asia/Dhaka',
-      '360,1'    : 'Asia/Omsk',
-      '390,0'    : 'Asia/Rangoon',
-      '420,1'    : 'Asia/Krasnoyarsk',
-      '420,0'    : 'Asia/Jakarta',
-      '480,0'    : 'Asia/Shanghai',
-      '480,1'    : 'Asia/Irkutsk',
-      '525,0'    : 'Australia/Eucla',
-      '525,1,s'  : 'Australia/Eucla',
-      '540,1'    : 'Asia/Yakutsk',
-      '540,0'    : 'Asia/Tokyo',
-      '570,0'    : 'Australia/Darwin',
-      '570,1,s'  : 'Australia/Adelaide',
-      '600,0'    : 'Australia/Brisbane',
-      '600,1'    : 'Asia/Vladivostok',
-      '600,1,s'  : 'Australia/Sydney',
-      '630,1,s'  : 'Australia/Lord_Howe',
-      '660,1'    : 'Asia/Kamchatka',
-      '660,0'    : 'Pacific/Noumea',
-      '690,0'    : 'Pacific/Norfolk',
-      '720,1,s'  : 'Pacific/Auckland',
-      '720,0'    : 'Pacific/Tarawa',
-      '765,1,s'  : 'Pacific/Chatham',
-      '780,0'    : 'Pacific/Tongatapu',
-      '780,1,s'  : 'Pacific/Apia',
-      '840,0'    : 'Pacific/Kiritimati'
-  };
+    jstz.olson = {};
 
-  if (typeof exports !== 'undefined') {
-    exports.jstz = jstz;
-  } else {
-    root.jstz = jstz;
-  }
+    /*
+     * The keys in this dictionary are comma separated as such:
+     *
+     * First the offset compared to UTC time in minutes.
+     *
+     * Then a flag which is 0 if the timezone does not take daylight savings into account and 1 if it
+     * does.
+     *
+     * Thirdly an optional 's' signifies that the timezone is in the southern hemisphere,
+     * only interesting for timezones with DST.
+     *
+     * The mapped arrays is used for constructing the jstz.TimeZone object from within
+     * jstz.determine_timezone();
+     */
+    jstz.olson.timezones = {
+        '-720,0': 'Pacific/Majuro',
+        '-660,0': 'Pacific/Pago_Pago',
+        '-600,1': 'America/Adak',
+        '-600,0': 'Pacific/Honolulu',
+        '-570,0': 'Pacific/Marquesas',
+        '-540,0': 'Pacific/Gambier',
+        '-540,1': 'America/Anchorage',
+        '-480,1': 'America/Los_Angeles',
+        '-480,0': 'Pacific/Pitcairn',
+        '-420,0': 'America/Phoenix',
+        '-420,1': 'America/Denver',
+        '-360,0': 'America/Guatemala',
+        '-360,1': 'America/Chicago',
+        '-360,1,s': 'Pacific/Easter',
+        '-300,0': 'America/Bogota',
+        '-300,1': 'America/New_York',
+        '-270,0': 'America/Caracas',
+        '-240,1': 'America/Halifax',
+        '-240,0': 'America/Santo_Domingo',
+        '-240,1,s': 'America/Santiago',
+        '-210,1': 'America/St_Johns',
+        '-180,1': 'America/Godthab',
+        '-180,0': 'America/Argentina/Buenos_Aires',
+        '-180,1,s': 'America/Montevideo',
+        '-120,0': 'America/Noronha',
+        '-120,1': 'America/Noronha',
+        '-60,1': 'Atlantic/Azores',
+        '-60,0': 'Atlantic/Cape_Verde',
+        '0,0': 'UTC',
+        '0,1': 'Europe/London',
+        '60,1': 'Europe/Berlin',
+        '60,0': 'Africa/Lagos',
+        '60,1,s': 'Africa/Windhoek',
+        '120,1': 'Asia/Beirut',
+        '120,0': 'Africa/Johannesburg',
+        '180,0': 'Asia/Baghdad',
+        '180,1': 'Europe/Moscow',
+        '210,1': 'Asia/Tehran',
+        '240,0': 'Asia/Dubai',
+        '240,1': 'Asia/Baku',
+        '270,0': 'Asia/Kabul',
+        '300,1': 'Asia/Yekaterinburg',
+        '300,0': 'Asia/Karachi',
+        '330,0': 'Asia/Kolkata',
+        '345,0': 'Asia/Kathmandu',
+        '360,0': 'Asia/Dhaka',
+        '360,1': 'Asia/Omsk',
+        '390,0': 'Asia/Rangoon',
+        '420,1': 'Asia/Krasnoyarsk',
+        '420,0': 'Asia/Jakarta',
+        '480,0': 'Asia/Shanghai',
+        '480,1': 'Asia/Irkutsk',
+        '525,0': 'Australia/Eucla',
+        '525,1,s': 'Australia/Eucla',
+        '540,1': 'Asia/Yakutsk',
+        '540,0': 'Asia/Tokyo',
+        '570,0': 'Australia/Darwin',
+        '570,1,s': 'Australia/Adelaide',
+        '600,0': 'Australia/Brisbane',
+        '600,1': 'Asia/Vladivostok',
+        '600,1,s': 'Australia/Sydney',
+        '630,1,s': 'Australia/Lord_Howe',
+        '660,1': 'Asia/Kamchatka',
+        '660,0': 'Pacific/Noumea',
+        '690,0': 'Pacific/Norfolk',
+        '720,1,s': 'Pacific/Auckland',
+        '720,0': 'Pacific/Tarawa',
+        '765,1,s': 'Pacific/Chatham',
+        '780,0': 'Pacific/Tongatapu',
+        '780,1,s': 'Pacific/Apia',
+        '840,0': 'Pacific/Kiritimati'
+    };
+
+    if (typeof exports !== 'undefined') {
+        exports.jstz = jstz;
+    } else {
+        root.jstz = jstz;
+    }
 })(this);
 /*!
 The MIT License (MIT)
@@ -2762,6 +2807,7 @@ Version 1.1.2
     var slice = Array.prototype.slice;
     var everliveUrl = "//api.everlive.com/v1/";
     var idField = "Id";
+
     function guardUnset(value, name, message) {
         if (!message)
             message = "The " + name + " is required";
@@ -2770,6 +2816,7 @@ Version 1.1.2
     }
 
     // An object that keeps information about an Everlive connecton
+
     function Setup(options) {
         this.url = everliveUrl;
         this.apiKey = null;
@@ -2788,6 +2835,7 @@ Version 1.1.2
     var initializations = [];
     // The constructor of Everlive instances.
     // The entry point for the SDK.
+
     function Everlive(options) {
         var self = this;
         this.setup = new Setup(options);
@@ -2827,12 +2875,13 @@ Version 1.1.2
             return authHeaderValue;
         if (setup.token) {
             authHeaderValue = (setup.tokenType || "bearer") + " " + setup.token;
-        }
-        else if (setup.masterKey) {
+        } else if (setup.masterKey) {
             authHeaderValue = 'masterkey ' + setup.masterKey;
         }
         if (authHeaderValue)
-            return { "Authorization": authHeaderValue };
+            return {
+                "Authorization": authHeaderValue
+        };
         else
             return null;
     };
@@ -2904,8 +2953,7 @@ Version 1.1.2
             where: function (filter) {
                 if (filter) {
                     return this._simple(OperatorType.filter, [filter]);
-                }
-                else {
+                } else {
                     return new WhereQuery(this);
                 }
             },
@@ -3034,8 +3082,16 @@ Version 1.1.2
             this.query = query;
             this.expr = query.expr;
         }
-        var maxDistanceConsts = { 'radians': '$maxDistance', 'km': '$maxDistanceInKilometers', 'miles': '$maxDistanceInMiles' };
-        var radiusConsts = { 'radians': 'radius', 'km': 'radiusInKilometers', 'miles': 'radiusInMiles' };
+        var maxDistanceConsts = {
+            'radians': '$maxDistance',
+            'km': '$maxDistanceInKilometers',
+            'miles': '$maxDistanceInMiles'
+        };
+        var radiusConsts = {
+            'radians': 'radius',
+            'km': 'radiusInKilometers',
+            'miles': 'radiusInMiles'
+        };
         QueryBuilder.prototype = {
             // TODO merge the two objects before returning them
             build: function () {
@@ -3047,7 +3103,7 @@ Version 1.1.2
                         $sort: query.sort || null,
                         $skip: query.toskip || null,
                         $take: query.totake || null
-                    };
+                };
                 return {
                     $where: this._buildWhere(),
                     $select: this._buildSelect(),
@@ -3079,8 +3135,7 @@ Version 1.1.2
                         return memo;
                     }, result);
                     return result;
-                }
-                else {
+                } else {
                     return null;
                 }
             },
@@ -3095,8 +3150,7 @@ Version 1.1.2
                         return memo;
                     }, result);
                     return result;
-                }
-                else {
+                } else {
                     return null;
                 }
             },
@@ -3106,8 +3160,7 @@ Version 1.1.2
                 });
                 if (whereExpression) {
                     return this._build(new Expression(OperatorType.and, whereExpression.operands));
-                }
-                else {
+                } else {
                     var filterExpression = _.find(this.expr.operands, function (value, index, list) {
                         return value.operator === OperatorType.filter;
                     });
@@ -3120,20 +3173,15 @@ Version 1.1.2
             _build: function (expr) {
                 if (this._isSimple(expr)) {
                     return this._simple(expr);
-                }
-                else if (this._isRegex(expr)) {
+                } else if (this._isRegex(expr)) {
                     return this._regex(expr);
-                }
-                else if (this._isGeo(expr)) {
+                } else if (this._isGeo(expr)) {
                     return this._geo(expr);
-                }
-                else if (this._isAnd(expr)) {
+                } else if (this._isAnd(expr)) {
                     return this._and(expr);
-                }
-                else if (this._isOr(expr)) {
+                } else if (this._isOr(expr)) {
                     return this._or(expr);
-                }
-                else if (this._isNot(expr)) {
+                } else if (this._isNot(expr)) {
                     return this._not(expr);
                 }
             },
@@ -3146,8 +3194,7 @@ Version 1.1.2
                 var operator = this._translateoperator(expr.operator);
                 if (operator) {
                     term[operator] = operands[1];
-                }
-                else {
+                } else {
                     term = operands[1];
                 }
                 fieldTerm[operands[0]] = term;
@@ -3168,14 +3215,14 @@ Version 1.1.2
                 var pattern = expr.operands[1];
                 var flags = expr.operands[2] ? expr.operands[2] : '';
                 switch (expr.operator) {
-                    case OperatorType.regex:
-                        return pattern instanceof RegExp ? pattern : new RegExp(pattern, flags);
-                    case OperatorType.startsWith:
-                        return new RegExp(pattern + ".*", flags);
-                    case OperatorType.endsWith:
-                        return new RegExp(".*" + pattern, flags);
-                    default:
-                        throw new Error("Unknown operator type.");
+                case OperatorType.regex:
+                    return pattern instanceof RegExp ? pattern : new RegExp(pattern, flags);
+                case OperatorType.startsWith:
+                    return new RegExp(pattern + ".*", flags);
+                case OperatorType.endsWith:
+                    return new RegExp(".*" + pattern, flags);
+                default:
+                    throw new Error("Unknown operator type.");
                 }
             },
             _getRegexValue: function (regex) {
@@ -3186,7 +3233,10 @@ Version 1.1.2
                     options += 'm';
                 if (regex.ignoreCase)
                     options += 'i';
-                return { $regex: regex.source, $options: options };
+                return {
+                    $regex: regex.source,
+                    $options: options
+                };
             },
             _isGeo: function (expr) {
                 return expr.operator >= OperatorType.nearShpere && expr.operator <= OperatorType.withinShpere;
@@ -3199,16 +3249,16 @@ Version 1.1.2
             },
             _getGeoTerm: function (expr) {
                 switch (expr.operator) {
-                    case OperatorType.nearShpere:
-                        return this._getNearSphereTerm(expr);
-                    case OperatorType.withinBox:
-                        return this._getWithinBox(expr);
-                    case OperatorType.withinPolygon:
-                        return this._getWithinPolygon(expr);
-                    case OperatorType.withinShpere:
-                        return this._getWithinCenterSphere(expr);
-                    default:
-                        throw new Error("Unknown operator type.");
+                case OperatorType.nearShpere:
+                    return this._getNearSphereTerm(expr);
+                case OperatorType.withinBox:
+                    return this._getWithinBox(expr);
+                case OperatorType.withinPolygon:
+                    return this._getWithinPolygon(expr);
+                case OperatorType.withinShpere:
+                    return this._getWithinCenterSphere(expr);
+                default:
+                    throw new Error("Unknown operator type.");
                 }
             },
             _getNearSphereTerm: function (expr) {
@@ -3292,8 +3342,7 @@ Version 1.1.2
                     value = andObj[key];
                     if (typeof value === 'undefined') {
                         andObj[key] = newObj[key];
-                    }
-                    else {
+                    } else {
                         newValue = newObj[key];
                         if (typeof value === "object" && typeof newValue === "object")
                             value = _.extend(value, newValue);
@@ -3314,36 +3363,40 @@ Version 1.1.2
                     term = this._build(operands[i]);
                     result.push(term);
                 }
-                return { $or: result };
+                return {
+                    $or: result
+                };
             },
             _isNot: function (expr) {
                 return expr.operator === OperatorType.not;
             },
             _not: function (expr) {
-                return { $not: this._build(expr.operands[0]) };
+                return {
+                    $not: this._build(expr.operands[0])
+                };
             },
             _translateoperator: function (operator) {
                 switch (operator) {
-                    case OperatorType.equal:
-                        return null;
-                    case OperatorType.not_equal:
-                        return "$ne";
-                    case OperatorType.gt:
-                        return "$gt";
-                    case OperatorType.lt:
-                        return "$lt";
-                    case OperatorType.gte:
-                        return "$gte";
-                    case OperatorType.lte:
-                        return "$lte";
-                    case OperatorType.isin:
-                        return "$in";
-                    case OperatorType.notin:
-                        return "$nin";
-                    case OperatorType.all:
-                        return "$all";
-                    case OperatorType.size:
-                        return "$size";
+                case OperatorType.equal:
+                    return null;
+                case OperatorType.not_equal:
+                    return "$ne";
+                case OperatorType.gt:
+                    return "$gt";
+                case OperatorType.lt:
+                    return "$lt";
+                case OperatorType.gte:
+                    return "$gte";
+                case OperatorType.lte:
+                    return "$lte";
+                case OperatorType.isin:
+                    return "$in";
+                case OperatorType.notin:
+                    return "$nin";
+                case OperatorType.all:
+                    return "$all";
+                case OperatorType.size:
+                    return "$size";
                 }
                 throw new Error("Unknown operator type.");
             }
@@ -3366,6 +3419,7 @@ Version 1.1.2
 
         // The Request type is an abstraction over Ajax libraries
         // A Request object needs information about the Everlive connection and initialization options
+
         function Request(setup, options) {
             guardUnset(setup, "setup");
             guardUnset(options, "options");
@@ -3399,12 +3453,10 @@ Version 1.1.2
                 if (query) {
                     if (query instanceof Everlive.Query) {
                         return Request.prototype._buildQueryHeaders(query);
-                    }
-                    else {
+                    } else {
                         return Request.prototype._buildFilterHeader(query);
                     }
-                }
-                else {
+                } else {
                     return {};
                 }
             },
@@ -3446,6 +3498,7 @@ Version 1.1.2
         Everlive.prototype.request = function (attrs) {
             return new Request(this.setup, attrs);
         };
+
         function parseIsoDateString(string) {
             var match = string.match(/^(\d{4})(-(\d{2})(-(\d{2})(T(\d{2}):(\d{2})(:(\d{2})(\.(\d+))?)?(Z|((\+|-)(\d{2}):(\d{2}))))?))$/);
             if (match) {
@@ -3453,8 +3506,7 @@ Version 1.1.2
                 if (secondParts) {
                     if (secondParts.length > 3) {
                         secondParts = Math.round(Number(secondParts.substr(0, 3) + '.' + secondParts.substr(3)));
-                    }
-                    else if (secondParts.length < 3) {
+                    } else if (secondParts.length < 3) {
                         // if the secondParts are one or two characters then two or one zeros should be appended
                         // in order to have the correct number for milliseconds ('.67' means 670ms not 67ms)
                         secondParts += secondParts.length === 2 ? '0' : '00';
@@ -3462,20 +3514,19 @@ Version 1.1.2
                 }
                 var date = new Date(
                     Date.UTC(
-                        Number(match[1]), // year
-                        (Number(match[3]) - 1) || 0, // month
-                        Number(match[5]) || 0, // day
-                        Number(match[7]) || 0, // hour
-                        Number(match[8]) || 0, // minute
-                        Number(match[10]) || 0, // second
-                        Number(secondParts) || 0
-                    )
-                );
+                    Number(match[1]), // year
+                (Number(match[3]) - 1) || 0, // month
+                Number(match[5]) || 0, // day
+                Number(match[7]) || 0, // hour
+                Number(match[8]) || 0, // minute
+                Number(match[10]) || 0, // second
+                Number(secondParts) || 0));
                 return date;
             } else {
                 return null
             }
         }
+
         function jsonDateReviver(key, value) {
             if (typeof value === 'string') {
                 var date = parseIsoDateString(value);
@@ -3485,6 +3536,7 @@ Version 1.1.2
             }
             return value;
         }
+
         function traverse(obj, func) {
             var key, value, newValue;
             for (key in obj) {
@@ -3498,63 +3550,71 @@ Version 1.1.2
                 }
             }
         }
+
         function traverseAndRevive(data) {
             traverse(data, jsonDateReviver);
         }
         Everlive._traverseAndRevive = traverseAndRevive;
+
         function parseResult(data) {
             if (typeof data === 'string' && data.length > 0) {
                 data = JSON.parse(data, jsonDateReviver);
-            }
-            else if (typeof data === 'object') {
+            } else if (typeof data === 'object') {
                 traverseAndRevive(data);
             }
             if (data) {
-                return { result: data.Result, count: data.Count };
-            }
-            else {
+                return {
+                    result: data.Result,
+                    count: data.Count
+                };
+            } else {
                 return data;
             }
         }
+
         function parseError(error) {
             if (typeof error === 'string' && error.length > 0) {
                 try {
                     error = JSON.parse(error);
-                    return { message: error.message, code: error.errorCode };
-                }
-                catch (e) {
+                    return {
+                        message: error.message,
+                        code: error.errorCode
+                    };
+                } catch (e) {
                     return error;
                 }
-            }
-            else {
+            } else {
                 return error;
             }
         }
+
         function parseSingleResult(data) {
             if (typeof data === 'string' && data.length > 0) {
                 data = JSON.parse(data, jsonDateReviver);
-            }
-            else if (typeof data === 'object') {
+            } else if (typeof data === 'object') {
                 traverseAndRevive(data);
             }
             if (data) {
-                return { result: data.Result };
-            }
-            else {
+                return {
+                    result: data.Result
+                };
+            } else {
                 return data;
             }
         }
+
         function parseUpdateResult(data) {
             if (typeof data === 'string' && data.length > 0) {
                 data = JSON.parse(data, jsonDateReviver);
-            }
-            else if (typeof data === 'object') {
+            } else if (typeof data === 'object') {
                 traverseAndRevive(data);
             }
             if (data) {
-                return { result: data.Result, ModifiedAt: data.ModifiedAt };
-            }
-            else {
+                return {
+                    result: data.Result,
+                    ModifiedAt: data.ModifiedAt
+                };
+            } else {
                 return data;
             }
         }
@@ -3628,7 +3688,11 @@ Version 1.1.2
                 };
             });
         }
-        return { promise: promise, success: success, error: error };
+        return {
+            promise: promise,
+            success: success,
+            error: error
+        };
     };
     // whenjs promises
     //Everlive.getCallbacks = function (success, error) {
@@ -3644,11 +3708,13 @@ Version 1.1.2
     //    }
     //    return { promise: promise.promise, success: success, error: error };
     //};
+
     function buildPromise(operation, success, error) {
         var callbacks = Everlive.getCallbacks(success, error);
         operation(callbacks.success, callbacks.error);
         return callbacks.promise;
     }
+
     function mergeResultData(data, success) {
         return function (res) {
             var attrs = res.result;
@@ -3657,16 +3723,16 @@ Version 1.1.2
                 _.each(data, function (item, index) {
                     _.extend(item, attrs[index]);
                 });
-            }
-            else {
+            } else {
                 _.extend(data, attrs);
             }
             success(res);
         };
     }
+
     function mergeUpdateResultData(data, success) {
         return function (res) {
-            var modifiedAt = res.ModifiedAt;            
+            var modifiedAt = res.ModifiedAt;
             data.ModifiedAt = modifiedAt;
             success(res);
         };
@@ -3822,59 +3888,57 @@ Version 1.1.2
             return this._destroy(null, filter, false, success, error);
         },
         setAcl: function (acl, filter, success, error) {
-        	var self = this;
-        	return buildPromise(function (success, error) {
-        		var endpoint = self.collectionName;
+            var self = this;
+            return buildPromise(function (success, error) {
+                var endpoint = self.collectionName;
 
-        		if (typeof filter === "string") { // if filter is string than will update a single item using the filter as an identifier
-        			endpoint += "/" + filter;
-        		}
-        		else if (typeof filter === "object") { // else if it is an object than we will use it's id property
-        			endpoint += "/" + filter[idField];
-        		}
-        		endpoint += "/_acl";
-        		var method, data;
-        		if (acl == null) {
-        			method = "DELETE";
-        		} else {
-        			method = "PUT";
-        			data = acl;
-        		}
+                if (typeof filter === "string") { // if filter is string than will update a single item using the filter as an identifier
+                    endpoint += "/" + filter;
+                } else if (typeof filter === "object") { // else if it is an object than we will use it's id property
+                    endpoint += "/" + filter[idField];
+                }
+                endpoint += "/_acl";
+                var method, data;
+                if (acl == null) {
+                    method = "DELETE";
+                } else {
+                    method = "PUT";
+                    data = acl;
+                }
 
-        		var request = self._createRequest({
-        			method: method,
-        			endpoint: endpoint,
-        			data: data,
-        			success: success,
-        			error: error
-        		});
-        		request.send();
-        	}, success, error);
+                var request = self._createRequest({
+                    method: method,
+                    endpoint: endpoint,
+                    data: data,
+                    success: success,
+                    error: error
+                });
+                request.send();
+            }, success, error);
         },
         setOwner: function (ownerId, filter, success, error) {
-        	var self = this;
-        	return buildPromise(function (success, error) {
-        		var endpoint = self.collectionName;
+            var self = this;
+            return buildPromise(function (success, error) {
+                var endpoint = self.collectionName;
 
-        		if (typeof filter === "string") { // if filter is string than will update a single item using the filter as an identifier
-        			endpoint += "/" + filter;
+                if (typeof filter === "string") { // if filter is string than will update a single item using the filter as an identifier
+                    endpoint += "/" + filter;
+                } else if (typeof filter === "object") { // else if it is an object than we will use it's id property
+                    endpoint += "/" + filter[idField];
                 }
-        		else if (typeof filter === "object") { // else if it is an object than we will use it's id property
-        			endpoint += "/" + filter[idField];
-        		}
-        		endpoint += "/_owner";
+                endpoint += "/_owner";
 
-        		var request = self._createRequest({
-        			method: "PUT",
-        			endpoint: endpoint,
-        			data: {
-        				Owner: ownerId
-        			},
-        			success: success,
-        			error: error
-        		});
-        		request.send();
-        	}, success, error);
+                var request = self._createRequest({
+                    method: "PUT",
+                    endpoint: endpoint,
+                    data: {
+                        Owner: ownerId
+                    },
+                    success: success,
+                    error: error
+                });
+                request.send();
+            }, success, error);
         },
         save: function (model, success, error) {
             var self = this;
@@ -3884,14 +3948,14 @@ Version 1.1.2
                     res.type = isNew ? 'create' : 'update';
                     success(res);
                 }
+
                 function saveError(err) {
                     err.type = isNew ? 'create' : 'update';
                     error(err);
                 }
                 if (isNew) {
                     return self.create(model, saveSuccess, saveError);
-                }
-                else {
+                } else {
                     return self.updateSingle(model, saveSuccess, saveError);
                 }
             }, success, error);
@@ -3917,15 +3981,20 @@ Version 1.1.2
         authenticated: 'authenticated'
     };
     Everlive.AuthStatus = AuthStatus;
+
     function getAuthInfo(setup, getUser, success, error) {
         if (setup.masterKey) {
             return buildPromise(function (success, error) {
-                success({ status: AuthStatus.masterKey });
+                success({
+                    status: AuthStatus.masterKey
+                });
             }, success, error);
         }
         if (!setup.token) {
             return buildPromise(function (success, error) {
-                success({ status: AuthStatus.unauthenticated });
+                success({
+                    status: AuthStatus.unauthenticated
+                });
             }, success, error);
         }
 
@@ -3933,9 +4002,10 @@ Version 1.1.2
         if (success) {
             errorcb = function (err) {
                 if (err && err.code === 601) { // invalid request, i.e. the access token is invalid or missing
-                    success({ status: AuthStatus.invalidAuthentication });
-                }
-                else {
+                    success({
+                        status: AuthStatus.invalidAuthentication
+                    });
+                } else {
                     error(err);
                 }
             };
@@ -3943,12 +4013,16 @@ Version 1.1.2
         var promise = getUser(success, errorcb);
         if (promise) {
             promise = promise.then(function (res) {
-                return { status: AuthStatus.authenticated, user: res.result };
+                return {
+                    status: AuthStatus.authenticated,
+                    user: res.result
+                };
             }, function (err) {
                 if (err && err.code === 601) { // invalid request, i.e. the access token is invalid or missing
-                    return { status: AuthStatus.invalidAuthentication };
-                }
-                else {
+                    return {
+                        status: AuthStatus.invalidAuthentication
+                    };
+                } else {
                     throw err;
                 }
             });
@@ -4009,15 +4083,18 @@ Version 1.1.2
             return buildPromise(function (success, error) {
                 getAuthInfo(self.setup, _.bind(self.getById, self, "me"))
                     .then(function (res) {
-                        if (typeof res.user !== 'undefined') {
-                            success({ result: res.user });
-                        }
-                        else {
-                            success({ result: null });
-                        }
-                    }, function (err) {
-                        error(err);
-                    });
+                    if (typeof res.user !== 'undefined') {
+                        success({
+                            result: res.user
+                        });
+                    } else {
+                        success({
+                            result: null
+                        });
+                    }
+                }, function (err) {
+                    error(err);
+                });
             }, success, error);
         };
         ns.changePassword = function (username, password, newPassword, keepTokens, success, error) {
@@ -4283,29 +4360,23 @@ Version 1.1.2
         disableNotifications: function (success, error) {
             var self = this;
 
-            return this.unregister().then(
-                function () {
-                    return buildPromise(
-                        function (success, error) {
-                            if (self.emulatorMode) {
-                                success();
-                            } else {
-                                var pushNotification = window.plugins.pushNotification;
-                                pushNotification.unregister(
-                                    function () {
-                                        self.isInitialized = false;
-                                        success();
-                                    },
-                                    error
-                                );
-                            }
+            return this.unregister().then(function () {
+                return buildPromise(function (success, error) {
+                    if (self.emulatorMode) {
+                        success();
+                    } else {
+                        var pushNotification = window.plugins.pushNotification;
+                        pushNotification.unregister(function () {
+                            self.isInitialized = false;
+                            success();
                         },
-                        success,
-                        error
-                    );
+                            error);
+                    }
                 },
-                error
-            );
+                    success,
+                    error);
+            },
+                error);
         },
 
         /**
@@ -4326,7 +4397,7 @@ Version 1.1.2
         /**
          * Registers the current device for push notifications in Everlive. This method can be called
          * only after enableNotifications() has completed successfully.
-         * 
+         *
          * @param {Object} customParameters
          *   Custom parameters for the registration.
          * @param {Function} success
@@ -4343,41 +4414,41 @@ Version 1.1.2
             if (customParameters !== undefined) {
                 deviceRegistration.Parameters = customParameters;
             }
-            return this._populateRegistrationObject(deviceRegistration).then(
-                function () {
-                    return self._pushHandler.devices.create(deviceRegistration, success, error);
-                },
-                error
-            );
+            return this._populateRegistrationObject(deviceRegistration).then(function () {
+                return self._pushHandler.devices.create(deviceRegistration, success, error);
+            },
+                error);
         },
 
         /**
          * Unregisters the current device from push notifications in Everlive. After this call completes
          * successfully, Everlive will no longer send notifications to this device. Note that this does
          * not prevent the device from receiving notifications and does not invalidate push tokens.
-         * 
+         *
          * @param {Function} success
          *   Callback to invoke on success.
          * @param {Function} error
          *   Callback to invoke on error.
-         * @returns {Object} 
+         * @returns {Object}
          *   A promise for the operation, or void if success/error are supplied.
          */
         unregister: function (success, error) {
             var deviceId = device.uuid;
-            return this._pushHandler.devices.destroySingle({ Id: 'HardwareId/' + deviceId }, success, error);
+            return this._pushHandler.devices.destroySingle({
+                Id: 'HardwareId/' + deviceId
+            }, success, error);
         },
 
         /**
          * Updates the registration for the current device.
-         * 
+         *
          * @param {Object} customParameters
          *   Custom parameters for the registration. If undefined, customParameters are not updated.
          * @param {Function} success
          *   Callback to invoke on success.
          * @param {Function} error
          *   Callback to invoke on error.
-         * @returns {Object} 
+         * @returns {Object}
          *   A promise for the operation, or void if success/error are supplied.
          */
         updateRegistration: function (customParameters, success, error) {
@@ -4387,13 +4458,11 @@ Version 1.1.2
             if (customParameters !== undefined) {
                 deviceRegistration.Parameters = customParameters;
             }
-            return this._populateRegistrationObject(deviceRegistration).then(
-                function () {
-                    deviceRegistration.Id = 'HardwareId/' + deviceRegistration.HardwareId;
-                    return self._pushHandler.devices.updateSingle(deviceRegistration, success, error);
-                },
-                error
-            );
+            return this._populateRegistrationObject(deviceRegistration).then(function () {
+                deviceRegistration.Id = 'HardwareId/' + deviceRegistration.HardwareId;
+                return self._pushHandler.devices.updateSingle(deviceRegistration, success, error);
+            },
+                error);
         },
 
 
@@ -4420,12 +4489,10 @@ Version 1.1.2
             }
 
             if (this.emulatorMode) {
-                setTimeout(
-                    function () {
-                        self._deviceRegistrationSuccess("fake_push_token");
-                    },
-                    1000
-                );
+                setTimeout(function () {
+                    self._deviceRegistrationSuccess("fake_push_token");
+                },
+                    1000);
                 return;
             }
 
@@ -4454,8 +4521,7 @@ Version 1.1.2
                 pushNotification.register(
                     _.bind(this._successfulRegistrationAPN, this),
                     _.bind(this._failedRegistrationAPN, this),
-                    apnRegistrationOptions
-                );
+                    apnRegistrationOptions);
             } else if (platformType === Platform.Android) {
                 //Initialize global GCM callback
                 var gcmCallbackName = "gcmCallback_" + suffix;
@@ -4470,8 +4536,7 @@ Version 1.1.2
                 pushNotification.register(
                     _.bind(this._successSentRegistrationGCM, this),
                     _.bind(this._errorSentRegistrationGCM, this),
-                    gcmRegistrationOptions
-                );
+                    gcmRegistrationOptions);
 
             } else {
                 throw new Error("The current platform is not supported: " + device.platform);
@@ -4491,56 +4556,50 @@ Version 1.1.2
         _populateRegistrationObject: function (deviceRegistration, success, error) {
             var self = this;
 
-            return buildPromise(
-                function (success, error) {
-                    if (!self.pushToken) {
-                        throw new Error("Push token is not available.");
-                    }
+            return buildPromise(function (success, error) {
+                if (!self.pushToken) {
+                    throw new Error("Push token is not available.");
+                }
 
-                    self._getLocaleName(
-                        function (locale) {
-                            var deviceId = self._getDeviceId();
-                            var hardwareModel = device.name;
-                            var platformType = self._getPlatformType(device.platform);
-                            var timeZone = jstz.determine().name();
-                            var pushToken = self.pushToken;
-                            var language = locale.value;
-                            var platformVersion = device.version;
+                self._getLocaleName(function (locale) {
+                    var deviceId = self._getDeviceId();
+                    var hardwareModel = device.name;
+                    var platformType = self._getPlatformType(device.platform);
+                    var timeZone = jstz.determine().name();
+                    var pushToken = self.pushToken;
+                    var language = locale.value;
+                    var platformVersion = device.version;
 
-                            deviceRegistration.HardwareId = deviceId;
-                            deviceRegistration.HardwareModel = hardwareModel;
-                            deviceRegistration.PlatformType = platformType;
-                            deviceRegistration.PlatformVersion = platformVersion;
-                            deviceRegistration.TimeZone = timeZone;
-                            deviceRegistration.PushToken = pushToken;
-                            deviceRegistration.Locale = language;
+                    deviceRegistration.HardwareId = deviceId;
+                    deviceRegistration.HardwareModel = hardwareModel;
+                    deviceRegistration.PlatformType = platformType;
+                    deviceRegistration.PlatformVersion = platformVersion;
+                    deviceRegistration.TimeZone = timeZone;
+                    deviceRegistration.PushToken = pushToken;
+                    deviceRegistration.Locale = language;
 
-                            success();
-                        },
-                        error
-                    );
+                    success();
                 },
+                    error);
+            },
                 success,
-                error
-            );
+                error);
         },
 
         _getLocaleName: function (success, error) {
             if (this.emulatorMode) {
-                success({ value: "en_US" });
+                success({
+                    value: "en_US"
+                });
             } else {
-                navigator.globalization.getLocaleName(
-                    function (locale) {
-                        success(locale);
-                    },
-                    error
-                );
-                navigator.globalization.getLocaleName(
-                    function (locale) {
+                navigator.globalization.getLocaleName(function (locale) {
+                    success(locale);
+                },
+                    error);
+                navigator.globalization.getLocaleName(function (locale) {
 
-                    },
-                    error
-                );
+                },
+                    error);
             }
         },
 
@@ -4552,16 +4611,16 @@ Version 1.1.2
         _getPlatformType: function (platformString) {
             var psLower = platformString.toLowerCase();
             switch (psLower) {
-                case "ios":
-                case "iphone":
-                case "ipad":
-                    return Platform.iOS;
-                case "android":
-                    return Platform.Android;
-                case "wince":
-                    return Platform.WindowsPhone;
-                default:
-                    return Platform.Unknown;
+            case "ios":
+            case "iphone":
+            case "ipad":
+                return Platform.iOS;
+            case "android":
+                return Platform.Android;
+            case "wince":
+                return Platform.WindowsPhone;
+            default:
+                return Platform.Unknown;
             }
         },
 
@@ -4571,7 +4630,9 @@ Version 1.1.2
             this.isInitialized = false;
 
             if (this._initErrorCallback) {
-                this._initErrorCallback({ error: error });
+                this._initErrorCallback({
+                    error: error
+                });
             }
         },
 
@@ -4581,7 +4642,9 @@ Version 1.1.2
             this.isInitialized = true;
 
             if (this._initSuccessCallback) {
-                this._initSuccessCallback({ token: token });
+                this._initSuccessCallback({
+                    token: token
+                });
             }
         },
 
@@ -4613,24 +4676,24 @@ Version 1.1.2
         //This function receives all notification events from GCM
         _onNotificationGCM: function onNotificationGCM(e) {
             switch (e.event) {
-                case 'registered':
-                    if (e.regid.length > 0) {
-                        this._deviceRegistrationSuccess(e.regid);
-                    }
-                    break;
-                case 'message':
+            case 'registered':
+                if (e.regid.length > 0) {
+                    this._deviceRegistrationSuccess(e.regid);
+                }
+                break;
+            case 'message':
+                this._raiseNotificationEventAndroid(e);
+                break;
+            case 'error':
+                if (!this.pushToken) {
+                    this._deviceRegistrationFailed(e);
+                } else {
                     this._raiseNotificationEventAndroid(e);
-                    break;
-                case 'error':
-                    if (!this.pushToken) {
-                        this._deviceRegistrationFailed(e);
-                    } else {
-                        this._raiseNotificationEventAndroid(e);
-                    }
-                    break;
-                default:
-                    this._raiseNotificationEventAndroid(e);
-                    break;
+                }
+                break;
+            default:
+                this._raiseNotificationEventAndroid(e);
+                break;
             }
         },
 
@@ -4659,7 +4722,10 @@ Version 1.1.2
         this.push = new Push(this);
     };
 
-    initializations.push({ name: "default", func: initDefault });
+    initializations.push({
+        name: "default",
+        func: initDefault
+    });
 
     ns.Everlive = Everlive;
 }(this));
@@ -4677,9 +4743,10 @@ Version 1.1.2
                 data: function (data) {
                     // update
                     if (typeof data.ModifiedAt !== 'undefined') {
-                        return { ModifiedAt: data.ModifiedAt };
-                    }
-                    else {
+                        return {
+                            ModifiedAt: data.ModifiedAt
+                        };
+                    } else {
                         return data.Result || data;
                     }
                 },
@@ -4760,8 +4827,8 @@ Version 1.1.2
     }
 
     var regexOperations = ['startsWith', 'endsWith', 'contains'];
-    function FilterBuilder() {
-    }
+
+    function FilterBuilder() {}
     FilterBuilder.prototype = {
         build: function (filter) {
             return this._build(filter);
@@ -4769,17 +4836,13 @@ Version 1.1.2
         _build: function (filter) {
             if (this._isRaw(filter)) {
                 return this._raw(filter);
-            }
-            else if (this._isSimple(filter)) {
+            } else if (this._isSimple(filter)) {
                 return this._simple(filter);
-            }
-            else if (this._isRegex(filter)) {
+            } else if (this._isRegex(filter)) {
                 return this._regex(filter);
-            }
-            else if (this._isAnd(filter)) {
+            } else if (this._isAnd(filter)) {
                 return this._and(filter);
-            }
-            else if (this._isOr(filter)) {
+            } else if (this._isOr(filter)) {
                 return this._or(filter);
             }
         },
@@ -4799,8 +4862,7 @@ Version 1.1.2
             var operator = this._translateoperator(filter.operator);
             if (operator) {
                 term[operator] = filter.value;
-            }
-            else {
+            } else {
                 term = filter.value;
             }
             fieldTerm[filter.field] = term;
@@ -4819,12 +4881,12 @@ Version 1.1.2
         _getRegex: function (filter) {
             var pattern = filter.value;
             switch (filter.operator) {
-                case 'contains':
-                    return new RegExp(".*" + pattern + ".*", "i");
-                case 'startsWith':
-                    return new RegExp(pattern + ".*", "i");
-                case 'endsWith':
-                    return new RegExp(".*" + pattern, "i");
+            case 'contains':
+                return new RegExp(".*" + pattern + ".*", "i");
+            case 'startsWith':
+                return new RegExp(pattern + ".*", "i");
+            case 'endsWith':
+                return new RegExp(".*" + pattern, "i");
             }
             throw new Error("Unknown operator type.");
         },
@@ -4856,22 +4918,24 @@ Version 1.1.2
                 term = this._build(operands[i]);
                 result.push(term);
             }
-            return { $or: result };
+            return {
+                $or: result
+            };
         },
         _translateoperator: function (operator) {
             switch (operator) {
-                case 'eq':
-                    return null;
-                case 'neq':
-                    return "$ne";
-                case 'gt':
-                    return "$gt";
-                case 'lt':
-                    return "$lt";
-                case 'gte':
-                    return "$gte";
-                case 'lte':
-                    return "$lte";
+            case 'eq':
+                return null;
+            case 'neq':
+                return "$ne";
+            case 'gt':
+                return "$gt";
+            case 'lt':
+                return "$lt";
+            case 'gte':
+                return "$gte";
+            case 'lte':
+                return "$lte";
             }
             throw new Error("Unknown operator type.");
         }
@@ -4915,7 +4979,8 @@ Version 1.1.2
     var createRequestFields = [Everlive.idField, 'CreatedAt'];
     var Model_accept = kendo.data.Model.prototype.accept;
     kendo.data.Model.prototype.accept = function (data) {
-        var that = this, field, value;
+        var that = this,
+            field, value;
         Everlive._traverseAndRevive(data);
         // create
         if (data && that.isNew() && data[Everlive.idField]) {

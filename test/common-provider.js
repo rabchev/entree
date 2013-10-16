@@ -400,6 +400,7 @@ exports.getTestCase = function (Provider, connStr, options) {
 
             test.expect(11);
 
+            interceptor.logdata.length = 0;
             provider.use(interceptor.security);
             provider.use(interceptor.logging);
 
