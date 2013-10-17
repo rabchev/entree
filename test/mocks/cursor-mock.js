@@ -3,7 +3,7 @@
 var Cursor      = require("../../lib/cursor"),
     util        = require("util"),
     sift        = require("sift"),
-    _           = require("underscore");
+    _           = require("lodash");
 
 function CursorMock(provider, query, options) {
     "use strict";

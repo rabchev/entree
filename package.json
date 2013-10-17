@@ -9,7 +9,7 @@
     "dependencies"      : {
         "node-uuid"         : "*",
         "sift"              : "*",
-        "underscore"        : "*"
+        "lodash"            : "*"
     },
     "devDependencies"   : {
         "nodeunit"          : "*",

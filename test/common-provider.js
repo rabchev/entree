@@ -3,7 +3,7 @@
 "use strict";
 debugger;
 
-var _               = require("underscore"),
+var _               = require("lodash"),
     timers          = require("timers"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
