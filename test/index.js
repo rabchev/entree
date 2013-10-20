@@ -15,5 +15,6 @@ process.chdir(__dirname);
 reporter.run([
     "./provider-base.js",
     "./file-system.js",
-    "./fs-common.js"
+    "./fs-common.js",
+    "./el-common.js"
 ]);
