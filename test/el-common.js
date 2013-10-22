@@ -11,4 +11,4 @@ var testCase    = require("./common-provider"),
         //authorization: "MasterKey PqmmvlWWBF5svReW7p3mkYG9X61nus1w"
     };
 
-module.exports = testCase.getTestCase(provider, connStr, options);
+module.exports = testCase.getTestCase(provider, connStr, options, { item_doesnt_exist: "{\"message\":\"Item not found.\",\"errorCode\":801}" });

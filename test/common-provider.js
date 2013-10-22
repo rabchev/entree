@@ -7,6 +7,9 @@ var _               = require("lodash"),
     timers          = require("timers"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
+    msg             = {
+        item_doesnt_exist: "Item does not exist."
+    },
     data,
     provider,
     context;
@@ -98,7 +101,7 @@ function assertFirstItem(test, err, result) {
 
     test.ok(!err);
     test.ok(result);
-    test.equal(result._id, 556617);
+    test.equal(result._id, "797ff043-11eb-11e1-80d6-510998755d10");
     test.equal(result.title, "Test Post");
     test.equal(result.author, "Me Me Me");
     test.equal(result.age, 43);
@@ -108,7 +111,7 @@ function assertUpdatedItem(test, err, result) {
 
     test.ok(!err);
     test.ok(result);
-    test.equal(result._id, 556617);
+    test.equal(result._id, "797ff043-11eb-11e1-80d6-510998755d10");
     test.equal(result.title, "Updated Post");
     test.equal(result.author, "Fred Goldman");
     test.equal(result.age, 55);
@@ -132,9 +135,13 @@ function insertTestData(callback) {
     }
 }
 
-exports.getTestCase = function (Provider, connStr, options) {
+exports.getTestCase = function (Provider, connStr, options, messages) {
     if (!_.isFunction(Provider)) {
         Provider = require(Provider);
+    }
+
+    if (messages) {
+        msg = _.extend(msg, messages);
     }
 
     return testCase({
@@ -166,7 +173,7 @@ exports.getTestCase = function (Provider, connStr, options) {
             test.expect(6);
 
             provider.insert(context, {
-                _id: 556617,
+                _id: "797ff043-11eb-11e1-80d6-510998755d10",
                 title: "Test Post",
                 author: "Me Me Me",
                 age: 43
@@ -181,7 +188,7 @@ exports.getTestCase = function (Provider, connStr, options) {
             test.expect(6);
 
             provider.get(context, {
-                _id: 556617
+                _id: "797ff043-11eb-11e1-80d6-510998755d10"
             }, function (err, result) {
 
                 assertFirstItem(test, err, result);
@@ -193,7 +200,7 @@ exports.getTestCase = function (Provider, connStr, options) {
             test.expect(6);
 
             provider.get(context,
-                556617,
+                "797ff043-11eb-11e1-80d6-510998755d10",
                 function (err, result) {
 
                     assertFirstItem(test, err, result);
@@ -205,7 +212,7 @@ exports.getTestCase = function (Provider, connStr, options) {
             test.expect(6);
 
             provider.update(context, {
-                _id: 556617,
+                _id: "797ff043-11eb-11e1-80d6-510998755d10",
                 title: "Updated Post",
                 author: "Fred Goldman",
                 age: 55
@@ -220,7 +227,7 @@ exports.getTestCase = function (Provider, connStr, options) {
             test.expect(6);
 
             provider.get(context,
-                556617,
+                "797ff043-11eb-11e1-80d6-510998755d10",
                 function (err, result) {
 
                     assertUpdatedItem(test, err, result);
@@ -232,7 +239,7 @@ exports.getTestCase = function (Provider, connStr, options) {
             test.expect(2);
 
             provider.delete(context,
-                556617,
+                "797ff043-11eb-11e1-80d6-510998755d10",
                 function (err, result) {
 
                     test.ok(!err);
@@ -245,12 +252,12 @@ exports.getTestCase = function (Provider, connStr, options) {
             test.expect(3);
 
             provider.get(context,
-                556617,
+                "797ff043-11eb-11e1-80d6-510998755d10",
                 function (err, result) {
 
                     test.ok(err);
                     test.ok(!result);
-                    test.equal(err.message, "Item does not exist.");
+                    test.equal(err.message, msg.item_doesnt_exist);
                     test.done();
                 });
         },
@@ -405,7 +412,7 @@ exports.getTestCase = function (Provider, connStr, options) {
             provider.use(interceptor.logging);
 
             provider.insert(context, {
-                _id: 556617,
+                _id: "797ff043-11eb-11e1-80d6-510998755d10",
                 title: "Test Post",
                 author: "Me Me Me",
                 age: 43
@@ -487,7 +494,7 @@ exports.getTestCase = function (Provider, connStr, options) {
 
             interceptor.logdata.length = 0;
 
-            provider.get({ user: {} }, 556617, function (err, item) {
+            provider.get({ user: {} }, "797ff043-11eb-11e1-80d6-510998755d10", function (err, item) {
 
                 test.ok(!item);
                 test.equal(err.message, "Access denied!");
@@ -502,7 +509,7 @@ exports.getTestCase = function (Provider, connStr, options) {
 
             provider.use(interceptor.timestamp);
 
-            provider.get(context, 556617, function (err, item) {
+            provider.get(context, "797ff043-11eb-11e1-80d6-510998755d10", function (err, item) {
 
                 test.ok(item.timestamp instanceof Date);
                 test.equal(interceptor.logdata.length, 2);
