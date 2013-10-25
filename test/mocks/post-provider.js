@@ -5,6 +5,7 @@ var Provider    = require("../../lib/provider"),
     Cursor      = require("./cursor-mock"),
     util        = require("util"),
     uuid        = require('node-uuid'),
+    _           = require("lodash"),
     empty       = "";
 
 function PostProvider(connStr, options) {
@@ -15,26 +16,37 @@ function PostProvider(connStr, options) {
 
 util.inherits(PostProvider, Provider);
 
-PostProvider.prototype._insert = function (item, callback) {
+PostProvider.prototype._insert = function (items, callback) {
     "use strict";
 
-    var that    = this,
-        id      = that._getId(item);
+    var that    = this;
 
-    if (!id) {
-        id = uuid.v1();
-        item[this.options.identifier] = id;
-    }
+    function storeItem (item) {
+        var id = that._getId(item);
 
-    process.nextTick(function () {
+        if (!id) {
+            id = uuid.v1();
+            item[that.options.identifier] = id;
+        }
+
         var sid = empty + id;
         if (that.store[sid]) {
             that.handleError("Item exists.", callback);
         } else {
             that.store[sid] = item;
-            if (callback) {
-                callback(null, item);
-            }
+        }
+    }
+
+    process.nextTick(function () {
+        if (_.isArray(items)) {
+            _.each(items, function (item) {
+                storeItem(item);
+            });
+        } else {
+            storeItem(items);
+        }
+        if (callback) {
+            callback(null, items);
         }
     });
 };

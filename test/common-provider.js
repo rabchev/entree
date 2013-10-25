@@ -118,24 +118,15 @@ function assertUpdatedItem(test, err, result) {
 }
 
 function insertTestData(callback) {
-
-    var item = data.shift();
-    if (item) {
-        provider.insert(context, item, function (err) {
-            if (err) {
-                throw err;
-            }
-            timers.setImmediate(function () {
-                insertTestData(callback);
-            });
-        });
-    } else {
-        data = null;
+    provider.insert(context, getData(), function (err) {
+        if (err) {
+            throw err;
+        }
         callback();
-    }
+    });
 }
 
-exports.getTestCase = function (Provider, connStr, options, messages) {
+exports.getTestCase = function (Provider, connStr, options, messages, init) {
     if (!_.isFunction(Provider)) {
         Provider = require(Provider);
     }
@@ -166,7 +157,16 @@ exports.getTestCase = function (Provider, connStr, options, messages) {
             test.equal(provider.connectionString, connStr);
             test.equal(provider.options, options);
 
-            test.done();
+            if (init) {
+                init(function (err) {
+                    if (err) {
+                        throw err;
+                    }
+                    test.done();
+                });
+            } else {
+                test.done();
+            }
         },
         "Insert Item": function (test) {
 
@@ -264,7 +264,7 @@ exports.getTestCase = function (Provider, connStr, options, messages) {
         "Select Query Without Callback": function (test) {
 
             test.expect(4);
-            data = getData();
+
             insertTestData(function () {
 
                 var cursor = provider.select(context, { age: 22 });
