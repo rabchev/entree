@@ -9,7 +9,8 @@
     "dependencies"      : {
         "node-uuid"         : "*",
         "sift"              : "*",
-        "lodash"            : "*"
+        "lodash"            : "*",
+        "async"             : "*"
     },
     "devDependencies"   : {
         "nodeunit"          : "*",

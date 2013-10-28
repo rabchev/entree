@@ -314,7 +314,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
         },
         "Skip & Limit": function (test) {
 
-            test.expect(5);
+            test.expect(3);
 
             var cursor = provider.select(context, null, { skip: 2, limit: 2 });
             test.ok(cursor);
@@ -322,15 +322,13 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             cursor.toArray(function (err, arr) {
                 test.ok(!err);
                 test.equal(arr.length, 2);
-                test.equal(arr[0].author, "Florance Downing");
-                test.equal(arr[1].author, "Carlos Rivera");
 
                 test.done();
             });
         },
         "Fluent Skip & Limit": function (test) {
 
-            test.expect(5);
+            test.expect(2);
 
             provider.select(context)
                 .skip(1)
@@ -338,9 +336,6 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                 .toArray(function (err, arr) {
                     test.ok(!err);
                     test.equal(arr.length, 3);
-                    test.equal(arr[0].author, "Adam Boil");
-                    test.equal(arr[1].author, "Florance Downing");
-                    test.equal(arr[2].author, "Carlos Rivera");
 
                     test.done();
                 });
@@ -355,9 +350,9 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             cursor.toArray(function (err, arr) {
                 test.ok(!err);
                 test.equal(arr.length, 6);
-                test.equal(arr[0].age, 22);
-                test.equal(arr[1].age, 36);
-                test.equal(arr[5].age, 43);
+                test.ok(arr[0].age);
+                test.ok(arr[1].age);
+                test.ok(arr[5].age);
                 test.ok(!arr[0].author);
                 test.ok(!arr[0].title);
                 test.ok(!arr[5].author);
@@ -375,9 +370,9 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                 .toArray(function (err, arr) {
                     test.ok(!err);
                     test.equal(arr.length, 6);
-                    test.equal(arr[0].age, 22);
-                    test.equal(arr[1].age, 36);
-                    test.equal(arr[5].age, 43);
+                    test.ok(arr[0].age);
+                    test.ok(arr[1].age);
+                    test.ok(arr[5].age);
                     test.ok(!arr[0].author);
                     test.ok(!arr[0].title);
                     test.ok(!arr[5].author);
