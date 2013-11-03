@@ -1,16 +1,13 @@
 /*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
 
 "use strict";
-debugger;
 
 var _               = require("lodash"),
-    timers          = require("timers"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
     msg             = {
         item_doesnt_exist: "Item does not exist."
     },
-    data,
     provider,
     context;
 
@@ -615,7 +612,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             test.expect(7);
 
             provider
-                .select(null, {publisher: {name: "TLC"}})
+                .select(null, {"publisher.name": "TLC"})
                 .sort({age: 1})
                 .toArray(function (err, arr) {
 
@@ -638,7 +635,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             test.expect(2);
 
             provider
-                .select(null, {publisher: {name: "TLC"}})
+                .select(null, {"publisher.name": "TLC"})
                 .count(function (err, count) {
 
                     test.ok(!err);
