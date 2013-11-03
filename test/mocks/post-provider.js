@@ -1,5 +1,6 @@
 /*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, indent: 4, maxerr: 50 */
-/*global require, module */
+
+"use strict";
 
 var Provider    = require("../../lib/provider"),
     Cursor      = require("./cursor-mock"),
@@ -17,11 +18,9 @@ function PostProvider(connStr, options) {
 util.inherits(PostProvider, Provider);
 
 PostProvider.prototype._insert = function (items, callback) {
-    "use strict";
-
     var that    = this;
 
-    function storeItem (item) {
+    function storeItem(item) {
         var id = that._getId(item);
 
         if (!id) {
@@ -52,8 +51,6 @@ PostProvider.prototype._insert = function (items, callback) {
 };
 
 PostProvider.prototype._upsert = function (item, callback) {
-    "use strict";
-
     var that    = this,
         id      = that._getId(item);
 
@@ -71,8 +68,6 @@ PostProvider.prototype._upsert = function (item, callback) {
 };
 
 PostProvider.prototype._update = function (item, callback) {
-    "use strict";
-
     var that    = this,
         id      = that._getId(item);
 
@@ -94,8 +89,6 @@ PostProvider.prototype._update = function (item, callback) {
 };
 
 PostProvider.prototype._get = function (item, callback) {
-    "use strict";
-
     var that    = this,
         id      = that._getId(item);
 
@@ -116,8 +109,6 @@ PostProvider.prototype._get = function (item, callback) {
 };
 
 PostProvider.prototype._delete = function (item, callback) {
-    "use strict";
-
     var that    = this,
         id      = that._getId(item);
 

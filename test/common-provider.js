@@ -656,6 +656,59 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
 
                     test.done();
                 });
+        },
+        "Bulk Update Selected": function (test) {
+            test.expect(4);
+
+            provider
+                .select(null, {"publisher.name": "TLC"})
+                .update({ age: 555 },
+                    function (err) {
+                        test.ok(!err);
+                        provider
+                            .select(null, { age: 555})
+                            .toArray(function (err, arr) {
+                                test.ok(!err);
+                                test.equal(arr.length, 3);
+                                test.equal(arr[0].age, 555);
+
+                                test.done();
+                            });
+                    });
+        },
+        "Bulk Delete Selected": function (test) {
+            test.expect(3);
+
+            provider
+                .select(null, {"publisher.name": "TLC"})
+                .delete(function (err) {
+                    test.ok(!err);
+                    provider
+                        .select(null, { age: 555})
+                        .count(function (err, count) {
+                            test.ok(!err);
+                            test.equal(count, 0);
+
+                            test.done();
+                        });
+                });
+        },
+        "Delete All The Rest": function (test) {
+            test.expect(3);
+
+            provider
+                .select()
+                .delete(function (err) {
+                    test.ok(!err);
+                    provider
+                        .select()
+                        .count(function (err, count) {
+                            test.ok(!err);
+                            test.equal(count, 0);
+
+                            test.done();
+                        });
+                });
         }
     });
 };
