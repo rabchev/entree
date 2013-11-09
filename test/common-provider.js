@@ -5,9 +5,6 @@
 var _               = require("lodash"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
-    msg             = {
-        item_doesnt_exist: "Item does not exist."
-    },
     provider,
     context;
 
@@ -128,6 +125,10 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
         Provider = require(Provider);
     }
 
+    var msg = {
+        item_doesnt_exist: "Item does not exist."
+    };
+
     if (messages) {
         msg = _.extend(msg, messages);
     }
@@ -214,9 +215,20 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                 author: "Fred Goldman",
                 age: 55
             }, function (err, result) {
-
-                assertUpdatedItem(test, err, result);
-                test.done();
+                if (_.isNumber(result)) {
+                    provider.get(null,
+                        "797ff043-11eb-11e1-80d6-510998755d10",
+                        function (err, res) {
+                            if (err) {
+                                throw err;
+                            }
+                            assertUpdatedItem(test, err, res);
+                            test.done();
+                        });
+                } else {
+                    assertUpdatedItem(test, err, result);
+                    test.done();
+                }
             });
         },
         "Get Updated Item by ID": function (test) {
@@ -709,6 +721,11 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                             test.done();
                         });
                 });
+        },
+        "Fixture Tear Down": function (test) {
+            test.expect(0);
+            provider.dispose();
+            test.done();
         }
     });
 };

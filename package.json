@@ -10,7 +10,8 @@
         "node-uuid"         : "*",
         "sift"              : "*",
         "lodash"            : "*",
-        "async"             : "*"
+        "async"             : "*",
+        "mongodb"           : "*"
     },
     "devDependencies"   : {
         "nodeunit"          : "*",

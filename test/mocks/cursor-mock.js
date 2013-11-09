@@ -14,6 +14,8 @@ function CursorMock(provider, query, options) {
     this._items = _.values(provider.store);
 
     Cursor.call(this, provider, query, options);
+
+    this.reset();
 }
 
 util.inherits(CursorMock, Cursor);
@@ -35,6 +37,8 @@ CursorMock.prototype.reset = function () {
             throw new Error("Unsuported arument type.");
         }
     }
+
+    return this;
 };
 
 CursorMock.prototype._isMatch = function (item) {

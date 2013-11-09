@@ -13,7 +13,7 @@ var url         = require("url"),
         //authorization: "MasterKey PqmmvlWWBF5svReW7p3mkYG9X61nus1w"
     };
 
-function init (callback) {
+function init(callback) {
     var opts    = url.parse(url.resolve(connStr, options.typeName)),
         req;
 

@@ -91,16 +91,18 @@ exports.timestamp = function (action, context, item, next, out) {
 
     function wrapCursor(cursor) {
         var func = cursor._nextObject;
-        cursor._nextObject = function (callback) {
+        cursor._nextObject = function () {
+            var args = Array.prototype.slice.call(arguments);
+            var callback = args.shift();
 
-            function handleCallback(err, item, sync) {
+            function handleCallback(err, item) {
                 if (item) {
                     item.timestamp = new Date();
                 }
-                callback(err, item, sync);
+                callback(err, item);
             }
-
-            func.call(cursor, handleCallback);
+            args.unshift(handleCallback);
+            func.apply(cursor, args);
         };
     }
 

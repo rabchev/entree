@@ -16,5 +16,6 @@ reporter.run([
     "./provider-base.js",
     "./file-system.js",
     "./fs-common.js",
-    "./el-common.js"
+    "./el-common.js",
+    "./mo-common.js"
 ]);
