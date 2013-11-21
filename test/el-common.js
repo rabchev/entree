@@ -8,13 +8,13 @@ var url         = require("url"),
     provider    = "../lib/providers/everlive",
     connStr     = "https://api.everlive.com/v1/uZEGyZYKiSq5CTSq/",
     options     = {
-        typeName: "blogs",
+        name: "blogs",
         identifier: "_id"//,
         //authorization: "MasterKey PqmmvlWWBF5svReW7p3mkYG9X61nus1w"
     };
 
 function init(callback) {
-    var opts    = url.parse(url.resolve(connStr, options.typeName)),
+    var opts    = url.parse(url.resolve(connStr, options.name)),
         req;
 
     opts.method     = "DELETE";

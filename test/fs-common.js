@@ -5,15 +5,15 @@
 var testCase    = require("./common-provider"),
     provider    = "../lib/providers/file-system",
     connStr     = __dirname + "/data",
-    options     = { typeName: "blogs", identifier: "_id", option: 1, foo: "bar" },
+    options     = { name: "blogs", identifier: "_id", option: 1, foo: "bar" },
     wrench      = require("wrench"),
-    fs          = require("fs");
+    fs          = require("fs"),
+    path        = connStr + "/blogs";
 
-if (fs.existsSync(connStr)) {
-    wrench.rmdirSyncRecursive(connStr);
+if (!fs.existsSync(connStr)) {
     fs.mkdirSync(connStr);
-} else {
-    fs.mkdirSync(connStr);
+} else if (fs.existsSync(path)) {
+    wrench.rmdirSyncRecursive(path);
 }
 
 module.exports = testCase.getTestCase(provider, connStr, options);

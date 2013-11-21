@@ -26,7 +26,7 @@ module.exports = testCase({
         test.expect(2);
 
         var connStr     = __dirname + "/data",
-            options     = { typeName: "blogs" };
+            options     = { name: "blogs" };
 
         context = {
             user: {

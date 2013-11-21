@@ -155,15 +155,24 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             test.equal(provider.connectionString, connStr);
             test.equal(provider.options, options);
 
-            if (init) {
-                init(function (err) {
+            function initProvider() {
+                provider.init(function (err) {
                     if (err) {
                         throw err;
                     }
                     test.done();
                 });
+            }
+
+            if (init) {
+                init(function (err) {
+                    if (err) {
+                        throw err;
+                    }
+                    initProvider();
+                });
             } else {
-                test.done();
+                initProvider();
             }
         },
         "Insert Item": function (test) {
@@ -724,8 +733,12 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
         },
         "Fixture Tear Down": function (test) {
             test.expect(0);
-            provider.dispose();
-            test.done();
+            provider.dispose(function (err) {
+                if (err) {
+                    throw err;
+                }
+                test.done();
+            });
         }
     });
 };

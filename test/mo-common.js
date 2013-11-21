@@ -6,7 +6,7 @@ var testCase    = require("./common-provider"),
     provider    = "../lib/providers/mongodb",
     connStr     = "mongodb://localhost/entreeTest",
     options     = {
-        typeName: "blogs",
+        name: "blogs",
         identifier: "_id"
     },
     messages    = {
@@ -20,7 +20,7 @@ function init(callback) {
         if (err) {
             throw err;
         }
-        db.collection(options.typeName).drop(function (err) {
+        db.collection(options.name).drop(function (err) {
             db.close();
             if (err && err.message !== "ns not found") {
                 throw err;
