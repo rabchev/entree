@@ -4,17 +4,27 @@
 
 var testCase        = require("nodeunit").testCase,
     Manager         = require("../lib/manager"),
-    _               = require("lodash"),
+    path            = require("path"),
     manager;
 
 module.exports = testCase({
     "Fixture Setup": function (test) {
-        test.expect(2);
+        test.expect(11);
 
+        var fsPath = path.resolve(process.cwd(), "./data");
         manager = new Manager();
         manager.init(function (err) {
             test.ok(!err);
-            test.equal(_.keys(manager.providers).length, 4);
+            test.equal(manager.providers.length, 5);
+            test.ok(manager.config);
+            test.ok(manager.blogs);
+            test.ok(manager.posts);
+            test.ok(manager.comments);
+            test.ok(manager.users);
+            test.equal(manager.blogs.connectionString, fsPath);
+            test.equal(manager.posts.connectionString, fsPath);
+            test.equal(manager.comments.connectionString, "mongodb://localhost/entreeTest");
+            test.equal(manager.users.connectionString, fsPath);
             test.done();
         });
     },

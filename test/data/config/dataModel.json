@@ -1,0 +1,24 @@
+{
+    "environments": {
+        "development": {
+            "providers": [
+                {
+                    "provider": "../lib/providers/file-system",
+                    "connStr": "./data",
+                    "collections": [
+                        { "name": "blogs", "identifier": "_id" },
+                        { "name": "posts", "identifier": "_id" },
+                        { "name": "users", "identifier": "_id" }
+                    ]
+                },
+                {
+                    "provider": "../lib/providers/mongodb",
+                    "connStr": "mongodb://localhost/entreeTest",
+                    "collections": [
+                        { "name": "comments", "identifier": "_id" }
+                    ]
+                }
+            ]
+        }
+    }
+}
