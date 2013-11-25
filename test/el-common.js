@@ -3,10 +3,10 @@
 "use strict";
 
 var url         = require("url"),
-    https       = require("https"),
+    http       = require("http"),
     testCase    = require("./common-provider"),
     provider    = "../lib/providers/everlive",
-    connStr     = "https://api.everlive.com/v1/uZEGyZYKiSq5CTSq/",
+    connStr     = "http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/",
     options     = {
         name: "blogs",
         identifier: "_id"//,
@@ -20,7 +20,7 @@ function init(callback) {
     opts.method     = "DELETE";
     opts.headers    = { "Content-Type": "application/json" };
 
-    req = https.request(opts, function (res) {
+    req = http.request(opts, function (res) {
         var result  = "";
 
         res.setEncoding("utf8");

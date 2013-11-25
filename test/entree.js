@@ -4,31 +4,33 @@
 debugger;
 var testCase        = require("nodeunit").testCase,
     entree          = require("../lib/entree"),
-    path            = require("path");
+    path            = require("path"),
+    manager;
 
 module.exports = testCase({
     "Fixture Setup": function (test) {
         test.expect(11);
 
         var fsPath = path.resolve(process.cwd(), "./data");
-        entree.initialize(function (err) {
+        entree.createManager(function (err, man) {
+            manager = man;
             test.ok(!err);
-            test.equal(entree.providers.length, 5);
-            test.ok(entree.config);
-            test.ok(entree.blogs);
-            test.ok(entree.posts);
-            test.ok(entree.comments);
-            test.ok(entree.users);
-            test.equal(entree.blogs.connectionString, fsPath);
-            test.equal(entree.posts.connectionString, fsPath);
-            test.equal(entree.comments.connectionString, fsPath);
-            test.equal(entree.users.connectionString, "mongodb://localhost/entreeTest");
+            test.equal(manager.providers.length, 5);
+            test.ok(manager.config);
+            test.ok(manager.blogs);
+            test.ok(manager.posts);
+            test.ok(manager.comments);
+            test.ok(manager.users);
+            test.equal(manager.blogs.connectionString, fsPath);
+            test.equal(manager.posts.connectionString, fsPath);
+            test.equal(manager.comments.connectionString, "mongodb://localhost/entreeTest");
+            test.equal(manager.users.connectionString, fsPath);
             test.done();
         });
     },
     "Fixture Tear Down": function (test) {
         test.expect(0);
-        entree.dispose(function (err) {
+        manager.dispose(function (err) {
             if (err) {
                 throw err;
             }
