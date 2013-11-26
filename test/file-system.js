@@ -28,20 +28,20 @@ module.exports = testCase({
         var connStr     = __dirname + "/data",
             options     = { name: "blogs" };
 
-        context = {
-            user: {
-                id: "FB5544",
-                name: "John Smit",
-                roles: [
-                    "Managers",
-                    "Contributers",
-                    "Users"
-                ]
-            }
-        };
-
         function createProvider() {
             blogs = new Provider(connStr, options);
+
+            context = blogs.createContext({
+                user: {
+                    id: "FB5544",
+                    name: "John Smit",
+                    roles: [
+                        "Managers",
+                        "Contributers",
+                        "Users"
+                    ]
+                }
+            });
 
             test.equal(blogs.connectionString, connStr);
             test.equal(blogs.options, options);

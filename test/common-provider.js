@@ -138,7 +138,9 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
 
             test.expect(2);
 
-            context = {
+            provider = new Provider(connStr, options);
+
+            context = provider.createContext({
                 user: {
                     id: "FB5544",
                     name: "John Smit",
@@ -148,9 +150,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                         "Users"
                     ]
                 }
-            };
-
-            provider = new Provider(connStr, options);
+            });
 
             test.equal(provider.connectionString, connStr);
             test.equal(provider.options, options);
@@ -225,8 +225,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                 age: 55
             }, function (err, result) {
                 if (_.isNumber(result)) {
-                    provider.get(null,
-                        "797ff043-11eb-11e1-80d6-510998755d10",
+                    provider.get("797ff043-11eb-11e1-80d6-510998755d10",
                         function (err, res) {
                             if (err) {
                                 throw err;
@@ -294,6 +293,16 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                     test.equal(arr[0].author, "Claudia Rice");
                     test.done();
                 });
+            });
+        },
+        "Select One": function (test) {
+
+            test.expect(2);
+
+            provider.selectOne(context, { age: 22 }, function (err, result) {
+                test.ok(!err);
+                test.equal(result.author, "Claudia Rice");
+                test.done();
             });
         },
         "Select All With Callback": function (test) {
@@ -633,7 +642,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             test.expect(7);
 
             provider
-                .select(null, {"publisher.name": "TLC"})
+                .select({"publisher.name": "TLC"})
                 .sort({age: 1})
                 .toArray(function (err, arr) {
 
@@ -656,7 +665,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             test.expect(2);
 
             provider
-                .select(null, {"publisher.name": "TLC"})
+                .select({"publisher.name": "TLC"})
                 .count(function (err, count) {
 
                     test.ok(!err);
@@ -701,7 +710,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             test.expect(3);
 
             provider
-                .select(null, {"publisher.name": "TLC"})
+                .select({"publisher.name": "TLC"})
                 .delete(function (err) {
                     test.ok(!err);
                     provider
