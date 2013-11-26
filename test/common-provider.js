@@ -1,7 +1,7 @@
 /*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
 
 "use strict";
-debugger;
+
 var _               = require("lodash"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
@@ -302,6 +302,28 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             provider.selectOne(context, { age: 22 }, function (err, result) {
                 test.ok(!err);
                 test.equal(result.author, "Claudia Rice");
+                test.done();
+            });
+        },
+        "Select One Without Context": function (test) {
+
+            test.expect(2);
+
+            provider.selectOne({ age: 22 }, function (err, result) {
+                test.ok(!err);
+                test.equal(result.author, "Claudia Rice");
+                test.done();
+            });
+        },
+        "Select One With Options": function (test) {
+
+            test.expect(4);
+
+            provider.selectOne({ age: 22 }, { map: ["author"] }, function (err, result) {
+                test.ok(!err);
+                test.equal(result.author, "Claudia Rice");
+                test.ok(!result.age);
+                test.ok(!result.title);
                 test.done();
             });
         },
@@ -691,12 +713,12 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
             test.expect(4);
 
             provider
-                .select(null, {"publisher.name": "TLC"})
+                .select(provider.createContext(null), {"publisher.name": "TLC"})
                 .update({ age: 555 },
                     function (err) {
                         test.ok(!err);
                         provider
-                            .select(null, { age: 555})
+                            .select({ age: 555})
                             .toArray(function (err, arr) {
                                 test.ok(!err);
                                 test.equal(arr.length, 3);
@@ -714,7 +736,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                 .delete(function (err) {
                     test.ok(!err);
                     provider
-                        .select(null, { age: 555})
+                        .select({ age: 555})
                         .count(function (err, count) {
                             test.ok(!err);
                             test.equal(count, 0);

@@ -1,5 +1,4 @@
 /*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
-/*global require, exports, module */
 
 "use strict";
 
@@ -30,7 +29,7 @@ exports.logdata = [];
 exports.security = function (action, context, item, next, out) {
     var perm;
 
-    if (!context) {
+    if (!context || context.__isEmpty) {
         return next(item, out);
     }
 
