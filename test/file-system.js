@@ -1,7 +1,7 @@
 /*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, es5: true, indent: 4, maxerr: 50 */
 
 "use strict";
-debugger;
+
 var testCase        = require("nodeunit").testCase,
     Provider        = require("../lib/providers/file-system"),
     Strings         = require("../lib/strings"),
