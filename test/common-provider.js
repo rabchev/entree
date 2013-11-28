@@ -1,7 +1,7 @@
 /*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
 
 "use strict";
-
+debugger;
 var _               = require("lodash"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
@@ -120,7 +120,7 @@ function insertTestData(callback) {
     });
 }
 
-exports.getTestCase = function (Provider, connStr, options, messages, init) {
+exports.getTestCase = function (Provider, options, schema, messages, init) {
     if (!_.isFunction(Provider)) {
         Provider = require(Provider);
     }
@@ -138,7 +138,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
 
             test.expect(2);
 
-            provider = new Provider(connStr, options);
+            provider = new Provider(options, schema);
 
             context = provider.createContext({
                 user: {
@@ -152,7 +152,7 @@ exports.getTestCase = function (Provider, connStr, options, messages, init) {
                 }
             });
 
-            test.equal(provider.connectionString, connStr);
+            test.equal(provider.options.connStr, options.connStr);
             test.equal(provider.options, options);
 
             function initProvider() {

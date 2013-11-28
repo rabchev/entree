@@ -1,7 +1,7 @@
 /*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, es5: true, indent: 4, maxerr: 50 */
 
 "use strict";
-
+debugger;
 var testCase        = require("nodeunit").testCase,
     Provider        = require("../lib/providers/file-system"),
     Strings         = require("../lib/strings"),
@@ -25,11 +25,11 @@ module.exports = testCase({
     "Fixture Setup": function (test) {
         test.expect(2);
 
-        var connStr     = __dirname + "/data",
-            options     = { name: "blogs" };
+        var options     = { connStr: __dirname + "/data" },
+            schema      = { __collName: "blogs" };
 
         function createProvider() {
-            blogs = new Provider(connStr, options);
+            blogs = new Provider(options, schema);
 
             context = blogs.createContext({
                 user: {
@@ -43,17 +43,17 @@ module.exports = testCase({
                 }
             });
 
-            test.equal(blogs.connectionString, connStr);
-            test.equal(blogs.options, options);
+            test.equal(blogs.options.connStr, options.connStr);
+            test.equal(blogs.schema, schema);
 
             test.done();
         }
 
-        fs.exists(connStr, function (exists) {
+        fs.exists(options.connStr, function (exists) {
             if (exists) {
                 createProvider();
             } else {
-                fs.mkdir(connStr, function (err) {
+                fs.mkdir(options.connStr, function (err) {
                     if (err) {
                         throw err;
                     }

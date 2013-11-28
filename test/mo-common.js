@@ -4,9 +4,11 @@
 
 var testCase    = require("./common-provider"),
     provider    = "../lib/providers/mongodb",
-    connStr     = "mongodb://localhost/entreeTest",
     options     = {
-        name: "blogs",
+        connStr: "mongodb://localhost/entreeTest"
+    },
+    schema     = {
+        __collName: "blogs",
         identifier: "_id"
     },
     messages    = {
@@ -16,11 +18,11 @@ var testCase    = require("./common-provider"),
 function init(callback) {
     var MongoClient = require('mongodb').MongoClient;
 
-    MongoClient.connect(connStr, function (err, db) {
+    MongoClient.connect(options.connStr, function (err, db) {
         if (err) {
             throw err;
         }
-        db.collection(options.name).drop(function (err) {
+        db.collection(schema.__collName).drop(function (err) {
             db.close();
             if (err && err.message !== "ns not found") {
                 throw err;
@@ -30,4 +32,4 @@ function init(callback) {
     });
 }
 
-module.exports = testCase.getTestCase(provider, connStr, options, messages, init);
+module.exports = testCase.getTestCase(provider, options, schema, messages, init);

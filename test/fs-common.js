@@ -4,16 +4,18 @@
 
 var testCase    = require("./common-provider"),
     provider    = "../lib/providers/file-system",
-    connStr     = __dirname + "/data",
-    options     = { name: "blogs", identifier: "_id", option: 1, foo: "bar" },
+    options     = {
+        connStr: __dirname + "/data"
+    },
+    schema      = { __collName: "blogs", identifier: "_id", option: 1, foo: "bar" },
     wrench      = require("wrench"),
     fs          = require("fs"),
-    path        = connStr + "/blogs";
+    path        = options.connStr + "/blogs";
 
-if (!fs.existsSync(connStr)) {
-    fs.mkdirSync(connStr);
+if (!fs.existsSync(options.connStr)) {
+    fs.mkdirSync(options.connStr);
 } else if (fs.existsSync(path)) {
     wrench.rmdirSyncRecursive(path);
 }
 
-module.exports = testCase.getTestCase(provider, connStr, options);
+module.exports = testCase.getTestCase(provider, options, schema);

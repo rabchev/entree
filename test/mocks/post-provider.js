@@ -9,8 +9,8 @@ var Provider    = require("../../lib/provider"),
     _           = require("lodash"),
     empty       = "";
 
-function PostProvider(connStr, options) {
-    Provider.call(this, connStr, options);
+function PostProvider(options, schema) {
+    Provider.call(this, options, schema);
     this.store = [];
     this.sync = false;
 }
@@ -25,7 +25,7 @@ PostProvider.prototype._insert = function (items, callback) {
 
         if (!id) {
             id = uuid.v1();
-            item[that.options.identifier] = id;
+            item[that.schema.identifier] = id;
         }
 
         var sid = empty + id;
@@ -56,7 +56,7 @@ PostProvider.prototype._upsert = function (item, callback) {
 
     if (!id) {
         id = uuid.v1();
-        item[this.options.identifier] = id;
+        item[this.schema.identifier] = id;
     }
 
     process.nextTick(function () {

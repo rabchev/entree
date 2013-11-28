@@ -4,7 +4,9 @@
 
 var testCase    = require("./common-provider"),
     provider    = "./mocks/post-provider",
-    connStr     = "test connection string",
-    options     = { identifier: "_id", option: 1, foo: "bar" };
+    options     = {
+        connStr: "test connection string"
+    },
+    schema     = { __collName: "test", identifier: "_id", option: 1, foo: "bar" };
 
-module.exports = testCase.getTestCase(provider, connStr, options);
+module.exports = testCase.getTestCase(provider, options, schema);

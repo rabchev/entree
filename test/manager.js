@@ -21,10 +21,10 @@ module.exports = testCase({
             test.ok(manager.posts);
             test.ok(manager.comments);
             test.ok(manager.users);
-            test.equal(manager.blogs.connectionString, fsPath);
-            test.equal(manager.posts.connectionString, fsPath);
-            test.equal(manager.comments.connectionString, "mongodb://localhost/entreeTest");
-            test.equal(manager.users.connectionString, fsPath);
+            test.equal(manager.blogs.dir, fsPath + "/blogs");
+            test.equal(manager.posts.dir, fsPath + "/posts");
+            test.equal(manager.comments.options.connStr, "mongodb://localhost/entreeTest");
+            test.equal(manager.users.dir, fsPath + "/users");
             test.done();
         });
     },

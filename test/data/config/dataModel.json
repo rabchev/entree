@@ -3,22 +3,34 @@
         "development": {
             "providers": [
                 {
-                    "provider": "../lib/providers/file-system",
-                    "connStr": "./data",
+                    "provider": "file-system",
+                    "options": {
+                        "connStr": "./data"
+                    },
                     "collections": [
-                        { "name": "blogs", "identifier": "_id" },
-                        { "name": "posts", "identifier": "_id" },
-                        { "name": "users", "identifier": "_id" }
+                        { "name": "blogs", "shecma": "blog" },
+                        { "name": "posts", "shecma": "post" },
+                        { "name": "users", "shecma": "user" }
                     ]
                 },
                 {
-                    "provider": "../lib/providers/mongodb",
-                    "connStr": "mongodb://localhost/entreeTest",
+                    "provider": "mongodb",
+                    "options": {
+                        "connStr": "mongodb://localhost/entreeTest"
+                    },
                     "collections": [
-                        { "name": "comments", "identifier": "_id" }
+                        { "name": "comments" }
                     ]
                 }
             ]
+        }
+    },
+    "schema": {
+        "blog": {
+            "identifier": "_id"
+        },
+        "post": {
+            "identifier": "_id"
         }
     }
 }

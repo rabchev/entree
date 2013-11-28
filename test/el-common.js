@@ -3,18 +3,20 @@
 "use strict";
 
 var url         = require("url"),
-    http       = require("http"),
+    http        = require("http"),
     testCase    = require("./common-provider"),
     provider    = "../lib/providers/everlive",
-    connStr     = "http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/",
-    options     = {
-        name: "blogs",
-        identifier: "_id"//,
+    options        = {
+        connStr: "http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/"//,
         //authorization: "MasterKey PqmmvlWWBF5svReW7p3mkYG9X61nus1w"
+    },
+    schema     = {
+        __collName: "blogs",
+        identifier: "_id"
     };
 
 function init(callback) {
-    var opts    = url.parse(url.resolve(connStr, options.name)),
+    var opts    = url.parse(url.resolve(options.connStr, schema.__collName)),
         req;
 
     opts.method     = "DELETE";
@@ -48,4 +50,4 @@ function init(callback) {
     req.end();
 }
 
-module.exports = testCase.getTestCase(provider, connStr, options, { item_doesnt_exist: "{\"message\":\"Item not found.\",\"errorCode\":801}" }, init);
+module.exports = testCase.getTestCase(provider, options, schema, { item_doesnt_exist: "{\"message\":\"Item not found.\",\"errorCode\":801}" }, init);
