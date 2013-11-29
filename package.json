@@ -11,7 +11,8 @@
         "sift"              : "*",
         "lodash"            : "*",
         "async"             : "*",
-        "mongodb"           : "*"
+        "mongodb"           : "*",
+        "cache-manager"     : "*"
     },
     "devDependencies"   : {
         "nodeunit"          : "*",
