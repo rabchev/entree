@@ -9,8 +9,21 @@
                     },
                     "collections": [
                         { "name": "blogs", "shecma": "blog" },
-                        { "name": "posts", "shecma": "post" },
-                        { "name": "users", "shecma": "user" }
+                        { "name": "posts", "shecma": "post" }, {
+                            "name": "users",
+                            "shecma": "user",
+                            "interceptors": [
+                                {
+                                    "interceptor": "cache",
+                                    "arguments": {
+                                        "stores": [
+                                            { "store": "memory", "max": 1000, "ttl": 10 }
+                                        ],
+                                        "actions": ["get", "select"]
+                                    }
+                                }
+                            ]
+                        }
                     ]
                 },
                 {
