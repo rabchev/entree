@@ -19,5 +19,6 @@ reporter.run([
 //    "./el-common.js",
     "./mo-common.js",
     "./manager.js",
-    "./entree.js"
+    "./entree.js",
+    "./cache.js"
 ]);

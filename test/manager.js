@@ -1,7 +1,7 @@
 /*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, indent: 4, maxerr: 50 */
 
 "use strict";
-debugger;
+
 var testCase        = require("nodeunit").testCase,
     Manager         = require("../lib/manager"),
     path            = require("path"),
@@ -9,7 +9,7 @@ var testCase        = require("nodeunit").testCase,
     manager;
 
 module.exports = testCase({
-    "Fixture Setup": function (test) {
+    "Initialize Manager": function (test) {
         test.expect(11);
 
         var fsPath = path.resolve(process.cwd(), "./data");
@@ -46,7 +46,17 @@ module.exports = testCase({
             test.done();
         });
     },
-    "Fixture Tear Down": function (test) {
+    "Remove Pdrovider": function (test) {
+        test.expect(3);
+
+        manager.removeProvider("myProvider", function (err) {
+            test.ok(!err);
+            test.ok(!manager.myProvider);
+            test.equal(manager.providers.length, 5);
+            test.done();
+        });
+    },
+    "Dispose Manager": function (test) {
         test.expect(0);
         manager.dispose(function (err) {
             if (err) {
