@@ -11,7 +11,7 @@ var Provider    = require("../../lib/provider"),
 
 function PostProvider(options, schema) {
     Provider.call(this, options, schema);
-    this.store = [];
+    this.store = {};
     this.sync = false;
 }
 
