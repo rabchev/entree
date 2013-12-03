@@ -45,7 +45,7 @@ module.exports = testCase({
 
         var provider    = new Provider({ connStr: "test connection string" }, { __collName: "test" });
 
-        provider.use(cache.interception(store1, ["get", "delete", "select"]));
+        provider.use(cache.interception({ store: store1 }, ["get", "delete", "select"]));
 
         manager = new Manager();
         manager.addProvider(provider, "testProv", function (err) {
@@ -66,7 +66,7 @@ module.exports = testCase({
         });
     },
     "Get Not Cached Item": function (test) {
-        test.expect(5);
+        test.expect(6);
         manager.testProv.get(1, function (err, item) {
             test.ok(!err);
             test.equal(item.name, "Foo");
@@ -78,7 +78,7 @@ module.exports = testCase({
         });
     },
     "Update Item Without Changeing Cached": function (test) {
-        test.expect(5);
+        test.expect(6);
         manager.testProv.update({_id: 1, name: "Baz", age: 25 }, function (err, item) {
             test.ok(!err);
             test.equal(item.name, "Baz");
@@ -87,6 +87,42 @@ module.exports = testCase({
             test.equal(store1.delCalls, 0);
             test.equal(store1.store["1"].name, "Foo");
             test.done();
+        });
+    },
+    "Get Cached Item": function (test) {
+        test.expect(6);
+        manager.testProv.get(1, function (err, item) {
+            test.ok(!err);
+            test.equal(item.name, "Foo");
+            test.equal(store1.setCalls, 1);
+            test.equal(store1.getCalls, 2);
+            test.equal(store1.delCalls, 0);
+            test.equal(manager.testProv.store["1"].name, "Baz");
+            test.done();
+        });
+    },
+    "Add More Items and Select": function (test) {
+        test.expect(9);
+        var items = [
+            {_id: 2, name: "Bar", age: 25 },
+            {_id: 3, name: "Qux", age: 20 },
+            {_id: 4, name: "Door", age: 30 },
+            {_id: 5, name: "Red", age: 25 }
+        ];
+        manager.testProv.insert(items, function (err, items) {
+            test.ok(!err);
+            test.ok(items);
+            test.equal(manager.testProv.store["2"].name, "Bar");
+            test.equal(store1.setCalls, 1);
+            test.equal(store1.getCalls, 2);
+            test.equal(store1.delCalls, 0);
+            var res = manager.testProv.select({ age: 25 });
+            res.toArray(function(err, arr) {
+                test.ok(!err);
+                test.ok(arr);
+                test.equal(arr.length, 3);
+                test.done();
+            });
         });
     },
     "Fixture Tear Down": function (test) {
