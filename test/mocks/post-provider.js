@@ -13,12 +13,20 @@ function PostProvider(options, schema) {
     Provider.call(this, options, schema);
     this.store = {};
     this.sync = false;
+    this.insertCalls = 0;
+    this.upsertCalls = 0;
+    this.getCalls = 0;
+    this.updateCalls = 0;
+    this.selectCalls = 0;
+    this.deleteCalls = 0;
 }
 
 util.inherits(PostProvider, Provider);
 
 PostProvider.prototype._insert = function (items, callback) {
     var that    = this;
+
+    this.insertCalls++;
 
     function storeItem(item) {
         var id = that._getId(item);
@@ -54,6 +62,8 @@ PostProvider.prototype._upsert = function (item, callback) {
     var that    = this,
         id      = that._getId(item);
 
+    this.upsertCalls++;
+
     if (!id) {
         id = uuid.v1();
         item[this.schema.identifier] = id;
@@ -70,6 +80,8 @@ PostProvider.prototype._upsert = function (item, callback) {
 PostProvider.prototype._update = function (item, callback) {
     var that    = this,
         id      = that._getId(item);
+
+    this.updateCalls++;
 
     if (!id) {
         return this.handleError("Identifier not specified.", callback);
@@ -92,6 +104,8 @@ PostProvider.prototype._get = function (item, callback) {
     var that    = this,
         id      = that._getId(item);
 
+    this.getCalls++;
+
     if (!id) {
         return this.handleError("Identifier not specified.", callback);
     }
@@ -112,6 +126,8 @@ PostProvider.prototype._delete = function (item, callback) {
     var that    = this,
         id      = that._getId(item);
 
+    this.deleteCalls++;
+
     if (!id) {
         return this.handleError("Identifier not specified.", callback);
     }
@@ -131,6 +147,9 @@ PostProvider.prototype._delete = function (item, callback) {
 
 PostProvider.prototype._select = function (args, callback) {
     var cursor = new Cursor(this, args.query, args.options);
+
+    this.selectCalls++;
+
     if (callback) {
         callback(null, cursor);
     } else {

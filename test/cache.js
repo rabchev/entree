@@ -1,7 +1,7 @@
 /*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, indent: 4, maxerr: 50 */
 
 "use strict";
-debugger;
+
 function Store(name) {
     this.name = name;
     this.getCalls = 0;
@@ -54,7 +54,7 @@ module.exports = testCase({
         });
     },
     "Insert Item": function (test) {
-        test.expect(6);
+        test.expect(10);
         manager.testProv.insert({_id: 1, name: "Foo", age: 20 }, function (err, item) {
             test.ok(!err);
             test.ok(item);
@@ -62,11 +62,17 @@ module.exports = testCase({
             test.equal(store1.setCalls, 0);
             test.equal(store1.getCalls, 0);
             test.equal(store1.delCalls, 0);
+
+            test.equal(manager.testProv.insertCalls, 1);
+            test.equal(manager.testProv.updateCalls, 0);
+            test.equal(manager.testProv.getCalls, 0);
+            test.equal(manager.testProv.selectCalls, 0);
+
             test.done();
         });
     },
     "Get Not Cached Item": function (test) {
-        test.expect(6);
+        test.expect(10);
         manager.testProv.get(1, function (err, item) {
             test.ok(!err);
             test.equal(item.name, "Foo");
@@ -74,11 +80,17 @@ module.exports = testCase({
             test.equal(store1.getCalls, 1);
             test.equal(store1.delCalls, 0);
             test.equal(store1.store["1"].name, "Foo");
+
+            test.equal(manager.testProv.insertCalls, 1);
+            test.equal(manager.testProv.updateCalls, 0);
+            test.equal(manager.testProv.getCalls, 1);
+            test.equal(manager.testProv.selectCalls, 0);
+
             test.done();
         });
     },
     "Update Item Without Changeing Cached": function (test) {
-        test.expect(6);
+        test.expect(10);
         manager.testProv.update({_id: 1, name: "Baz", age: 25 }, function (err, item) {
             test.ok(!err);
             test.equal(item.name, "Baz");
@@ -86,11 +98,17 @@ module.exports = testCase({
             test.equal(store1.getCalls, 1);
             test.equal(store1.delCalls, 0);
             test.equal(store1.store["1"].name, "Foo");
+
+            test.equal(manager.testProv.insertCalls, 1);
+            test.equal(manager.testProv.updateCalls, 1);
+            test.equal(manager.testProv.getCalls, 1);
+            test.equal(manager.testProv.selectCalls, 0);
+
             test.done();
         });
     },
     "Get Cached Item": function (test) {
-        test.expect(6);
+        test.expect(10);
         manager.testProv.get(1, function (err, item) {
             test.ok(!err);
             test.equal(item.name, "Foo");
@@ -98,11 +116,17 @@ module.exports = testCase({
             test.equal(store1.getCalls, 2);
             test.equal(store1.delCalls, 0);
             test.equal(manager.testProv.store["1"].name, "Baz");
+
+            test.equal(manager.testProv.insertCalls, 1);
+            test.equal(manager.testProv.updateCalls, 1);
+            test.equal(manager.testProv.getCalls, 1);
+            test.equal(manager.testProv.selectCalls, 0);
+
             test.done();
         });
     },
     "Add More Items and Select": function (test) {
-        test.expect(9);
+        test.expect(17);
         var items = [
             {_id: 2, name: "Bar", age: 25 },
             {_id: 3, name: "Qux", age: 20 },
@@ -116,10 +140,42 @@ module.exports = testCase({
             test.equal(store1.setCalls, 1);
             test.equal(store1.getCalls, 2);
             test.equal(store1.delCalls, 0);
-            var res = manager.testProv.select({ age: 25 });
-            res.toArray(function(err, arr) {
+            manager.testProv.select({ age: 25 }, function (err, res) {
                 test.ok(!err);
-                test.ok(arr);
+                res.toArray(function (err, arr) {
+                    test.ok(!err);
+                    test.ok(arr);
+                    test.equal(arr.length, 3);
+                    test.equal(store1.setCalls, 2);
+                    test.equal(store1.getCalls, 3);
+                    test.equal(store1.delCalls, 0);
+
+                    test.equal(manager.testProv.insertCalls, 2);
+                    test.equal(manager.testProv.updateCalls, 1);
+                    test.equal(manager.testProv.getCalls, 1);
+                    test.equal(manager.testProv.selectCalls, 1);
+
+                    test.done();
+                });
+            });
+        });
+    },
+    "Select from Cache": function (test) {
+        test.expect(10);
+
+        manager.testProv.select({ age: 25 }, function (err, res) {
+            test.ok(!err);
+            test.equal(store1.setCalls, 2);
+            test.equal(store1.getCalls, 4);
+            test.equal(store1.delCalls, 0);
+
+            test.equal(manager.testProv.insertCalls, 2);
+            test.equal(manager.testProv.updateCalls, 1);
+            test.equal(manager.testProv.getCalls, 1);
+            test.equal(manager.testProv.selectCalls, 1);
+
+            res.toArray(function (err, arr) {
+                test.ok(!err);
                 test.equal(arr.length, 3);
                 test.done();
             });
