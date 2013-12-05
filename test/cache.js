@@ -37,6 +37,7 @@ var testCase        = require("nodeunit").testCase,
     cache           = require("../lib/interceptors/cache"),
     store1          = new Store("store1"),
     store2          = new Store("store2"),
+    store3          = new Store("store3"),
     manager;
 
 module.exports = testCase({
@@ -177,6 +178,65 @@ module.exports = testCase({
             res.toArray(function (err, arr) {
                 test.ok(!err);
                 test.equal(arr.length, 3);
+                test.done();
+            });
+        });
+    },
+    "Throw on Select Without Callback": function (test) {
+        test.expect(1);
+        test.throws(function () {
+            manager.testProv.select({age: 25});
+        }, "Cache interceptor is asynchronous and therefore it requires a callback function.");
+        test.done();
+    },
+    "Tiered Caches": function (test) {
+        test.expect(1);
+
+        var provider    = new Provider({ connStr: "test connection string" }, { __collName: "multiCache" });
+
+        provider.use(cache.interception([{ store: store2 }, { store: store3 }]));
+
+        manager.addProvider(provider, "multiCache", function (err) {
+            test.ok(!err);
+            test.done();
+        });
+    },
+    "Get Item": function (test) {
+        test.expect(25);
+        manager.multiCache.insert({_id: 1, name: "Foo", age: 20 }, function (err, item) {
+            test.ok(!err);
+            test.ok(item);
+            test.equal(manager.multiCache.store["1"].name, "Foo");
+
+            test.equal(store2.setCalls, 1);
+            test.equal(store2.getCalls, 0);
+            test.equal(store2.delCalls, 0);
+
+            test.equal(store3.setCalls, 1);
+            test.equal(store3.getCalls, 0);
+            test.equal(store3.delCalls, 0);
+
+            test.equal(manager.multiCache.insertCalls, 1);
+            test.equal(manager.multiCache.updateCalls, 0);
+            test.equal(manager.multiCache.getCalls, 0);
+            test.equal(manager.multiCache.selectCalls, 0);
+
+            manager.multiCache.get(1, function (err, item) {
+                test.ok(!err);
+                test.equal(item.name, "Foo");
+                test.equal(store2.setCalls, 1);
+                test.equal(store2.getCalls, 1);
+                test.equal(store2.delCalls, 0);
+
+                test.equal(store3.setCalls, 1);
+                test.equal(store3.getCalls, 0);
+                test.equal(store3.delCalls, 0);
+
+                test.equal(manager.multiCache.insertCalls, 1);
+                test.equal(manager.multiCache.updateCalls, 0);
+                test.equal(manager.multiCache.getCalls, 0);
+                test.equal(manager.multiCache.selectCalls, 0);
+
                 test.done();
             });
         });
