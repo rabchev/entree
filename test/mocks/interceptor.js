@@ -88,21 +88,11 @@ exports.logging = function (action, context, item, next, out) {
 
 exports.timestamp = function (action, context, item, next, out) {
 
-    function wrapCursor(cursor) {
-        var func = cursor._nextObject;
-        cursor._nextObject = function () {
-            var args = Array.prototype.slice.call(arguments);
-            var callback = args.shift();
-
-            function handleCallback(err, item) {
-                if (item) {
-                    item.timestamp = new Date();
-                }
-                callback(err, item);
-            }
-            args.unshift(handleCallback);
-            func.apply(cursor, args);
-        };
+    function wrapper(err, item, callback) {
+        if (item) {
+            item.timestamp = new Date();
+        }
+        callback(err, item);
     }
 
     function handleResult(err, item) {
@@ -116,7 +106,7 @@ exports.timestamp = function (action, context, item, next, out) {
                 item.timestamp = new Date();
                 break;
             case "_select":
-                wrapCursor(item);
+                item.wrapCallback("_nextObject", wrapper);
                 break;
             }
         }
@@ -125,7 +115,7 @@ exports.timestamp = function (action, context, item, next, out) {
 
     var result = next(item, out ? handleResult : null);
     if (result) {
-        wrapCursor(result);
+        result.wrapCallback("_nextObject", wrapper);
     }
     return result;
 };
