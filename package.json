@@ -12,7 +12,8 @@
         "lodash"            : "*",
         "async"             : "*",
         "mongodb"           : "*",
-        "cache-manager"     : "*"
+        "cache-manager"     : "*",
+        "winston"           : "*"
     },
     "devDependencies"   : {
         "nodeunit"          : "*",
