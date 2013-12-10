@@ -15,6 +15,7 @@
                             "interceptors": [
                                 {
                                     "interceptor": "cache",
+                                    "disable": false,
                                     "arguments": {
                                         "stores": [
                                             { "store": "memory", "max": 1000, "ttl": 10 }
