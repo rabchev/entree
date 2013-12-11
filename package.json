@@ -1,24 +1,24 @@
 {
-    "name"              : "entree",
-    "description"       : "Data provider model abstraction.",
-    "version"           : "0.1.0",
-    "main"              : "index",
-    "scripts"           : {
-        "test"              : "node ./test",
-        "docs"              : "./node_modules/.bin/jsdoc -c ./jsdoc.json"
-    },
-    "dependencies"      : {
-        "node-uuid"         : "*",
-        "sift"              : "*",
-        "lodash"            : "*",
-        "async"             : "*",
-        "mongodb"           : "*",
-        "cache-manager"     : "*",
-        "winston"           : "*"
-    },
-    "devDependencies"   : {
-        "nodeunit"          : "*",
-        "jsdoc"             : "*",
-        "wrench"            : "*"
-    }
+  "name": "entree",
+  "description": "Data provider model abstraction.",
+  "version": "0.1.1",
+  "main": "index",
+  "scripts": {
+    "test": "node ./test",
+    "docs": "./node_modules/.bin/jsdoc -c ./jsdoc.json"
+  },
+  "dependencies": {
+    "node-uuid": "*",
+    "sift": "*",
+    "lodash": "*",
+    "async": "*",
+    "mongodb": "*",
+    "cache-manager": "*",
+    "winston": "*"
+  },
+  "devDependencies": {
+    "nodeunit": "*",
+    "jsdoc": "*",
+    "wrench": "*"
+  }
 }
