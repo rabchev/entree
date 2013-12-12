@@ -1,7 +1,7 @@
 {
   "name": "entree",
   "description": "Data provider model abstraction.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "index",
   "scripts": {
     "test": "node ./test",
@@ -18,7 +18,10 @@
   },
   "devDependencies": {
     "nodeunit": "*",
-    "jsdoc": "*",
-    "wrench": "*"
+    "wrench": "*",
+    "grunt": "*",
+    "grunt-release": "*",
+    "grunt-contrib-nodeunit": "*",
+    "grunt-jsdoc": "*"
   }
 }

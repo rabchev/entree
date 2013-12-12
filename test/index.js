@@ -13,12 +13,12 @@ try {
 
 process.chdir(__dirname);
 reporter.run([
-    "./provider-base.js",
-    "./file-system.js",
-    "./fs-common.js",
-    "./el-common.js",
-    "./mo-common.js",
-    "./manager.js",
-    "./entree.js",
-    "./cache.js"
+    "./provider-base_test.js",
+    "./file-system_test.js",
+    "./fs-common_test.js",
+    "./el-common_test.js",
+    "./mo-common_test.js",
+    "./manager_test.js",
+    "./entree_test.js",
+    "./cache_test.js"
 ]);
