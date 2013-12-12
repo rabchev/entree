@@ -1,27 +1,29 @@
 {
-  "name": "entree",
-  "description": "Data provider model abstraction.",
-  "version": "0.1.2",
-  "main": "index",
-  "scripts": {
-    "test": "node ./test",
-    "docs": "./node_modules/.bin/jsdoc -c ./jsdoc.json"
+  "name"            : "entree",
+  "description"     : "Data provider model abstraction.",
+  "version"         : "0.1.2",
+  "main"            : "index",
+  "scripts"         : {
+    "test"                      : "node ./test",
+    "docs"                      : "./node_modules/.bin/jsdoc -c ./jsdoc.json"
   },
-  "dependencies": {
-    "node-uuid": "*",
-    "sift": "*",
-    "lodash": "*",
-    "async": "*",
-    "mongodb": "*",
-    "cache-manager": "*",
-    "winston": "*"
+  "dependencies"    : {
+    "node-uuid"                 : "*",
+    "sift"                      : "*",
+    "lodash"                    : "*",
+    "async"                     : "*",
+    "mongodb"                   : "*",
+    "cache-manager"             : "*",
+    "winston"                   : "*"
   },
-  "devDependencies": {
-    "nodeunit": "*",
-    "wrench": "*",
-    "grunt": "*",
-    "grunt-release": "*",
-    "grunt-contrib-nodeunit": "*",
-    "grunt-jsdoc": "*"
+  "devDependencies" : {
+    "nodeunit"                  : "*",
+    "wrench"                    : "*",
+    "grunt"                     : "*",
+    "grunt-release"             : "*",
+    "grunt-contrib-nodeunit"    : "*",
+    "grunt-jsdoc"               : "*",
+    "grunt-shell"               : "*",
+    "grunt-node-inspector"      : "*"
   }
 }
