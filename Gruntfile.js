@@ -3,64 +3,81 @@
 "use strict";
 
 module.exports = function (grunt) {
-    var globalConfig = {};
-
     grunt.initConfig({
-        globalConfig: globalConfig,
-        jsdoc : {
-            dist : {
-                src     : ["./lib"],
-                options: {
+        jsdoc           : {
+            dist            : {
+                src             : ["./lib", "README.md"],
+                options         : {
                     destination     : "./docs/",
+                    tutorials       : "./docs/tutorials",
+                    template        : "./node_modules/grunt-jsdoc/node_modules/ink-docstrap/template",
                     configure       : "./jsdoc.json"
                 }
             }
         },
-        test: {
-            all         : "",
-            fileSys     : "",
-            mongodb     : "",
-            everlive    : "",
-            manager     : "",
-            entree      : "",
-            cache       : ""
+        "gh-pages": {
+            options: {
+                base: "docs"
+            },
+            src: ["**"]
         },
-        nodeunit: {
-            all         : ["*_test.js"],
-            fileSys     : ["file-system_test.js", "fs-spec_test.js"],
-            mongodb     : ["mongodb_test.js"],
-            everlive    : ["everlive_test.js"],
-            manager     : ["manager_test.js"],
-            entree      : ["entree_test.js"],
-            cache       : ["cache_test.js"]
+        nodeunit        : {
+            all             : ["*_test.js"],
+            fileSys         : ["file-system_test.js", "fs-spec_test.js"],
+            mongodb         : ["mongodb_test.js"],
+            everlive        : ["everlive_test.js"],
+            manager         : ["manager_test.js"],
+            entree          : ["entree_test.js"],
+            cache           : ["cache_test.js"]
         },
-        shell: {
-            debugtest: {
-                options: {
-                    stdout      : true
-                },
-                command         : "node --debug-brk $(which grunt) test:<%= globalConfig.target %>"
+        shell           : {
+            debug           : {
+                options         : { stdout: true },
+                command         : function (target) {
+                    return "node --debug-brk $(which grunt) test:" + target;
+                }
             }
         },
-        "node-inspector"        : {
-            "default"               : {}
+        concurrent      : {
+            options         : { logConcurrentOutput: true },
+            debug_all       : ["node-inspector", "shell:debug:all"],
+            debug_fileSys   : ["node-inspector", "shell:debug:fileSys"],
+            debug_mongodb   : ["node-inspector", "shell:debug:mongodb"],
+            debug_everlive  : ["node-inspector", "shell:debug:everlive"],
+            debug_manager   : ["node-inspector", "shell:debug:manager"],
+            debug_entree    : ["node-inspector", "shell:debug:entree"],
+            debug_cache     : ["node-inspector", "shell:debug:cache"]
+        },
+        "node-inspector": {
+            "default"       : {}
         }
     });
 
     grunt.loadNpmTasks("grunt-jsdoc");
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-release");
+    grunt.loadNpmTasks("grunt-concurrent");
     grunt.loadNpmTasks("grunt-contrib-nodeunit");
     grunt.loadNpmTasks("grunt-node-inspector");
+    grunt.loadNpmTasks("grunt-gh-pages");
 
-    grunt.registerMultiTask("test", function () {
+    grunt.registerTask("test", function () {
+        var arg = "all";
+        if (this.args && this.args.length > 0) {
+            arg = this.args[0];
+        }
         process.chdir("test");
-        grunt.task.run(["nodeunit:" + this.target]);
+        grunt.task.run(["nodeunit:" + arg]);
     });
 
     grunt.registerTask("test-debug", function () {
+        var arg = "all";
+        if (this.args && this.args.length > 0) {
+            arg = this.args[0];
+        }
         process.chdir("test");
-        globalConfig.target = this.args[0];
-        grunt.task.run(["node-inspector", "shell:debugtest"]);
+        grunt.task.run(["concurrent:debug_" + arg]);
     });
+
+    grunt.registerTask("docs", ["jsdoc", "gh-pages"]);
 };

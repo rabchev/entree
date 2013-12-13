@@ -1,1 +1,6 @@
 docs
+examples
+.grunt
+test
+Gruntfile.js
+jsdoc.json
