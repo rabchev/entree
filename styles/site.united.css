@@ -5488,7 +5488,7 @@ a.badge:focus {
   color: #772953;
   font-weight: 700;
   padding-top: 10px;
-  display: none;
+  display: block;
 }
 footer {
   border-top: 1px solid #862e5e;
