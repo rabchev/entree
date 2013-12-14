@@ -3,7 +3,6 @@
         "allowUnknownTags": true
     },
     "source": {
-        "include": [ "./lib", "./README.md" ],
         "includePattern": ".+\\.js(doc)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
@@ -15,7 +14,6 @@
         "hardwrap": true
     },
     "opts": {
-        "destination": "./docs/",
         "recurse": true
     },
     "templates" : {
@@ -28,9 +26,9 @@
         "footer"          : "",
         "copyright"       : "Entree Copyright © 2012-2013 The contributors to the Entree projects.",
         "navType"         : "vertical",
-        "theme"           : "united",
+        "theme"           : "custom",
         "linenums"        : true,
         "collapseSymbols" : false,
-        "inverseNav"      : true
+        "inverseNav"      : false
     }
 }
