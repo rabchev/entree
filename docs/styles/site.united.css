@@ -5402,7 +5402,7 @@ a.badge:focus {
   max-height: 300px;
   overflow: auto;
   width: 300px;
-  background-color: #772953;
+  background-color: #a5360f;
 }
 .navbar .dropdown-menu a,
 .navbar .dropdown-menu a:visited {
@@ -5488,7 +5488,7 @@ a.badge:focus {
   color: #772953;
   font-weight: 700;
   padding-top: 10px;
-  display: none;
+  display: block;
 }
 footer {
   border-top: 1px solid #862e5e;

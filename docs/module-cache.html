@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Entree Module: log</title>
+	<title>Entree Module: cache</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -89,12 +89,12 @@
 
 
 
-	<h1 class="page-title">Module: log</h1>
+	<h1 class="page-title">Module: cache</h1>
 <section>
 
 <header>
     <h2>
-    log
+    cache
     </h2>
 
 </header>
@@ -105,8 +105,10 @@
 
 
 
-            <div class="description"><p>Interception module for logging usage, performance and error information about data provider methods.</p>
-<p>By default the interceptor uses <a href="https://github.com/flatiron/winston">winston</a> library for logging. Winston can be configured as you would normally do. Please see <strong>winston</strong> documentation. To set custom logger use <code>options.logger</code> property.</p></div>
+            <div class="description"><p>Interception module for caching the results returned by the intercepted methods.</p>
+<p><strong>IMPORTANT:</strong> this interceptor breaks the call chain and returns immediately if the requested item is cached, therefore subsequent interceptors and the method itself will not be invoked.</p>
+<p>The interceptor uses <a href="https://github.com/BryanDonovan/node-cache-manager">node-cache-manager</a> library for caching.
+Please refer to <strong>node-cache-manager</strong> <a href="https://github.com/BryanDonovan/node-cache-manager">documentation</a> for more details on configuration and usage.</p></div>
 
 
 
@@ -132,7 +134,7 @@
 
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="log.js.html">interceptors/log.js</a>, <a href="log.js.html#sunlight-1-line-3">line 3</a>
+        <a href="cache.js.html">interceptors/cache.js</a>, <a href="cache.js.html#sunlight-1-line-3">line 3</a>
     </li></ul></dd>
 
 
@@ -145,25 +147,16 @@
 
 
 
-            <h3>Examples</h3>
+            <h3>Example</h3>
 
     <pre class="sunlight-highlight-javascript"> var entree  = require("entree"),
-     log     = entree.resolveInterceptor("log"),
-     opts    = {
-         level: "info",
-         log: {
-             action: true,
-             query: true
-         }
-     };
+     cache     = entree.resolveInterceptor("cache"),
+     stores    = [
+         { store: "memory", max: 1000, ttl: 10 },
+         { store: require("./redis_store"), db: 0, ttl: 100 }
+     ];
 
-entree.posts.use(log.interception(opts, ["insert", "update", "delete"]));</pre>
-
-    <pre class="sunlight-highlight-javascript"> var options = {
-     logger: require("path/to/logger"); // or an instance of winston logger
- };
-
-provider.use(log.interception(options));</pre>
+entree.posts.use(cache.interception(stores, ["get"]));</pre>
 
 
 
@@ -188,7 +181,7 @@ provider.use(log.interception(options));</pre>
         <dl>
 
 <dt>
-    <h4 class="name" id="interception"><span class="type-signature">&lt;static> </span>interception<span class="signature">(<span class="optional">opts</span>, <span class="optional">actions</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="interception"><span class="type-signature">&lt;static> </span>interception<span class="signature">(<span class="optional">stores</span>, <span class="optional">actions</span>)</span><span class="type-signature"></span></h4>
 
 
 </dt>
@@ -197,20 +190,6 @@ provider.use(log.interception(options));</pre>
 
     <div class="description">
         <p>Configures and returns an interceptor function.</p>
-<p>Options</p>
-<ul>
-<li><code>logger</code> {Object}, logger instance, if omitted default <strong>winston</strong> instance is used.</li>
-<li><code>level</code> {String}, logging level for actions in normal flow. Default is &quot;info&quot;.</li>
-<li><code>errorLevel</code> {String}, logging level for errors. Default is &quot;error&quot;.</li>
-<li><code>log</code> {Object}, defines what type of information should be logged. By default only actions are logged.<ul>
-<li><code>action</code> {Boolean}, logs the name of the intercepted method. Default is true.</li>
-<li><code>profile</code> {Boolean}, profiles, logs execution duration, for all intercepted methods in milliseconds. Default is false.</li>
-<li><code>query</code> {Boolean}, logs the &quot;query&quot; argument of the intercepted method as metadata. Default is false.</li>
-<li><code>context</code> {Boolean}, logs the &quot;context&quot; argument of the intercepted method as metadata. Default is false.</li>
-<li><code>result</code> {Boolean}, logs the result returned by the intercepted method as metadata. NOTE: This is potentially dangerous option for select method if the returned result set is very large. Default is false.</li>
-</ul>
-</li>
-</ul>
     </div>
 
 
@@ -246,7 +225,7 @@ provider.use(log.interception(options));</pre>
 
         <tr>
 
-                <td class="name"><code>opts</code></td>
+                <td class="name"><code>stores</code></td>
 
 
             <td class="type">
@@ -272,7 +251,7 @@ provider.use(log.interception(options));</pre>
 
 
 
-            <td class="description last"><p>Logger options.</p></td>
+            <td class="description last"><p>defines the cache stores. By default only memory store is used with the following configuration: <code>{ store: &quot;memory&quot;, max: 1000, ttl: 10 }</code>.</p></td>
         </tr>
 
 
@@ -308,7 +287,7 @@ provider.use(log.interception(options));</pre>
 
 
 
-            <td class="description last"><p>Specifies which actions should be logged. Could be single action or an array of actions. If omitted, all actions are logged.
+            <td class="description last"><p>Specifies which actions (methods) should be cached. Could be single action or an array of actions. If omitted, all actions are cached.
  Possible values are: <code>[&quot;insert&quot;, &quot;upsert&quot;, &quot;update&quot;, &quot;get&quot;, &quot;delete&quot;, &quot;select&quot;]</code></p></td>
         </tr>
 
@@ -341,7 +320,7 @@ provider.use(log.interception(options));</pre>
 
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="log.js.html">interceptors/log.js</a>, <a href="log.js.html#sunlight-1-line-56">line 56</a>
+        <a href="cache.js.html">interceptors/cache.js</a>, <a href="cache.js.html#sunlight-1-line-44">line 44</a>
     </li></ul></dd>
 
 
