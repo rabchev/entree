@@ -29,6 +29,10 @@
 					<ul class="dropdown-menu ">
 						
 						<li>
+							<a href="module-cache.html">cache</a>
+						</li>
+						
+						<li>
 							<a href="module-log.html">log</a>
 						</li>
 						
@@ -44,6 +48,14 @@
 						
 						<li>
 							<a href="Cursor.html">Cursor</a>
+						</li>
+						
+						<li>
+							<a href="EverliveProvider.html">EverliveProvider</a>
+						</li>
+						
+						<li>
+							<a href="Provider.html">Provider</a>
 						</li>
 						
 
@@ -104,13 +116,15 @@
     
     
     <div class="description">
-        <p>Constructor for a cursor object that handles all the operations on query result
-using select. This cursor object is unidirectional and cannot traverse backwards. Clients should not be creating a cursor directly,
-but use select to acquire a cursor.</p>
-<p>Options
- - <strong>skip</strong> {Number} skip number of documents to skip.
- - <strong>limit</strong> {Number}, limit the number of results to return.
- - <strong>sort</strong> {Array | Object}, set to sort the documents coming back from the query. Array of indexes, [['a', 1]] etc.</p>
+        <p>Constructor for a cursor object that handles all the operations on query result using select.
+This cursor object is unidirectional and cannot traverse backwards.
+Clients should not be creating a cursor directly, but use select to acquire a cursor.</p>
+<p>Options</p>
+<ul>
+<li><code>skip</code> {Number}, skip number of documents to skip.</li>
+<li><code>limit</code> {Number}, limit the number of results to return.</li>
+<li><code>sort</code> {Object}, set to sort the documents coming back from the query.</li>
+</ul>
     </div>
     
 
@@ -234,7 +248,7 @@ but use select to acquire a cursor.</p>
 
             
 
-            <td class="description last"><p>additional options for the collection.</p></td>
+            <td class="description last"><p>additional options for the cursor.</p></td>
         </tr>
 
 	
@@ -266,7 +280,7 @@ but use select to acquire a cursor.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-26">line 26</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-27">line 27</a>
     </li></ul></dd>
     
 
@@ -346,7 +360,7 @@ but use select to acquire a cursor.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-489">line 489</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-490">line 490</a>
     </li></ul></dd>
     
 
@@ -400,7 +414,7 @@ but use select to acquire a cursor.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-475">line 475</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-476">line 476</a>
     </li></ul></dd>
     
 
@@ -454,7 +468,7 @@ but use select to acquire a cursor.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-482">line 482</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-483">line 483</a>
     </li></ul></dd>
     
 
@@ -569,7 +583,7 @@ not all of the elements will be iterated if this cursor had been previouly acces
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-282">line 282</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-283">line 283</a>
     </li></ul></dd>
     
 
@@ -749,7 +763,7 @@ not all of the elements will be iterated if this cursor had been previouly acces
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-53">line 53</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-54">line 54</a>
     </li></ul></dd>
     
 
@@ -890,7 +904,7 @@ not all of the elements will be iterated if this cursor had been previouly acces
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-323">line 323</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-324">line 324</a>
     </li></ul></dd>
     
 
@@ -1051,7 +1065,7 @@ not all of the elements will be iterated if this cursor had been previouly acces
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-90">line 90</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-91">line 91</a>
     </li></ul></dd>
     
 
@@ -1215,7 +1229,7 @@ not all of the elements will be iterated if this cursor had been previouly acces
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-127">line 127</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-128">line 128</a>
     </li></ul></dd>
     
 
@@ -1357,7 +1371,7 @@ is enough memory to store the results.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-242">line 242</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-243">line 243</a>
     </li></ul></dd>
     
 
@@ -1427,7 +1441,7 @@ is enough memory to store the results.</p>
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Sat Dec 14 2013 11:13:03 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Sun Dec 15 2013 23:25:34 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
