@@ -28,7 +28,8 @@ module.exports = function (grunt) {
             everlive        : ["everlive_test.js"],
             manager         : ["manager_test.js"],
             entree          : ["entree_test.js"],
-            cache           : ["cache_test.js"]
+            cache           : ["cache_test.js"],
+            logging         : ["logging_test.js"]
         },
         shell           : {
             debug           : {
@@ -46,7 +47,8 @@ module.exports = function (grunt) {
             debug_everlive  : ["node-inspector", "shell:debug:everlive"],
             debug_manager   : ["node-inspector", "shell:debug:manager"],
             debug_entree    : ["node-inspector", "shell:debug:entree"],
-            debug_cache     : ["node-inspector", "shell:debug:cache"]
+            debug_cache     : ["node-inspector", "shell:debug:cache"],
+            debug_logging   : ["node-inspector", "shell:debug:logging"]
         },
         "node-inspector": {
             "default"       : {}
