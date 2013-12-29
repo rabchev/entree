@@ -32,6 +32,7 @@
     "devDependencies"       : {
         "nodeunit"                  : "*",
         "wrench"                    : "*",
+        "map-stream"                : "*",
         "grunt"                     : "*",
         "grunt-release"             : "*",
         "grunt-contrib-nodeunit"    : "*",

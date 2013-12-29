@@ -19,6 +19,7 @@ function PostProvider(options, schema) {
     this.updateCalls = 0;
     this.selectCalls = 0;
     this.deleteCalls = 0;
+    this.delay = 0;
 }
 
 util.inherits(PostProvider, Provider);
@@ -44,7 +45,7 @@ PostProvider.prototype._insert = function (items, callback) {
         }
     }
 
-    process.nextTick(function () {
+    setTimeout(function () {
         if (_.isArray(items)) {
             _.each(items, function (item) {
                 storeItem(item);
@@ -55,7 +56,7 @@ PostProvider.prototype._insert = function (items, callback) {
         if (callback) {
             callback(null, items);
         }
-    });
+    }, this.delay);
 };
 
 PostProvider.prototype._upsert = function (item, callback) {
@@ -69,12 +70,12 @@ PostProvider.prototype._upsert = function (item, callback) {
         item[this.schema.identifier] = id;
     }
 
-    process.nextTick(function () {
+    setTimeout(function () {
         that.store[empty + id] = item;
         if (callback) {
             callback(null, item);
         }
-    });
+    }, this.delay);
 };
 
 PostProvider.prototype._update = function (item, callback) {
@@ -87,7 +88,7 @@ PostProvider.prototype._update = function (item, callback) {
         return this.handleError("Identifier not specified.", callback);
     }
 
-    process.nextTick(function () {
+    setTimeout(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
             that.handleError("Item does not exist.", callback);
@@ -97,7 +98,7 @@ PostProvider.prototype._update = function (item, callback) {
                 callback(null, item);
             }
         }
-    });
+    }, this.delay);
 };
 
 PostProvider.prototype._get = function (item, callback) {
@@ -110,7 +111,7 @@ PostProvider.prototype._get = function (item, callback) {
         return this.handleError("Identifier not specified.", callback);
     }
 
-    process.nextTick(function () {
+    setTimeout(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
             that.handleError("Item does not exist.", callback);
@@ -119,7 +120,7 @@ PostProvider.prototype._get = function (item, callback) {
                 callback(null, that.store[sid]);
             }
         }
-    });
+    }, this.delay);
 };
 
 PostProvider.prototype._delete = function (item, callback) {
@@ -132,7 +133,7 @@ PostProvider.prototype._delete = function (item, callback) {
         return this.handleError("Identifier not specified.", callback);
     }
 
-    process.nextTick(function () {
+    setTimeout(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
             that.handleError("Item does not exist.", callback);
@@ -142,7 +143,7 @@ PostProvider.prototype._delete = function (item, callback) {
                 callback(null, item);
             }
         }
-    });
+    }, this.delay);
 };
 
 PostProvider.prototype._select = function (args, callback) {
