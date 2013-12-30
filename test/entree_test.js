@@ -21,10 +21,10 @@ module.exports = testCase({
             test.ok(manager.posts);
             test.ok(manager.comments);
             test.ok(manager.users);
-            test.equal(manager.blogs.dir, fsPath + "/blogs");
-            test.equal(manager.posts.dir, fsPath + "/posts");
+            test.equal(manager.blogs.dir, path.join(fsPath, "blogs"));
+            test.equal(manager.posts.dir, path.join(fsPath, "posts"));
             test.equal(manager.comments.options.connStr, "mongodb://localhost/entreeTest");
-            test.equal(manager.users.dir, fsPath + "/users");
+            test.equal(manager.users.dir, path.join(fsPath, "users"));
             test.done();
         });
     },
@@ -39,10 +39,10 @@ module.exports = testCase({
             test.ok(entree.posts);
             test.ok(entree.comments);
             test.ok(entree.users);
-            test.equal(entree.blogs.dir, fsPath + "/blogs");
-            test.equal(entree.posts.dir, fsPath + "/posts");
+            test.equal(entree.blogs.dir, path.join(fsPath, "blogs"));
+            test.equal(entree.posts.dir, path.join(fsPath, "posts"));
             test.equal(entree.comments.options.connStr, "mongodb://localhost/entreeTest");
-            test.equal(entree.users.dir, fsPath + "/users");
+            test.equal(entree.users.dir, path.join(fsPath, "users"));
             test.done();
         });
     },
@@ -70,7 +70,7 @@ module.exports = testCase({
             test.equal(entree.providers.length, 2);
             test.ok(entree.config);
             test.ok(entree.foo);
-            test.equal(entree.foo.dir, fsPath + "/foo");
+            test.equal(entree.foo.dir, path.join(fsPath, "foo"));
             entree.dispose();
             test.done();
         });
