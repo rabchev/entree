@@ -259,7 +259,6 @@ module.exports = testCase({
         msgs.length = 0;
         manager.testProv._stack.length = 0;
         manager.testProv.use(log.interception({ log: { context: true } }));
-        manager.testProv.delay = 0;
 
         manager.testProv.get({ user: "my name" }, 1, function (err, item) {
             test.ok(!err);
@@ -278,7 +277,6 @@ module.exports = testCase({
         msgs.length = 0;
         manager.testProv._stack.length = 0;
         manager.testProv.use(log.interception({ log: { context: true } }));
-        manager.testProv.delay = 0;
 
         manager.testProv.get(1, function (err, item) {
             test.ok(!err);
@@ -286,6 +284,23 @@ module.exports = testCase({
             test.equal(msgs.length, 1);
             obj = JSON.parse(msgs[0]);
             test.equal(obj.context, null);
+            test.done();
+        });
+    },
+    "Log Cursor Result no Callback": function (test) {
+        test.expect(3);
+
+        var obj, cur;
+
+        msgs.length = 0;
+        manager.testProv._stack.length = 0;
+        manager.testProv.use(log.interception({ log: { result: true } }));
+
+        cur = manager.testProv.select();
+        cur.toArray(function (err, arr) {
+            test.ok(!err);
+            test.equal(arr.length, 6);
+            test.equal(msgs.length, 1);
             test.done();
         });
     }
