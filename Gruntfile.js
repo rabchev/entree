@@ -23,6 +23,7 @@ module.exports = function (grunt) {
         },
         nodeunit        : {
             all             : ["*_test.js"],
+            base            : ["provider-base_test.js"],
             fileSys         : ["file-system_test.js", "fs-spec_test.js"],
             mongodb         : ["mongodb_test.js"],
             everlive        : ["everlive_test.js"],
@@ -42,6 +43,7 @@ module.exports = function (grunt) {
         concurrent      : {
             options         : { logConcurrentOutput: true },
             debug_all       : ["node-inspector", "shell:debug:all"],
+            debug_base      : ["node-inspector", "shell:debug:base"],
             debug_fileSys   : ["node-inspector", "shell:debug:fileSys"],
             debug_mongodb   : ["node-inspector", "shell:debug:mongodb"],
             debug_everlive  : ["node-inspector", "shell:debug:everlive"],

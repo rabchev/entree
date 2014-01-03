@@ -74,7 +74,7 @@ module.exports = testCase({
         msgs.length = 0;
         manager.testProv._stack.length = 0;
         manager.testProv.use(log.interception({ log: { profile: true } }));
-        manager.testProv.delay = 10;
+        manager.testProv.delay = 0;
 
         manager.testProv.insert(itmes, function (err, items) {
             test.ok(!err);
@@ -288,7 +288,7 @@ module.exports = testCase({
         });
     },
     "Log Cursor Result no Callback": function (test) {
-        test.expect(3);
+        test.expect(6);
 
         var obj, cur;
 
@@ -301,7 +301,55 @@ module.exports = testCase({
             test.ok(!err);
             test.equal(arr.length, 6);
             test.equal(msgs.length, 1);
+            obj = JSON.parse(msgs[0]);
+            test.equal(obj.result.length, 6);
+            test.equal(obj.result[0]._id, 1);
+            test.equal(obj.result[5].name, "Fee");
             test.done();
+        });
+    },
+    "Log Cursor Result With Callback": function (test) {
+        test.expect(7);
+
+        var obj;
+
+        msgs.length = 0;
+        manager.testProv._stack.length = 0;
+        manager.testProv.use(log.interception({ log: { result: true } }));
+
+        manager.testProv.select({age: 20}, function (er, cur) {
+            test.ok(!er);
+            cur.toArray(function (err, arr) {
+                test.ok(!err);
+                test.equal(arr.length, 2);
+                test.equal(msgs.length, 1);
+                obj = JSON.parse(msgs[0]);
+                test.equal(obj.result.length, 2);
+                test.equal(obj.result[0]._id, 1);
+                test.equal(obj.result[1].name, "Qux");
+                test.done();
+            });
+        });
+    },
+    "Log Cursor Result Count": function (test) {
+        test.expect(5);
+
+        var obj;
+
+        msgs.length = 0;
+        manager.testProv._stack.length = 0;
+        manager.testProv.use(log.interception({ log: { result: true } }));
+
+        manager.testProv.select({age: 20}, function (er, cur) {
+            test.ok(!er);
+            cur.count(function (err, res) {
+                test.ok(!err);
+                test.equal(res, 2);
+                test.equal(msgs.length, 1);
+                obj = JSON.parse(msgs[0]);
+                test.equal(obj.result, 2);
+                test.done();
+            });
         });
     }
 });

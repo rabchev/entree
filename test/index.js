@@ -13,13 +13,13 @@ try {
 
 process.chdir(__dirname);
 reporter.run([
-    "./provider-base_test.js",
-    "./fs-spec_test.js",
-    "./file-system_test.js",
-    "./everlive_test.js",
-    "./mongodb_test.js",
-    "./manager_test.js",
-    "./entree_test.js",
-    "./cache_test.js",
+//    "./provider-base_test.js",
+//    "./fs-spec_test.js",
+//    "./file-system_test.js",
+//    "./everlive_test.js",
+//    "./mongodb_test.js",
+//    "./manager_test.js",
+//    "./entree_test.js",
+//    "./cache_test.js",
     "./logging_test.js"
 ]);
