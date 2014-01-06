@@ -65,9 +65,9 @@ module.exports = testCase({
 
         var itmes   = [
                 {_id: 2, name: "Bar", age: 21 },
-                {_id: 3, name: "Baz", age: 22 },
+                {_id: 3, name: "Baz", age: 21 },
                 {_id: 4, name: "Qux", age: 20 },
-                {_id: 5, name: "Fie", age: 31 },
+                {_id: 5, name: "Fie", age: 21 },
                 {_id: 6, name: "Fee", age: 33 }
             ];
 
@@ -288,7 +288,7 @@ module.exports = testCase({
         });
     },
     "Log Cursor Result no Callback": function (test) {
-        test.expect(6);
+        test.expect(7);
 
         var obj, cur;
 
@@ -305,11 +305,12 @@ module.exports = testCase({
             test.equal(obj.result.length, 6);
             test.equal(obj.result[0]._id, 1);
             test.equal(obj.result[5].name, "Fee");
+            test.equal(obj.message, "testProv._select.toArray");
             test.done();
         });
     },
     "Log Cursor Result With Callback": function (test) {
-        test.expect(7);
+        test.expect(8);
 
         var obj;
 
@@ -327,12 +328,13 @@ module.exports = testCase({
                 test.equal(obj.result.length, 2);
                 test.equal(obj.result[0]._id, 1);
                 test.equal(obj.result[1].name, "Qux");
+                test.equal(obj.message, "testProv._select.toArray");
                 test.done();
             });
         });
     },
     "Log Cursor Result Count": function (test) {
-        test.expect(5);
+        test.expect(6);
 
         var obj;
 
@@ -348,8 +350,67 @@ module.exports = testCase({
                 test.equal(msgs.length, 1);
                 obj = JSON.parse(msgs[0]);
                 test.equal(obj.result, 2);
+                test.equal(obj.message, "testProv._select.count");
                 test.done();
             });
+        });
+    },
+    "Log Cursor Result Next": function (test) {
+        test.expect(6);
+
+        var obj;
+
+        msgs.length = 0;
+        manager.testProv._stack.length = 0;
+        manager.testProv.use(log.interception({ log: { result: true } }));
+
+        manager.testProv.select({age: 21}, function (er, cur) {
+            test.ok(!er);
+            cur.next(function (err, res) {
+                test.ok(!err);
+                test.equal(res.name, "Bar");
+                test.equal(msgs.length, 1);
+                obj = JSON.parse(msgs[0]);
+                test.equal(obj.result.name, "Bar");
+                test.equal(obj.message, "testProv._select.next");
+                test.done();
+            });
+        });
+    },
+    "Log Cursor Profile First": function (test) {
+        test.expect(5);
+
+        msgs.length = 0;
+        manager.testProv._stack.length = 0;
+        manager.testProv.use(log.interception({ log: { profile: true } }));
+
+        manager.testProv.select({age: 21}, function (er, cur) {
+            test.ok(!er);
+            cur.first(function (err, res) {
+                test.ok(!err);
+                test.equal(res.name, "Bar");
+                test.equal(msgs.length, 1);
+                test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") === 0);
+                test.done();
+            });
+        });
+    },
+    "Log Cursor Profile & Result Update": function (test) {
+        test.expect(5);
+
+        msgs.length = 0;
+        manager.testProv._stack.length = 0;
+        manager.testProv.use(log.interception({ log: { profile: true, result: true } }));
+
+        var cur = manager.testProv.select({ age: 21 });
+        cur.update({ age: 52 }, function (err, res) {
+            test.ok(!err);
+            test.equal(res.length, 3);
+            test.equal(msgs.length, 2);
+            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") === 0);
+            var obj = JSON.parse(msgs[1]);
+            test.equal(obj.result.name, "Bar");
+            test.done();
         });
     }
 });
