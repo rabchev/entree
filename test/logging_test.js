@@ -1,7 +1,7 @@
 /*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, indent: 4, maxerr: 50 */
 
 "use strict";
-debugger;
+
 var testCase        = require("nodeunit").testCase,
     Manager         = require("../lib/manager"),
     Provider        = require("./mocks/post-provider"),
@@ -400,16 +400,16 @@ module.exports = testCase({
 
         msgs.length = 0;
         manager.testProv._stack.length = 0;
-        manager.testProv.use(log.interception({ log: { profile: true, result: true } }));
+        manager.testProv.use(log.interception({ log: { profile: true, action: true } }));
 
         var cur = manager.testProv.select({ age: 21 });
         cur.update({ age: 52 }, function (err, res) {
             test.ok(!err);
-            test.equal(res.length, 3);
+            test.ok(!res);
             test.equal(msgs.length, 2);
             test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") === 0);
             var obj = JSON.parse(msgs[1]);
-            test.equal(obj.result.name, "Bar");
+            test.equal(obj.message, "testProv._select.update");
             test.done();
         });
     }
