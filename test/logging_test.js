@@ -395,7 +395,7 @@ module.exports = testCase({
             });
         });
     },
-    "Log Cursor Profile & Result Update": function (test) {
+    "Log Cursor Profile & Action Update": function (test) {
         test.expect(5);
 
         msgs.length = 0;
@@ -411,6 +411,30 @@ module.exports = testCase({
             var obj = JSON.parse(msgs[1]);
             test.equal(obj.message, "testProv._select.update");
             test.done();
+        });
+    },
+    "Log Cursor Profile & Result Each": function (test) {
+        test.expect(8);
+
+        var count = 0;
+
+        msgs.length = 0;
+        manager.testProv._stack.length = 0;
+        manager.testProv.use(log.interception({ log: { profile: true, action: true } }));
+
+        manager.testProv.select({ age: 52 }, function (er, curr) {
+            curr.each(function (err, res) {
+                test.ok(!err);
+                if (!res) {
+                    test.equal(count, 3);
+                    test.equal(msgs.length, 2);
+                    test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") === 0);
+                    var obj = JSON.parse(msgs[1]);
+                    test.equal(obj.message, "testProv._select.each");
+                    test.done();
+                }
+                count++;
+            });
         });
     }
 });
