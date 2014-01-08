@@ -29,6 +29,10 @@
 					<ul class="dropdown-menu ">
 						
 						<li>
+							<a href="module-authz.html">authz</a>
+						</li>
+						
+						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
 						
@@ -62,20 +66,6 @@
 					</ul>
 				</li>
 				
-				<li class="dropdown">
-					<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b
-						class="caret"></b></a>
-
-					<ul class="dropdown-menu ">
-						
-						<li>
-							<a href="tutorial-test.html">test</a>
-						</li>
-						
-
-					</ul>
-				</li>
-				
 			</ul>
 		</div>
 	</div>
@@ -93,7 +83,7 @@
     
     <section>
         <article>
-            <pre class="sunlight-highlight-javascript linenums">/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, indent: 4, maxerr: 50 */
+            <pre class="sunlight-highlight-javascript linenums">/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
 
 /**
  * Interception module for logging usage, performance and error information about data provider methods.
@@ -113,7 +103,6 @@
  *
  * entree.posts.use(log.interception(opts, ["insert", "update", "delete"]));
  *
- *
  * @example
  *  var options = {
  *      logger: require("path/to/logger"); // or an instance of winston logger
@@ -126,8 +115,20 @@
 
 "use strict";
 
-var _           = require("lodash"),
-    Cursor      = require("../cursor");
+var util        = require("util"),
+    _           = require("lodash"),
+    wrapFns     = ["toArray", "next", "each", "count", "first", "update", "delete"];
+
+function convertError(err) {
+    if (util.isError(err)) {
+        var obj = {};
+        Object.getOwnPropertyNames(err).forEach(function (key) {
+            obj[key] = err[key];
+        });
+        return obj;
+    }
+    return err;
+}
 
 /**
  * Configures and returns an interceptor function.
@@ -143,6 +144,7 @@ var _           = require("lodash"),
  *   - `query` {Boolean}, logs the "query" argument of the intercepted method as metadata. Default is false.
  *   - `context` {Boolean}, logs the "context" argument of the intercepted method as metadata. Default is false.
  *   - `result` {Boolean}, logs the result returned by the intercepted method as metadata. NOTE: This is potentially dangerous option for select method if the returned result set is very large. Default is false.
+ *   - `error` {Boolean}, logs error message if an error was returned by the intercepted method. Default is false.
  *
  * @param {object=} opts - Logger options.
  * @param {(string|string[])=} actions - Specifies which actions should be logged. Could be single action or an array of actions. If omitted, all actions are logged.
@@ -157,6 +159,7 @@ exports.interception = function (opts, actions) {
         level       = opts.level || "info",
         errorLevel  = opts.errorLevel || "error",
         log         = opts.log || { action: true },
+        tracking,
         i;
 
     if (actions) {
@@ -175,6 +178,94 @@ exports.interception = function (opts, actions) {
         var msg = this.name + "." + action,
             meta;
 
+        function setMeta(prop, val) {
+            if (!meta) {
+                meta = {};
+            }
+            meta[prop] = val;
+        }
+
+        function logMessage(prop, val, lvl) {
+            if (prop && val) {
+                setMeta(prop, val);
+            }
+            if (log.action || meta) {
+                if (meta) {
+                    logger.log(lvl || level, msg, meta);
+                } else {
+                    logger.log(lvl || level, msg);
+                }
+            }
+        }
+
+        function logError(err) {
+            if (err && log.error) {
+                logMessage("error", convertError(err), errorLevel);
+            }
+        }
+
+        function handleResponse(err, res, profKey) {
+            if (log.profile) {
+                logger.profile(profKey || msg);
+            }
+
+            if (err) {
+                logError(err);
+            } else {
+                if (log.result) {
+                    logMessage("result", res);
+                } else {
+                    logMessage();
+                }
+            }
+        }
+
+        function replaceFn(cursor, orgFn, name) {
+            return function (data, callback) {
+                if (!callback) {
+                    callback = data;
+                    data = null;
+                }
+
+                function wrapper(err, res) {
+                    if (name !== "each" || !res) {
+                        var profKey = msg;
+                        msg += "." + name;
+                        handleResponse(err, res, profKey);
+                    }
+                    callback(err, res);
+                }
+
+                if (tracking) {
+                    if (tracking !== name) {
+                        if (data) {
+                            return orgFn.call(cursor, data, callback);
+                        }
+                        return orgFn.call(cursor, callback);
+                    }
+                } else {
+                    tracking = name;
+                }
+                if (data) {
+                    orgFn.call(cursor, data, wrapper);
+                } else {
+                    orgFn.call(cursor, wrapper);
+                }
+            };
+        }
+
+        function wrapCursor(cursor) {
+            var i;
+            for (i = 0; i &lt; wrapFns.length; i++) {
+                var name = wrapFns[i];
+                cursor[name] = replaceFn(cursor, cursor[name], name);
+            }
+        }
+
+        if (tracking || (actions && actions.indexOf(action) === -1)) {
+            return next(item, out);
+        }
+
         if (log.profile) {
             logger.profile(msg);
         }
@@ -184,55 +275,34 @@ exports.interception = function (opts, actions) {
         }
 
         if (log.context) {
-            if (!meta) {
-                meta = {};
-            }
-            meta.context = context;
-        }
-
-        if (log.action) {
-            logger.log(level, msg, meta);
+            setMeta("context", context || null);
         }
 
         if (log.result || log.error || log.profile) {
             if (out) {
                 next(item, function (err, res) {
-                    if (err && log.error) {
-                        logger.log(errorLevel, msg, err);
-                    } else if (log.result) {
-                        if (res instanceof Cursor) {
-                            // TODO: handle cursor
-                            console.log(">>&lt;&lt;");
-                        } else {
-                            if (!meta) {
-                                meta = {};
-                            }
-                            meta.result = res;
-                            logger.log(level, msg, meta);
-                            if (log.profile) {
-                                logger.profile(msg);
-                            }
-                        }
-                        out(err, res);
+                    if (action === "_select") {
+                        wrapCursor(res);
+                    } else {
+                        handleResponse(err, res);
                     }
+                    out(err, res);
                 });
             } else {
                 var cur;
                 try {
                     cur = next(item);
                 } catch (e) {
-                    if (log.error) {
-                        logger.log(errorLevel, msg, e);
-                    }
+                    logError(e);
                     throw e;
                 }
                 if (cur) {
-                    // TODO: handle cursor
-                    console.log(">>&lt;&lt;");
+                    wrapCursor(cur);
                 }
                 return cur;
             }
         } else {
+            logMessage();
             return next(item, out);
         }
     };
@@ -258,7 +328,7 @@ exports.interception = function (opts, actions) {
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Sun Dec 15 2013 23:25:34 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Thu Jan 09 2014 00:27:46 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
