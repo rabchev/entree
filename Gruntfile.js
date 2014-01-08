@@ -8,8 +8,8 @@ module.exports = function (grunt) {
             dist            : {
                 src             : ["./lib", "README.md"],
                 options         : {
-                    destination     : "./docs/",
-                    tutorials       : "./docs/tutorials",
+                    destination     : "./cache/docs",
+                    tutorials       : "./cache/docs/tutorials",
                     template        : "./node_modules/grunt-jsdoc/node_modules/ink-docstrap/template",
                     configure       : "./jsdoc.json"
                 }
@@ -17,7 +17,7 @@ module.exports = function (grunt) {
         },
         "gh-pages": {
             options: {
-                base: "docs"
+                base: "./cache/docs"
             },
             src: ["**"]
         },
