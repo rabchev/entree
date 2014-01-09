@@ -36,6 +36,10 @@ module.exports = function (grunt) {
             debug           : {
                 options         : { stdout: true },
                 command         : function (target) {
+                    if (process.platform === "win32") {
+                        return "grunt-debug test:" + target;
+                    }
+
                     return "node --debug-brk $(which grunt) test:" + target;
                 }
             }
