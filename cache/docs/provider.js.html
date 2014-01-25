@@ -10,9 +10,9 @@
 	<![endif]-->
 	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
 
-
+	
 	<link type="text/css" rel="stylesheet" href="styles/site.custom.css">
-
+	
 </head>
 
 <body>
@@ -21,66 +21,66 @@
 		<div class="navbar-inner">
 			<a class="brand" href="index.html">Entree</a>
 			<ul class="nav">
-
+				
 				<li class="dropdown">
 					<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="module-authz.html">authz</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
-
+						
 						<li>
 							<a href="module-log.html">log</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 				<li class="dropdown">
 					<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="Cursor.html">Cursor</a>
 						</li>
-
+						
 						<li>
 							<a href="EverliveProvider.html">EverliveProvider</a>
 						</li>
-
+						
 						<li>
 							<a href="Provider.html">Provider</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 			</ul>
 		</div>
 	</div>
 
 	<div class="row-fluid">
 
-
+		
 			<div class="span12">
-
+				
 				<div id="main">
-
+					
 
 
 		<h1 class="page-title">Source: provider.js</h1>
-
+    
     <section>
         <article>
             <pre class="sunlight-highlight-javascript linenums">/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, es5: true, indent: 4, maxerr: 50 */
@@ -127,7 +127,8 @@ function validateArgs(args, name) {
 }
 
 function validateSelectArgs(args) {
-    var res = {};
+    var res = {},
+        val;
 
     switch (args.length) {
     case 4:
@@ -169,10 +170,13 @@ function validateSelectArgs(args) {
         }
         break;
     case 1:
-        if (args[0] instanceof Context) {
-            res.context = args[0];
+        val = args[0];
+        if (val instanceof Context) {
+            res.context = val;
+        } else if (typeof val === "function") {
+            res.callback = val;
         } else {
-            res.query = args[0];
+            res.query = val;
         }
         break;
     }
@@ -244,6 +248,7 @@ Provider.prototype.createContext = function (context) {
  *
  * @param {Object} item - the item to be stored.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.insert = function () {
     var args = validateArgs(arguments, "items");
@@ -261,6 +266,7 @@ Provider.prototype.insert = function () {
  *
  * @param {Object} item - the item to be added or updated.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.upsert = function () {
     var args = validateArgs(arguments, "item");
@@ -279,6 +285,7 @@ Provider.prototype.upsert = function () {
  *
  * @param {Object} item - the item to be updated.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.update = function () {
     var args = validateArgs(arguments, "item");
@@ -297,6 +304,7 @@ Provider.prototype.update = function () {
  *
  * @param {Object|String|Number} item|identity - the item or the identity of an item to be deleted.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.delete = function () {
     var args = validateArgs(arguments, "itemOrID");
@@ -313,8 +321,9 @@ Provider.prototype.delete = function () {
  * Usually this is information about the user making the call.
  * Although this parameter is optional, it might be required by some interceptors, such as authorization.
  *
- * @param {Object|String|Number} item|identity - the item or the identity of an item to be deleted.
+ * @param {(Object|String|Number)} item|identity - the item or the identity of an item to be deleted.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.get = function () {
     var args = validateArgs(arguments, "itemOrID");
@@ -323,6 +332,23 @@ Provider.prototype.get = function () {
     }
 };
 
+/**
+ * Selects items in the data store and returns a {@link Cursor} to the selected items.
+ *
+ * This method can return a Cursor either directly or with a callback. In most cases a cursor is created and returned synchronously, but some interceptors like {@link cache} require a callback. If you plan to use asynchronous interceptors you have to use the callback form.
+ *
+ * Options
+ *
+ *  - `skip` {Number}, skip number of documents to skip.
+ *  - `limit` {Number}, limit the number of results to return.
+ *  - `sort` {Object}, set to sort the documents coming back from the query.
+ *
+ * @param {object=} context - Provides context for the current execution.
+ * @param {object=} query - Specifies selection criteria. To return all items in a collection, omit this parameter or pass an empty object.
+ * @param {object=} options - Additional options for the cursor.
+ * @param {function=} callback - Optional callback function that will be called when the {@link Cursor} is constructed.
+ * @return {(null|Cursor)} - The method returns null if a callback is provided otherwise it returns a {@link Cursor}.
+ */
 Provider.prototype.select = function () {
     var args = validateSelectArgs(arguments);
     if (args) {
@@ -459,21 +485,21 @@ module.exports = Provider;
 
 				<div class="clearfix"></div>
 				<footer>
-
-
+					
+					
 		<span class="copyright">
 		Entree Copyright © 2012-2013 The contributors to the Entree projects.
 		</span>
 					<br />
-
+					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Thu Jan 09 2014 00:43:29 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Sat Jan 25 2014 02:36:02 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
 
-
+			
 			<br clear="both">
 		</div>
 
@@ -505,7 +531,7 @@ module.exports = Provider;
 		} );
 	</script>
 
-
+	
 
 </body>
 </html>

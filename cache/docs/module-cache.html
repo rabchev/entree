@@ -10,9 +10,9 @@
 	<![endif]-->
 	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
 
-
+	
 	<link type="text/css" rel="stylesheet" href="styles/site.custom.css">
-
+	
 </head>
 
 <body>
@@ -21,62 +21,62 @@
 		<div class="navbar-inner">
 			<a class="brand" href="index.html">Entree</a>
 			<ul class="nav">
-
+				
 				<li class="dropdown">
 					<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="module-authz.html">authz</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
-
+						
 						<li>
 							<a href="module-log.html">log</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 				<li class="dropdown">
 					<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="Cursor.html">Cursor</a>
 						</li>
-
+						
 						<li>
 							<a href="EverliveProvider.html">EverliveProvider</a>
 						</li>
-
+						
 						<li>
 							<a href="Provider.html">Provider</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 			</ul>
 		</div>
 	</div>
 
 	<div class="row-fluid">
 
-
+		
 		<div class="span8">
-
+			
 				<div id="main">
-
+					
 
 
 	<h1 class="page-title">Module: cache</h1>
@@ -86,59 +86,59 @@
     <h2>
     cache
     </h2>
-
+    
 </header>
 
 <article>
     <div class="container-overview">
+    
 
-
-
-
+    
+        
             <div class="description"><p>Interception module for caching the results returned by the intercepted methods.</p>
 <p><strong>IMPORTANT:</strong> this interceptor breaks the call chain and returns immediately if the requested item is cached, therefore subsequent interceptors and the method itself will not be invoked.</p>
 <p>The interceptor uses <a href="https://github.com/BryanDonovan/node-cache-manager">node-cache-manager</a> library for caching.
 Please refer to <strong>node-cache-manager</strong> <a href="https://github.com/BryanDonovan/node-cache-manager">documentation</a> for more details on configuration and usage.</p></div>
+        
 
-
-
+        
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="cache.js.html">interceptors/cache.js</a>, <a href="cache.js.html#sunlight-1-line-3">line 3</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
-
+        
             <h3>Example</h3>
-
+            
     <pre class="sunlight-highlight-javascript"> var entree  = require("entree"),
      cache     = entree.resolveInterceptor("cache"),
      stores    = [
@@ -149,198 +149,198 @@ Please refer to <strong>node-cache-manager</strong> <a href="https://github.com/
 entree.posts.use(cache.interception(stores, ["get"]));</pre>
 
 
-
-
+        
+    
     </div>
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
+    
         <h3 class="subsection-title">Methods</h3>
 
         <dl>
-
+            
 <dt>
     <h4 class="name" id="interception"><span class="type-signature">&lt;static> </span>interception<span class="signature">(<span class="optional">stores</span>, <span class="optional">actions</span>)</span><span class="type-signature"></span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Configures and returns an interceptor function.</p>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
-
+		
 		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>stores</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>defines the cache stores. By default only memory store is used with the following configuration: <code>{ store: &quot;memory&quot;, max: 1000, ttl: 10 }</code>.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>actions</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">string</span>
 |
 
 <span class="param-type">Array.&lt;string></span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>Specifies which actions (methods) should be cached. Could be single action or an array of actions. If omitted, all actions are cached.
  Possible values are: <code>[&quot;insert&quot;, &quot;upsert&quot;, &quot;update&quot;, &quot;get&quot;, &quot;delete&quot;, &quot;select&quot;]</code></p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="cache.js.html">interceptors/cache.js</a>, <a href="cache.js.html#sunlight-1-line-44">line 44</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
+    
 </dd>
 
         </dl>
+    
 
+    
 
-
-
-
+    
 </article>
 
 </section>
@@ -352,25 +352,25 @@ entree.posts.use(cache.interception(stores, ["get"]));</pre>
 
 				<div class="clearfix"></div>
 				<footer>
-
-
+					
+					
 		<span class="copyright">
 		Entree Copyright © 2012-2013 The contributors to the Entree projects.
 		</span>
 					<br />
-
+					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Thu Jan 09 2014 00:43:29 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Sat Jan 25 2014 02:36:03 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
 
-
+			
 			<div class="span3">
 				<div id="toc"></div>
 			</div>
-
+			
 			<br clear="both">
 		</div>
 
@@ -402,7 +402,7 @@ entree.posts.use(cache.interception(stores, ["get"]));</pre>
 		} );
 	</script>
 
-
+	
 
 </body>
 </html>

@@ -728,6 +728,48 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                             });
                     });
         },
+        "Select All With Callback & Without Context": function (test) {
+            test.expect(5);
+
+            provider.select(function (err, cursor) {
+                test.ok(!err);
+                test.ok(cursor);
+                cursor.toArray(function (err, arr) {
+                    test.ok(!err);
+                    test.ok(arr);
+                    test.equal(arr.length, 7);
+                    test.done();
+                });
+            });
+        },
+        "Select All With Callback & With Context": function (test) {
+            test.expect(5);
+
+            provider.select(context, function (err, cursor) {
+                test.ok(!err);
+                test.ok(cursor);
+                cursor.toArray(function (err, arr) {
+                    test.ok(!err);
+                    test.ok(arr);
+                    test.equal(arr.length, 7);
+                    test.done();
+                });
+            });
+        },
+        "Select With Callback & Without Context": function (test) {
+            test.expect(5);
+
+            provider.select({"publisher.name": "TLC"}, function (err, cursor) {
+                test.ok(!err);
+                test.ok(cursor);
+                cursor.toArray(function (err, arr) {
+                    test.ok(!err);
+                    test.ok(arr);
+                    test.equal(arr.length, 3);
+                    test.done();
+                });
+            });
+        },
         "Bulk Delete Selected": function (test) {
             test.expect(3);
 

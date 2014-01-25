@@ -18,35 +18,35 @@
 	if (sunlight === undefined) {
 		throw "Include sunlight.js before including plugin files";
 	}
-
+	
 	var supportedLanguages = {
 		php: {
 			"function": function(word) { return "http://php.net/" + word; },
 			languageConstruct: function(word) { return "http://php.net/" + word; }
 		},
-
+		
 		ruby: {
 			"function": function(word) {
-				return "http://www.ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/function.html#"
+				return "http://www.ruby-doc.org/docs/ruby-doc-bundle/Manual/man-1.4/function.html#" 
 					+ word.replace(/!/g, "_bang").replace(/\?/g, "_p");
 			}
 		},
-
+		
 		python: {
 			"function": function(word) {
 				return "http://docs.python.org/py3k/library/functions.html#" + word;
 			}
 		},
-
+		
 		perl: {
 			"function": function(word) { return "http://perldoc.perl.org/functions/" + word + ".html"; }
 		},
-
+		
 		lua: {
 			"function": function(word) { return "http://www.lua.org/manual/5.1/manual.html#pdf-" + word; }
 		}
 	};
-
+	
 	function createLink(transformUrl) {
 		return function(context) {
 			var link = document.createElement("a");
@@ -56,36 +56,36 @@
 			context.addNode(link);
 		};
 	}
-
+	
 	sunlight.bind("beforeAnalyze", function(context) {
 		if (!this.options.enableDocLinks) {
 			return;
 		}
-
+		
 		context.analyzerContext.getAnalyzer = function() {
 			var language = supportedLanguages[this.language.name],
 				analyzer,
 				tokenName;
-
+			
 			if (!language) {
 				return;
 			}
-
+			
 			analyzer = sunlight.util.clone(context.analyzerContext.language.analyzer);
-
+			
 			for (tokenName in language) {
 				if (!language.hasOwnProperty(tokenName)) {
 					continue;
 				}
-
+				
 				analyzer["handle_" + tokenName] = createLink(language[tokenName]);
 			}
-
+			
 			return analyzer;
 		};
-
+		
 	});
-
+	
 	sunlight.globalOptions.enableDocLinks = false;
-
+	
 }(this["Sunlight"], document));
