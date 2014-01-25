@@ -8,8 +8,8 @@
                         "connStr": "./data"
                     },
                     "collections": [
-                        { "name": "blogs", "shecma": "blog" },
-                        { "name": "posts", "shecma": "post" }, {
+                        { "name": "blogs", "schema": "blog" },
+                        { "name": "posts", "schema": "post" }, {
                             "name": "users",
                             "shecma": "user",
                             "interceptors": [

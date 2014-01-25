@@ -5,7 +5,7 @@
 var testCase        = require("nodeunit").testCase,
     entree          = require("../lib/entree"),
     path            = require("path"),
-    fsPath = path.resolve(process.cwd(), "./data"),
+    fsPath          = path.resolve(process.cwd(), "./data"),
     manager;
 
 module.exports = testCase({

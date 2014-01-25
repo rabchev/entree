@@ -10,9 +10,9 @@
 	<![endif]-->
 	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
 
-	
+
 	<link type="text/css" rel="stylesheet" href="styles/site.custom.css">
-	
+
 </head>
 
 <body>
@@ -21,62 +21,58 @@
 		<div class="navbar-inner">
 			<a class="brand" href="index.html">Entree</a>
 			<ul class="nav">
-				
+
 				<li class="dropdown">
 					<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-						
-						<li>
-							<a href="module-authz.html">authz</a>
-						</li>
-						
+
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
-						
+
 						<li>
 							<a href="module-log.html">log</a>
 						</li>
-						
+
 
 					</ul>
 				</li>
-				
+
 				<li class="dropdown">
 					<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-						
+
 						<li>
 							<a href="Cursor.html">Cursor</a>
 						</li>
-						
+
 						<li>
 							<a href="EverliveProvider.html">EverliveProvider</a>
 						</li>
-						
+
 						<li>
 							<a href="Provider.html">Provider</a>
 						</li>
-						
+
 
 					</ul>
 				</li>
-				
+
 			</ul>
 		</div>
 	</div>
 
 	<div class="row-fluid">
 
-		
+
 		<div class="span8">
-			
+
 				<div id="main">
-					
+
 
 
 	<h1 class="page-title">Module: log</h1>
@@ -86,105 +82,91 @@
     <h2>
     log
     </h2>
-    
+
 </header>
 
 <article>
     <div class="container-overview">
-    
 
-    
-        
+
+
+
             <div class="description"><p>Interception module for logging usage, performance and error information about data provider methods.</p>
 <p>By default the interceptor uses <a href="https://github.com/flatiron/winston">winston</a> library for logging. Winston can be configured as you would normally do. Please see <strong>winston</strong> documentation. To set custom logger use <code>options.logger</code> property.</p></div>
-        
 
-        
+
+
 <dl class="details">
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="log.js.html">interceptors/log.js</a>, <a href="log.js.html#sunlight-1-line-3">line 3</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
 
-        
+
             <h3>Examples</h3>
-            
-    <pre class="sunlight-highlight-javascript"> var entree  = require("entree"),
-     log     = entree.resolveInterceptor("log"),
-     opts    = {
-         level: "info",
-         log: {
-             action: true,
-             query: true
-         }
-     };
 
-entree.posts.use(log.interception(opts, ["insert", "update", "delete"]));</pre>
+    <pre class="sunlight-highlight-javascript"> var entree  = require("entree"),     log     = entree.resolveInterceptor("log"),     opts    = {         level: "info",         log: {             action: true,             query: true         }     };entree.posts.use(log.interception(opts, ["insert", "update", "delete"]));</pre>
 
-    <pre class="sunlight-highlight-javascript"> var options = {
-     logger: require("path/to/logger"); // or an instance of winston logger
- };
-
-provider.use(log.interception(options));</pre>
+    <pre class="sunlight-highlight-javascript"> var options = {     logger: require("path/to/logger"); // or an instance of winston logger };provider.use(log.interception(options));</pre>
 
 
-        
-    
+
+
     </div>
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
         <h3 class="subsection-title">Methods</h3>
 
         <dl>
-            
+
 <dt>
     <h4 class="name" id="interception"><span class="type-signature">&lt;static> </span>interception<span class="signature">(<span class="optional">opts</span>, <span class="optional">actions</span>)</span><span class="type-signature"></span></h4>
-    
-    
+
+
 </dt>
 <dd>
-    
-    
+
+
     <div class="description">
         <p>Configures and returns an interceptor function.</p>
 <p>Options</p>
@@ -203,166 +185,166 @@ provider.use(log.interception(options));</pre>
 </li>
 </ul>
     </div>
-    
 
-    
-    
-    
-    
-    
+
+
+
+
+
+
         <h5>Parameters:</h5>
-        
+
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-		
+
 		<th>Name</th>
-		
+
 
 		<th>Type</th>
 
-		
-		<th>Argument</th>
-		
 
-		
+		<th>Argument</th>
+
+
+
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-	
+
 
         <tr>
-            
+
                 <td class="name"><code>opts</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">object</span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
 
             <td class="description last"><p>Logger options.</p></td>
         </tr>
 
-	
+
 
         <tr>
-            
+
                 <td class="name"><code>actions</code></td>
-            
+
 
             <td class="type">
-            
-                
+
+
 <span class="param-type">string</span>
 |
 
 <span class="param-type">Array.&lt;string></span>
 
 
-            
+
             </td>
 
-            
+
                 <td class="attributes">
-                
+
                     &lt;optional><br>
-                
 
-                
 
-                
+
+
+
                 </td>
-            
 
-            
+
+
 
             <td class="description last"><p>Specifies which actions should be logged. Could be single action or an array of actions. If omitted, all actions are logged.
  Possible values are: <code>[&quot;insert&quot;, &quot;upsert&quot;, &quot;update&quot;, &quot;get&quot;, &quot;delete&quot;, &quot;select&quot;]</code></p></td>
         </tr>
 
-	
+
 	</tbody>
 </table>
 
-    
-    
-    
+
+
+
 <dl class="details">
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
+
+
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="log.js.html">interceptors/log.js</a>, <a href="log.js.html#sunlight-1-line-68">line 68</a>
     </li></ul></dd>
-    
 
-    
 
-    
 
-    
+
+
+
+
 </dl>
 
-    
-    
 
-    
 
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
 </dd>
 
         </dl>
-    
 
-    
 
-    
+
+
+
 </article>
 
 </section>
@@ -374,25 +356,25 @@ provider.use(log.interception(options));</pre>
 
 				<div class="clearfix"></div>
 				<footer>
-					
-					
+
+
 		<span class="copyright">
 		Entree Copyright © 2012-2013 The contributors to the Entree projects.
 		</span>
 					<br />
-					
+
 		<span class="jsdoc-message">
-		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Sat Jan 25 2014 02:36:03 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
+		on Sat Jan 25 2014 14:36:28 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
 
-			
+
 			<div class="span3">
 				<div id="toc"></div>
 			</div>
-			
+
 			<br clear="both">
 		</div>
 
@@ -424,7 +406,7 @@ provider.use(log.interception(options));</pre>
 		} );
 	</script>
 
-	
+
 
 </body>
 </html>

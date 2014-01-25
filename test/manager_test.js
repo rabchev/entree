@@ -1,4 +1,4 @@
-/*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, indent: 4, maxerr: 50 */
+/*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, es5: true, indent: 4, maxerr: 50 */
 
 "use strict";
 
@@ -53,6 +53,16 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(!manager.myProvider);
             test.equal(manager.providers.length, 5);
+            test.done();
+        });
+    },
+    "New Manger Invalid Model Doc": function (test) {
+        test.expect(1);
+
+        var mgr = new Manager({ config: { modelDocument: "non-existent" }});
+        mgr.init(function (err) {
+            test.ok(err);
+            console.log(err);
             test.done();
         });
     },
