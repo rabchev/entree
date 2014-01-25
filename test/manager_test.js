@@ -62,7 +62,6 @@ module.exports = testCase({
         var mgr = new Manager({ config: { modelDocument: "non-existent" }});
         mgr.init(function (err) {
             test.ok(err);
-            console.log(err);
             test.done();
         });
     },
