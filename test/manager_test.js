@@ -57,11 +57,12 @@ module.exports = testCase({
         });
     },
     "New Manger Invalid Model Doc": function (test) {
-        test.expect(1);
+        test.expect(2);
 
         var mgr = new Manager({ config: { modelDocument: "non-existent" }});
         mgr.init(function (err) {
             test.ok(err);
+            test.equals(err.code, "NO_CONF_FILE");
             test.done();
         });
     },
