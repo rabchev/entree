@@ -56,11 +56,34 @@ module.exports = testCase({
             test.done();
         });
     },
-    "New Manger Invalid Model Doc": function (test) {
+    "New Manger Mising Config Params": function (test) {
         test.expect(2);
 
         var mgr = new Manager({ config: { modelDocument: "non-existent" }});
         mgr.init(function (err) {
+            test.ok(err);
+            test.equals(err.code, "MISSING_CONF_PARAMS");
+            test.done();
+        });
+    },
+    "New Manger Invalid Model Doc": function (test) {
+        test.expect(2);
+
+        var mgr = new Manager(),
+            opts = {
+                config: {
+                    modelDocument: "non-existent",
+                    provider: "file-system",
+                    options: {
+                        connStr: path.join(process.cwd(), "data")
+                    },
+                    schema: {
+                        __collName: "config"
+                    }
+                }
+            };
+
+        mgr.init(opts, function (err) {
             test.ok(err);
             test.equals(err.code, "NO_CONF_FILE");
             test.done();
