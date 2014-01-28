@@ -29,10 +29,6 @@
 					<ul class="dropdown-menu ">
 						
 						<li>
-							<a href="module-authz.html">authz</a>
-						</li>
-						
-						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
 						
@@ -88,17 +84,11 @@
 "use strict";
 
 var Strings     = require("./strings"),
+    Context     = require("./context"),
+    Err         = require("./error"),
     _           = require("lodash"),
     uuid        = require("node-uuid"),
     util        = require("util");
-
-function Context(obj) {
-    if (obj) {
-        this.__orgObj = obj;
-    } else if (obj === null) {
-        this.__isEmpty = true;
-    }
-}
 
 function validateArgs(args, name) {
     var res = {};
@@ -127,7 +117,8 @@ function validateArgs(args, name) {
 }
 
 function validateSelectArgs(args) {
-    var res = {};
+    var res = {},
+        val;
 
     switch (args.length) {
     case 4:
@@ -169,10 +160,13 @@ function validateSelectArgs(args) {
         }
         break;
     case 1:
-        if (args[0] instanceof Context) {
-            res.context = args[0];
+        val = args[0];
+        if (val instanceof Context) {
+            res.context = val;
+        } else if (typeof val === "function") {
+            res.callback = val;
         } else {
-            res.query = args[0];
+            res.query = val;
         }
         break;
     }
@@ -213,13 +207,9 @@ function Provider(options, schema) {
     this._uuid              = uuid.v1();
 }
 
-Provider.prototype.createContext = function (context) {
-    return new Context(context);
-};
-
 /**
  * This callback will be called after executing the method.
- * The first parameter will contain an error object if an error occurred during execution
+ * The first parameter will contain an error object if an error occurred during execution,
  * while the second parameter will contain the result from the execution if it was successful.
  *
  * For insert, upsert and update operations the result should be an object containing the same set of fields
@@ -229,8 +219,8 @@ Provider.prototype.createContext = function (context) {
  * error is returned the operation is considered successful.
  *
  * @callback Provider~actionCallback
- * @param {Object} err - the error object upon unsuccessiful execution.
- * @param {Object} res - the result object upon successiful execution.
+ * @param {object} err - the error object upon unsuccessful execution.
+ * @param {object} res - the result object upon successful execution.
  */
 
 /**
@@ -238,12 +228,13 @@ Provider.prototype.createContext = function (context) {
  * If an item with the same identity is already present in the data store,
  * the operation is aborted and an error is returned.
  *
- * @param {Object=} context - provides context for the current execution.
+ * @param {Object=} context - Provides context for the current execution.
  * Usually this is information about the user making the call.
  * Although this parameter is optional, it might be required by some interceptors, such as authorization.
  *
  * @param {Object} item - the item to be stored.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.insert = function () {
     var args = validateArgs(arguments, "items");
@@ -261,6 +252,7 @@ Provider.prototype.insert = function () {
  *
  * @param {Object} item - the item to be added or updated.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.upsert = function () {
     var args = validateArgs(arguments, "item");
@@ -279,6 +271,7 @@ Provider.prototype.upsert = function () {
  *
  * @param {Object} item - the item to be updated.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.update = function () {
     var args = validateArgs(arguments, "item");
@@ -297,6 +290,7 @@ Provider.prototype.update = function () {
  *
  * @param {Object|String|Number} item|identity - the item or the identity of an item to be deleted.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.delete = function () {
     var args = validateArgs(arguments, "itemOrID");
@@ -313,8 +307,9 @@ Provider.prototype.delete = function () {
  * Usually this is information about the user making the call.
  * Although this parameter is optional, it might be required by some interceptors, such as authorization.
  *
- * @param {Object|String|Number} item|identity - the item or the identity of an item to be deleted.
+ * @param {(Object|String|Number)} item|identity - the item or the identity of an item to be deleted.
  * @param {Provider~actionCallback} callback - The callback that handles the result of this action.
+ * @return {null}
  */
 Provider.prototype.get = function () {
     var args = validateArgs(arguments, "itemOrID");
@@ -323,6 +318,79 @@ Provider.prototype.get = function () {
     }
 };
 
+/**
+ * Selects items in the data store and returns a {@link Cursor} to the selected items.
+ *
+ * This method can return a Cursor either directly or with a callback. In most cases a cursor is created and returned synchronously, but some interceptors like {@link module:cache} require a callback. If you plan to use asynchronous interceptors you have to use the callback form.
+ *
+ * Select uses MongoDB query [syntax](http://docs.mongodb.org/manual/reference/operator/query). All Entree data providers should support the full specification.
+ *
+ * Options
+ *
+ *  - `skip` {Number}, the number of items to skip.
+ *  - `limit` {Number}, limit the number of returned items.
+ *  - `sort` {Object}, set to sort the documents coming back from the query.
+ *
+ * @example
+ *
+ *  // Select at most 10 teenagers starting from the 21th that matches the criteria:
+ *  entree.users.select({ age: { $gte: 13,  $lte: 19 }})
+ *      .skip(20)
+ *      .limit(10)
+ *      .sort({ age: 1 })
+ *      .each(function (err, user)) {
+ *          if (err) {
+ *              return console.log(err);
+ *          }
+ *          console.log(JSON.stringify(user));
+ *      });
+ *
+ *  // Do the same but with a callback - the recommended way if interceptors are used on the select method:
+ *  entree.users.select({ age: { $gte: 13, $lte: 19 }}, function (err, cursor) {
+ *      if (err) {
+ *          return console.log(err);
+ *      }
+ *      cursor
+ *          .skip(20)
+ *          .limit(10)
+ *          .sort({ age: 1 })
+ *          .each(function (err, user) {
+ *              if (err) {
+ *                  return console.log(err);
+ *              }
+ *              console.log(JSON.stringify(user));
+ *          });
+ *  });
+ *
+ *  // Again the same but limitations set as options:
+ *  entree.users.select({ age: { $gte: 13,  $lte: 19 }}, { skip: 20, limit: 10, sort: { age: 1 }}, function (err, cursor) {
+ *      if (err) {
+ *          return console.log(err);
+ *      }
+ *      cursor.each(function (err, user) {
+ *          if (err) {
+ *              return console.log(err);
+ *          }
+ *          onsole.log(JSON.stringify(user));
+ *      });
+ *  });
+ *
+ *  // Get the total number of all users in the collection:
+ *  entree.users.select(function (err, currsor) {
+ *      cursor.count(err, count) {
+ *          if (err) {
+ *              return console.log(err);
+ *          }
+ *          console.log(count);
+ *      });
+ *  });
+ *
+ * @param {object=} context - Provides context for the current execution.
+ * @param {object=} query - Specifies selection criteria. To return all items in a collection, omit this parameter or pass an empty object.
+ * @param {object=} options - Additional options for the cursor.
+ * @param {function=} callback - Optional callback function that will be called when the {@link Cursor} is constructed.
+ * @return {(null|Cursor)} - The method returns null if a callback is provided otherwise it returns a {@link Cursor}.
+ */
 Provider.prototype.select = function () {
     var args = validateSelectArgs(arguments);
     if (args) {
@@ -406,7 +474,7 @@ Provider.prototype.dispose = function (callback) {
 
 Provider.prototype.handleError = function (err, callback) {
     if (typeof err === "string") {
-        err = new Error(err);
+        err = new Err(err);
     }
 
     if (callback) {
@@ -468,7 +536,7 @@ module.exports = Provider;
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Thu Jan 09 2014 00:43:29 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Tue Jan 28 2014 23:44:15 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
