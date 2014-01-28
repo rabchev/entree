@@ -5,27 +5,34 @@
 var testCase        = require("nodeunit").testCase,
     entree          = require("../lib/entree"),
     path            = require("path"),
-    fsPath          = path.resolve(process.cwd(), "./data"),
-    manager;
+    fsPath          = path.resolve(process.cwd(), "./data");
 
 module.exports = testCase({
     "Create Manger": function (test) {
-        test.expect(11);
+        test.expect(13);
 
-        entree.createManager(function (err, man) {
-            manager = man;
+        entree.createManager(function (err, manager) {
             test.ok(!err);
-            test.equal(manager.providers.length, 5);
-            test.ok(manager.config);
-            test.ok(manager.blogs);
-            test.ok(manager.posts);
-            test.ok(manager.comments);
-            test.ok(manager.users);
-            test.equal(manager.blogs.dir, path.join(fsPath, "blogs"));
-            test.equal(manager.posts.dir, path.join(fsPath, "posts"));
-            test.equal(manager.comments.options.connStr, "mongodb://localhost/entreeTest");
-            test.equal(manager.users.dir, path.join(fsPath, "users"));
-            test.done();
+            test.equal(manager.providers.length, 0);
+            manager.init(function (err) {
+                test.ok(!err);
+                test.equal(manager.providers.length, 5);
+                test.ok(manager.config);
+                test.ok(manager.blogs);
+                test.ok(manager.posts);
+                test.ok(manager.comments);
+                test.ok(manager.users);
+                test.equal(manager.blogs.dir, path.join(fsPath, "blogs"));
+                test.equal(manager.posts.dir, path.join(fsPath, "posts"));
+                test.equal(manager.comments.options.connStr, "mongodb://localhost/entreeTest");
+                test.equal(manager.users.dir, path.join(fsPath, "users"));
+                manager.dispose(function (err) {
+                    if (err) {
+                        throw err;
+                    }
+                    test.done();
+                });
+            });
         });
     },
     "Init Entree Without Options": function (test) {
@@ -46,8 +53,8 @@ module.exports = testCase({
             test.done();
         });
     },
-    "Replace Entree With Options": function (test) {
-        test.expect(5);
+    "Add Entree Options": function (test) {
+        test.expect(4);
 
         var opts = {
             model: {
@@ -65,19 +72,17 @@ module.exports = testCase({
             }
         };
 
-        entree.init(opts, true, function (err) {
+        entree.configure(opts, function (err) {
             test.ok(!err);
-            test.equal(entree.providers.length, 2);
-            test.ok(entree.config);
+            test.equal(entree.providers.length, 6);
             test.ok(entree.foo);
             test.equal(entree.foo.dir, path.join(fsPath, "foo"));
-            entree.dispose();
             test.done();
         });
     },
     "Dispose Manger": function (test) {
         test.expect(0);
-        manager.dispose(function (err) {
+        entree.dispose(function (err) {
             if (err) {
                 throw err;
             }

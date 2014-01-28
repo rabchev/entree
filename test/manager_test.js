@@ -59,7 +59,7 @@ module.exports = testCase({
     "New Manger Mising Config Params": function (test) {
         test.expect(2);
 
-        var mgr = new Manager({ config: { modelDocument: "non-existent" }});
+        var mgr = new Manager({ config: {}});
         mgr.init(function (err) {
             test.ok(err);
             test.equals(err.code, "MISSING_CONF_PARAMS");
@@ -70,18 +70,7 @@ module.exports = testCase({
         test.expect(2);
 
         var mgr = new Manager(),
-            opts = {
-                config: {
-                    modelDocument: "non-existent",
-                    provider: "file-system",
-                    options: {
-                        connStr: path.join(process.cwd(), "data")
-                    },
-                    schema: {
-                        __collName: "config"
-                    }
-                }
-            };
+            opts = { config: { modelDocument: "non-existent" }};
 
         mgr.init(opts, function (err) {
             test.ok(err);
