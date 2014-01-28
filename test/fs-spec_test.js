@@ -5,6 +5,7 @@
 var testCase        = require("nodeunit").testCase,
     Provider        = require("../lib/providers/file-system"),
     Strings         = require("../lib/strings"),
+    Context         = require("../lib/context"),
     fs              = require("fs"),
     path            = require("path"),
     uuid            = require('node-uuid'),
@@ -31,7 +32,7 @@ module.exports = testCase({
         function createProvider() {
             blogs = new Provider(options, schema);
 
-            context = blogs.createContext({
+            context = new Context({
                 user: {
                     id: "FB5544",
                     name: "John Smit",

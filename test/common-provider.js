@@ -5,6 +5,7 @@
 var _               = require("lodash"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
+    Context         = require("../lib/context"),
     provider,
     context;
 
@@ -140,7 +141,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
 
             provider = new Provider(options, schema);
 
-            context = provider.createContext({
+            context = new Context({
                 user: {
                     id: "FB5544",
                     name: "John Smit",
@@ -713,7 +714,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
             test.expect(4);
 
             provider
-                .select(provider.createContext(null), {"publisher.name": "TLC"})
+                .select(new Context(null), {"publisher.name": "TLC"})
                 .update({ age: 555 },
                     function (err) {
                         test.ok(!err);
