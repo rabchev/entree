@@ -1,0 +1,95 @@
+{
+    "connections": {
+        "fs-default": {
+            "provider": "file-system",
+            "options": {
+                "connStr": "./data"
+            }
+        },
+        "mongo-node:1": {
+            "provider": "mongodb",
+            "options": {
+                "connStr": "mongodb://localhost/node1"
+            }
+        },
+        "mongo-node:2": {
+            "provider": "mongodb",
+            "options": {
+                "connStr": "mongodb://localhost/node2"
+            },
+            "interceptors": [
+                {
+                    "interceptor": "log",
+                    "disable": false,
+                    "options": {
+                        "level": "info",
+                        "log": {
+                            "action": true,
+                            "query": true
+                        }
+                        "actions": ["insert", "update", "delete"]
+                    }
+                }
+            ]
+        }
+    }
+    "collectons": [
+        {
+            "name": "blogs",
+            "schema": "blog",
+            "connection": "fs-default",
+            "interceptors": [
+                {
+                    "interceptor": "cache",
+                    "disable": false,
+                    "options": {
+                        "stores": [
+                            { "store": "memory", "max": 1000, "ttl": 10 }
+                        ],
+                        "actions": ["get", "select"]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "comments",
+            "schema": "comment",
+            "connecton": "mongo-node:2",
+            "interceptors": [
+                {
+                    "interceptor": "log",
+                    "disable": true
+                }
+            ]
+        },
+        {
+            "name": "posts",
+            "schema": "post",
+            "replica": ["fs-default", "mongo-node:1"],
+            "master": "mongo-node:1"
+        },
+        {
+            "name": "users",
+            "schema": "user",
+            "shard": {
+                "condition": {
+
+                }
+            }
+        }
+    ],
+    "schema": {
+        "blog": {
+            "identifier": "_id"
+        },
+        "post": {
+            "identifier": "_id"
+        },
+        "comment": {
+            "identifier": "_id"
+        },
+        "user": {
+            "identifier": "_id"
+        }
+    }
+}
