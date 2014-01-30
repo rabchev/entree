@@ -26,13 +26,13 @@
                         "log": {
                             "action": true,
                             "query": true
-                        }
+                        },
                         "actions": ["insert", "update", "delete"]
                     }
                 }
             ]
         }
-    }
+    },
     "collectons": [
         {
             "name": "blogs",
@@ -80,7 +80,8 @@
     ],
     "schema": {
         "blog": {
-            "identifier": "_id"
+            "identifier": "_id",
+            "title": "string"
         },
         "post": {
             "identifier": "_id"
