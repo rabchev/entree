@@ -1,42 +1,27 @@
 {
-    "connections": {
-        "fs-default": {
-            "provider": "file-system",
-            "options": {
-                "connStr": "./data"
-            }
-        },
-        "mongo-node:1": {
-            "provider": "mongodb",
-            "options": {
-                "connStr": "mongodb://localhost/node1"
-            }
-        },
-        "mongo-node:2": {
-            "provider": "mongodb",
-            "options": {
-                "connStr": "mongodb://localhost/node2"
-            },
-            "interceptors": [
-                {
-                    "interceptor": "log",
-                    "disable": false,
+    "environments": {
+        "development": {
+             "connections": {
+                "mongodb": {
+                    "provider": "mongodb",
                     "options": {
-                        "level": "info",
-                        "log": {
-                            "action": true,
-                            "query": true
-                        },
-                        "actions": ["insert", "update", "delete"]
+                        "connStr": "mongodb://localhost/entreeTest"
                     }
                 }
-            ]
+            }
         }
     },
     "collectons": [
         {
             "name": "blogs",
-            "schema": "blog",
+            "connection": "fs-default"
+        },
+        {
+            "name": "posts",
+            "connection": "fs-default"
+        },
+        {
+            "name": "users",
             "connection": "fs-default",
             "interceptors": [
                 {
@@ -53,44 +38,7 @@
         },
         {
             "name": "comments",
-            "schema": "comment",
-            "connecton": "mongo-node:2",
-            "interceptors": [
-                {
-                    "interceptor": "log",
-                    "disable": true
-                }
-            ]
-        },
-        {
-            "name": "posts",
-            "schema": "post",
-            "replica": ["fs-default", "mongo-node:1"],
-            "master": "mongo-node:1"
-        },
-        {
-            "name": "users",
-            "schema": "user",
-            "shard": {
-                "condition": {
-
-                }
-            }
+            "connection": "mongodb"
         }
-    ],
-    "schema": {
-        "blog": {
-            "identifier": "_id",
-            "title": "string"
-        },
-        "post": {
-            "identifier": "_id"
-        },
-        "comment": {
-            "identifier": "_id"
-        },
-        "user": {
-            "identifier": "_id"
-        }
-    }
+    ]
 }

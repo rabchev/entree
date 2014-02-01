@@ -13,10 +13,10 @@ module.exports = testCase({
 
         entree.createManager(function (err, manager) {
             test.ok(!err);
-            test.equal(manager.providers.length, 0);
+            test.equal(manager.collections.length, 0);
             manager.init(function (err) {
                 test.ok(!err);
-                test.equal(manager.providers.length, 5);
+                test.equal(manager.collections.length, 5);
                 test.ok(manager.config);
                 test.ok(manager.blogs);
                 test.ok(manager.posts);
@@ -40,7 +40,7 @@ module.exports = testCase({
 
         entree.init(function (err) {
             test.ok(!err);
-            test.equal(entree.providers.length, 5);
+            test.equal(entree.collections.length, 5);
             test.ok(entree.config);
             test.ok(entree.blogs);
             test.ok(entree.posts);
@@ -56,25 +56,11 @@ module.exports = testCase({
     "Add Entree Options": function (test) {
         test.expect(4);
 
-        var opts = {
-            model: {
-                providers: [
-                    {
-                        provider: "file-system",
-                        options: {
-                            connStr: "./data"
-                        },
-                        collections: [
-                            { name: "foo" }
-                        ]
-                    }
-                ]
-            }
-        };
+        var opts = {collections: [{ name: "foo", connection: "fs-default" }]};
 
         entree.configure(opts, function (err) {
             test.ok(!err);
-            test.equal(entree.providers.length, 6);
+            test.equal(entree.collections.length, 6);
             test.ok(entree.foo);
             test.equal(entree.foo.dir, path.join(fsPath, "foo"));
             test.done();
