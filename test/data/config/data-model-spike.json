@@ -1,0 +1,90 @@
+{
+    "connections": {
+        "fs-default": {
+            "provider": "file-system",
+            "options": {
+                "connStr": "./data"
+            }
+        },
+        "mongo-node:1": {
+            "provider": "mongodb",
+            "options": {
+                "connStr": "mongodb://localhost/node1"
+            }
+        },
+        "mongo-node:2": {
+            "provider": "mongodb",
+            "options": {
+                "connStr": "mongodb://localhost/node2"
+            },
+            "interceptors": [
+                {
+                    "interceptor": "log",
+                    "disable": false,
+                    "options": {
+                        "level": "info",
+                        "log": {
+                            "action": true,
+                            "query": true
+                        },
+                        "actions": ["insert", "update", "delete"]
+                    }
+                }
+            ]
+        }
+    },
+    "collectons": [
+        {
+            "name": "blogs",
+            "schema": "blog",
+            "connection": "fs-default",
+            "interceptors": [
+                {
+                    "interceptor": "cache",
+                    "disable": false,
+                    "options": {
+                        "stores": [
+                            { "store": "memory", "max": 1000, "ttl": 10 }
+                        ],
+                        "actions": ["get", "select"]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "comments",
+            "schema": "comment",
+            "connecton": "mongo-node:2",
+            "interceptors": [
+                {
+                    "interceptor": "log",
+                    "disable": true
+                }
+            ]
+        },
+        {
+            "name": "posts",
+            "schema": "post",
+            "master": "mongo-node:1"
+        },
+        {
+            "name": "users",
+            "schema": "user"
+        }
+    ],
+    "schema": {
+        "blog": {
+            "__identifier__": "_id",
+            "title": "string"
+        },
+        "post": {
+            "__identifier__": "_id"
+        },
+        "comment": {
+            "__identifier__": "_id"
+        },
+        "user": {
+            "__identifier__": "_id"
+        }
+    }
+}
