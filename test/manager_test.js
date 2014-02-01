@@ -16,7 +16,7 @@ module.exports = testCase({
         manager = new Manager();
         manager.init(function (err) {
             test.ok(!err);
-            test.equal(manager.providers.length, 5);
+            test.equal(manager.collections.length, 5);
             test.ok(manager.config);
             test.ok(manager.blogs);
             test.ok(manager.posts);
@@ -41,18 +41,18 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(manager.myProvider);
             test.equal(manager.myProvider.options.connStr, "test connection string");
-            test.equal(manager.providers.length, 6);
-            test.ok(_.find(manager.providers, function (itm) { return itm.name === "myProvider"; }));
+            test.equal(manager.collections.length, 6);
+            test.ok(_.find(manager.collections, function (itm) { return itm.name === "myProvider"; }));
             test.done();
         });
     },
     "Remove Pdrovider": function (test) {
         test.expect(3);
 
-        manager.removeProvider("myProvider", function (err) {
+        manager.removeCollection("myProvider", function (err) {
             test.ok(!err);
             test.ok(!manager.myProvider);
-            test.equal(manager.providers.length, 5);
+            test.equal(manager.collections.length, 5);
             test.done();
         });
     },

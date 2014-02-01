@@ -11,7 +11,7 @@
             }
         }
     },
-    "collectons": [
+    "collections": [
         {
             "name": "blogs",
             "connection": "fs-default"
