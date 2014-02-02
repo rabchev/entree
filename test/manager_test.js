@@ -4,6 +4,7 @@
 
 var testCase        = require("nodeunit").testCase,
     Manager         = require("../lib/manager"),
+    interceptor     = require("./mocks/interceptor"),
     path            = require("path"),
     _               = require("lodash"),
     manager;
@@ -86,5 +87,70 @@ module.exports = testCase({
             }
             test.done();
         });
-    }
+    },
+    "API - simple insert": function (test) {
+        test.expect(3);
+        manager = new Manager();
+        manager.addCollection("users").done();
+
+        manager.users.insert([
+            { name: "user 1", age: 15 },
+            { name: "user 2", age: 16 },
+            { name: "user 3", age: 16 },
+            { name: "user 4", age: 18 },
+            { name: "user 5", age: 26 },
+            { name: "user 6", age: 12 },
+            { name: "user 7", age: 22 }
+        ], function (err, res) {
+            test.ok(!err);
+            test.equal(res.length, 7);
+            test.ok(res[0]._id);
+            test.done();
+        });
+    },
+    "API - simple select": function (test) {
+        test.expect(4);
+        manager.users.select({ age: 16 }, function (err, currsor) {
+            test.ok(!err);
+            currsor.toArray(function (err, res) {
+                test.ok(!err);
+                test.equal(res.length, 2);
+                test.equal(res[0].name, "user 2");
+                test.done();
+            });
+        });
+    },
+    "API - simple delete": function (test) {
+        test.expect(2);
+        manager.users.select(function (err, currsor) {
+            test.ok(!err);
+            currsor.delete(function (err, res) {
+                test.ok(!err);
+                test.done();
+            });
+        });
+    },
+    "API - fluent add collections": function (test) {
+        test.expect(1);
+        manager
+            .addConnection("mongodb-new", "mongodb", "mongodb://localhost/node1")
+            .addCollection("settings")
+                .setConnection("mongo-new")
+                .use(interceptor.logging)
+            .addCollection("prefs")
+                .setConnection("mongo-new")
+            .done(function (err) {
+                test.ok(!err);
+                test.done();
+            });
+    },
+    "Dispose Manager 2": function (test) {
+        test.expect(0);
+        manager.dispose(function (err) {
+            if (err) {
+                throw err;
+            }
+            test.done();
+        });
+    },
 });
