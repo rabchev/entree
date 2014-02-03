@@ -91,7 +91,7 @@ module.exports = testCase({
     "API - simple insert": function (test) {
         test.expect(3);
         manager = new Manager();
-        manager.addCollection("users").done();
+        manager.addCollection("users");
 
         manager.users.insert([
             { name: "user 1", age: 15 },
@@ -131,16 +131,18 @@ module.exports = testCase({
         });
     },
     "API - fluent add collections": function (test) {
-        test.expect(1);
+        test.expect(3);
         manager
             .addConnection("mongodb-new", "mongodb", "mongodb://localhost/node1")
-            .addCollection("settings")
-                .setConnection("mongo-new")
-                .use(interceptor.logging)
+            .setCollections("settings")
+            .setConnection("mongodb-new")
+            .use(interceptor.logging)
             .addCollection("prefs")
-                .setConnection("mongo-new")
+            .setConnection("mongodb-new")
             .done(function (err) {
                 test.ok(!err);
+                test.ok(manager.settings);
+                test.ok(manager.prefs);
                 test.done();
             });
     },
