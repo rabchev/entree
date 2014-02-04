@@ -1,4 +1,5 @@
 {
+    "defaultConnection": "mongodb",
     "environments": {
         "development": {
              "connections": {
@@ -37,8 +38,7 @@
             ]
         },
         {
-            "name": "comments",
-            "connection": "mongodb"
+            "name": "comments"
         }
     ]
 }
