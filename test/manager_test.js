@@ -155,15 +155,15 @@ module.exports = testCase({
             test.done();
         });
     },
-//    "AddCollection args - set schema skip args": function (test) {
-//        test.expect(2);
-//        manager.schema.bar = { name: "bar" };
-//        manager.addCollection("bars", "mongodb-new", "bar", function (err) {
-//            test.ok(manager.bars);
-//            test.ok(manager.collections.some(function (el) { return el.name === "bars" && el.schema.name === "bar"; }));
-//            test.done();
-//        });
-//    },
+    "AddCollection args - set schema skip args": function (test) {
+        test.expect(2);
+        manager.schema.bar = { name: "bar" };
+        manager.addCollection("bars", "mongodb-new", "bar", function (err) {
+            test.ok(manager.bars);
+            test.ok(manager.collections.some(function (el) { return el.name === "bars" && el.schema.name === "bar"; }));
+            test.done();
+        });
+    },
     "Dispose Manager 2": function (test) {
         test.expect(0);
         manager.dispose(function (err) {
