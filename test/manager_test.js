@@ -146,6 +146,24 @@ module.exports = testCase({
                 test.done();
             });
     },
+    "AddCollection args - set schema by name": function (test) {
+        test.expect(2);
+        manager.schema.foo = { name: "foo" };
+        manager.addCollection("foo", null, null, "foo", function (err) {
+            test.ok(manager.foo);
+            test.ok(manager.collections.some(function (el) { return el.name === "foo" && el.schema.name === "foo"; }));
+            test.done();
+        });
+    },
+//    "AddCollection args - set schema skip args": function (test) {
+//        test.expect(2);
+//        manager.schema.bar = { name: "bar" };
+//        manager.addCollection("bars", "mongodb-new", "bar", function (err) {
+//            test.ok(manager.bars);
+//            test.ok(manager.collections.some(function (el) { return el.name === "bars" && el.schema.name === "bar"; }));
+//            test.done();
+//        });
+//    },
     "Dispose Manager 2": function (test) {
         test.expect(0);
         manager.dispose(function (err) {
