@@ -1,7 +1,7 @@
 {
   "name": "entree",
   "description": "Data Access Framework for NodeJS",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "main": "index",
   "author": "Boyan Rabchev <boyan@rabchev.com>",
   "contributors": [
