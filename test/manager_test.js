@@ -164,6 +164,49 @@ module.exports = testCase({
             test.done();
         });
     },
+    "AddCollection args - set interceptors": function (test) {
+        test.expect(2);
+        manager.addCollection("bazs", [interceptor.logging], function (err) {
+            test.ok(manager.bazs);
+            test.ok(manager.collections.some(function (el) {
+                return el.name === "bazs" && !el.schema.name && el.schema.__collName === "bazs" && el._stack.length === 1;
+            }));
+            test.done();
+        });
+    },
+    "AddCollection args - set interceptors and schema": function (test) {
+        test.expect(2);
+        manager.schema.qux = { name: "qux" };
+        manager.addCollection("quxs", [], "qux", function (err) {
+            test.ok(manager.quxs);
+            test.ok(manager.collections.some(function (el) {
+                return el.name === "quxs" && el.schema.name === "qux" && el._stack.length === 0;
+            }));
+            test.done();
+        });
+    },
+    "AddCollection args - pass schema object": function (test) {
+        test.expect(3);
+        manager.addCollection("izones", { __name__: "izone", __identifier__: "ID" }, function (err) {
+            test.ok(manager.schema.izone);
+            test.ok(manager.izones);
+            test.ok(manager.collections.some(function (el) {
+                return el.name === "izones" && el.schema.__name__ === "izone";
+            }));
+            test.done();
+        });
+    },
+    "AddCollection args - pass schema object with existing name": function (test) {
+        test.expect(3);
+        manager.addCollection("mitras", { __name__: "qux", __identifier__: "ID" }, function (err) {
+            test.equal(err.code, "SCHEMA_EXISTS");
+            test.ok(!manager.mitras);
+            test.ok(!manager.collections.some(function (el) {
+                return el.name === "mitras";
+            }));
+            test.done();
+        });
+    },
     "Dispose Manager 2": function (test) {
         test.expect(0);
         manager.dispose(function (err) {

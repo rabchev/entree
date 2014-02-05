@@ -10,9 +10,9 @@
 	<![endif]-->
 	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
 
-
+	
 	<link type="text/css" rel="stylesheet" href="styles/site.custom.css">
-
+	
 </head>
 
 <body>
@@ -21,58 +21,62 @@
 		<div class="navbar-inner">
 			<a class="brand" href="index.html">Entree</a>
 			<ul class="nav">
-
+				
 				<li class="dropdown">
 					<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
-
+						
 						<li>
 							<a href="module-log.html">log</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 				<li class="dropdown">
 					<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="Cursor.html">Cursor</a>
 						</li>
-
+						
 						<li>
 							<a href="EverliveProvider.html">EverliveProvider</a>
 						</li>
-
+						
+						<li>
+							<a href="Manager.html">Manager</a>
+						</li>
+						
 						<li>
 							<a href="Provider.html">Provider</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 			</ul>
 		</div>
 	</div>
 
 	<div class="row-fluid">
 
-
+		
 		<div class="span8">
-
+			
 				<div id="main">
-
+					
 
 
 	<h1 class="page-title">Class: Provider</h1>
@@ -82,272 +86,288 @@
     <h2>
     Provider
     </h2>
-
+    
         <div class="class-description"><p>Represents a base class for storage specific providers.
 All provider implementations should derive from this class.</p></div>
-
+    
 </header>
 
 <article>
     <div class="container-overview">
+    
 
-
-
-
+    
+        
 <dt>
-    <h4 class="name" id="Provider"><span class="type-signature"></span>new Provider<span class="signature">(opts, schema)</span><span class="type-signature"></span></h4>
-
-
+    <h4 class="name" id="Provider"><span class="type-signature"></span>new Provider<span class="signature">(opts, <span class="optional">schema</span>)</span><span class="type-signature"></span></h4>
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Constructor for the data provider base class. This class cannot be used directly.</p>
 <p>Options</p>
 <ul>
-<li><code>connStr</code> {String} &lt;required&gt;, connection string.</li>
-</ul>
-<p>Schema</p>
-<ul>
-<li><code>__collName</code> {String} &lt;rquiered&gt;, the name of the data collection (table) for the provider.</li>
+<li><code>connStr</code> {String} <required>, connection string.</li>
 </ul>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
+		
+		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>opts</code></td>
-
+            
 
             <td class="type">
+            
+                
+<span class="param-type">object</span>
 
 
-<span class="param-type">Object</span>
-
-
-
+            
             </td>
 
+            
+                <td class="attributes">
+                
 
+                
 
+                
+                </td>
+            
 
+            
 
-            <td class="description last"><p>additional options. The only required options is <code>connStr</code>.</p></td>
+            <td class="description last"><p>additional options. The only required option is <code>connStr</code>.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>schema</code></td>
-
+            
 
             <td class="type">
+            
+                
+<span class="param-type">object</span>
 
 
-<span class="param-type">Object</span>
-
-
-
+            
             </td>
 
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
 
+                
 
+                
+                </td>
+            
 
+            
 
-            <td class="description last"><p>defines the database schema. The only required attribute is <code>__collName</code>.</p></td>
+            <td class="description last"><p>defines the database schema such as fields, indexes, types and structure.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-117">line 117</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-113">line 113</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
+    
 </dd>
 
-
+    
     </div>
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
+    
         <h3 class="subsection-title">Methods</h3>
 
         <dl>
-
+            
 <dt>
     <h4 class="name" id="delete"><span class="type-signature"></span>delete<span class="signature">(<span class="optional">context</span>, item|identity, callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Removes the specified item from the data store.
 If an item with the specified identity is not found an error is returned.</p>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
-
+		
 		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>context</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>provides context for the current execution.
 Usually this is information about the user making the call.
 Although this parameter is optional, it might be required by some interceptors, such as authorization.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>item|identity</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 |
 
@@ -357,108 +377,108 @@ Although this parameter is optional, it might be required by some interceptors, 
 <span class="param-type">Number</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>the item or the identity of an item to be deleted.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>callback</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type"><a href="Provider.html#actionCallback">Provider~actionCallback</a></span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>The callback that handles the result of this action.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-214">line 214</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-210">line 210</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
     <h5>Returns:</h5>
-
-
+    
+            
 
 
 <dl>
@@ -466,7 +486,7 @@ Although this parameter is optional, it might be required by some interceptors, 
 		Type
 	</dt>
 	<dd>
-
+		
 <span class="param-type">null</span>
 
 
@@ -474,100 +494,100 @@ Although this parameter is optional, it might be required by some interceptors, 
 </dl>
 
 
-
-
-
+        
+    
+    
 </dd>
 
-
-
+        
+            
 <dt>
     <h4 class="name" id="get"><span class="type-signature"></span>get<span class="signature">(<span class="optional">context</span>, item|identity, callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Retrieves the specified item from the data store.
 If an item with the specified identity is not found an error is returned.</p>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
-
+		
 		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>context</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>provides context for the current execution.
 Usually this is information about the user making the call.
 Although this parameter is optional, it might be required by some interceptors, such as authorization.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>item|identity</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 |
 
@@ -577,108 +597,108 @@ Although this parameter is optional, it might be required by some interceptors, 
 <span class="param-type">Number</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>the item or the identity of an item to be deleted.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>callback</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type"><a href="Provider.html#actionCallback">Provider~actionCallback</a></span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>The callback that handles the result of this action.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-233">line 233</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-229">line 229</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
     <h5>Returns:</h5>
-
-
+    
+            
 
 
 <dl>
@@ -686,7 +706,7 @@ Although this parameter is optional, it might be required by some interceptors, 
 		Type
 	</dt>
 	<dd>
-
+		
 <span class="param-type">null</span>
 
 
@@ -694,206 +714,206 @@ Although this parameter is optional, it might be required by some interceptors, 
 </dl>
 
 
-
-
-
+        
+    
+    
 </dd>
 
-
-
+        
+            
 <dt>
     <h4 class="name" id="insert"><span class="type-signature"></span>insert<span class="signature">(<span class="optional">context</span>, item, callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Inserts new item in the data store.
 If an item with the same identity is already present in the data store,
 the operation is aborted and an error is returned.</p>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
-
+		
 		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>context</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>Provides context for the current execution.
 Usually this is information about the user making the call.
 Although this parameter is optional, it might be required by some interceptors, such as authorization.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>item</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>the item to be stored.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>callback</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type"><a href="Provider.html#actionCallback">Provider~actionCallback</a></span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>The callback that handles the result of this action.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-158">line 158</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-154">line 154</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
     <h5>Returns:</h5>
-
-
+    
+            
 
 
 <dl>
@@ -901,7 +921,7 @@ Although this parameter is optional, it might be required by some interceptors, 
 		Type
 	</dt>
 	<dd>
-
+		
 <span class="param-type">null</span>
 
 
@@ -909,21 +929,21 @@ Although this parameter is optional, it might be required by some interceptors, 
 </dl>
 
 
-
-
-
+        
+    
+    
 </dd>
 
-
-
+        
+            
 <dt>
     <h4 class="name" id="select"><span class="type-signature"></span>select<span class="signature">(<span class="optional">context</span>, <span class="optional">query</span>, <span class="optional">options</span>, <span class="optional">callback</span>)</span><span class="type-signature"> &rarr; {null|<a href="Cursor.html">Cursor</a>}</span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Selects items in the data store and returns a <a href="Cursor.html">Cursor</a> to the selected items.</p>
 <p>This method can return a Cursor either directly or with a callback. In most cases a cursor is created and returned synchronously, but some interceptors like <a href="module-cache.html">module:cache</a> require a callback. If you plan to use asynchronous interceptors you have to use the callback form.</p>
@@ -935,221 +955,221 @@ Although this parameter is optional, it might be required by some interceptors, 
 <li><code>sort</code> {Object}, set to sort the documents coming back from the query.</li>
 </ul>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
-
+		
 		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>context</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>Provides context for the current execution.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>query</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>Specifies selection criteria. To return all items in a collection, omit this parameter or pass an empty object.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>options</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>Additional options for the cursor.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>callback</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">function</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>Optional callback function that will be called when the <a href="Cursor.html">Cursor</a> is constructed.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-313">line 313</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-309">line 309</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
     <h5>Returns:</h5>
-
-
+    
+            
 <div class="param-desc">
     <ul>
 <li>The method returns null if a callback is provided otherwise it returns a <a href="Cursor.html">Cursor</a>.</li>
@@ -1163,7 +1183,7 @@ Although this parameter is optional, it might be required by some interceptors, 
 		Type
 	</dt>
 	<dd>
-
+		
 <span class="param-type">null</span>
 |
 
@@ -1174,261 +1194,211 @@ Although this parameter is optional, it might be required by some interceptors, 
 </dl>
 
 
-
-
-
+        
+    
+    
         <h5>Example</h5>
-
-    <pre class="sunlight-highlight-javascript"> // Select at most 10 teenagers starting from the 21th that matches the criteria:
- entree.users.select({ age: { $gte: 13,  $lte: 19 }})
-     .skip(20)
-     .limit(10)
-     .sort({ age: 1 })
-     .each(function (err, user)) {
-         if (err) {
-             return console.log(err);
-         }
-         console.log(JSON.stringify(user));
-     });
-
- // Do the same but with a callback - the recommended way if interceptors are used on the select method:
- entree.users.select({ age: { $gte: 13, $lte: 19 }}, function (err, cursor) {
-     if (err) {
-         return console.log(err);
-     }
-     cursor
-         .skip(20)
-         .limit(10)
-         .sort({ age: 1 })
-         .each(function (err, user) {
-             if (err) {
-                 return console.log(err);
-             }
-             console.log(JSON.stringify(user));
-         });
- });
-
- // Again the same but limitations set as options:
- entree.users.select({ age: { $gte: 13,  $lte: 19 }}, { skip: 20, limit: 10, sort: { age: 1 }}, function (err, cursor) {
-     if (err) {
-         return console.log(err);
-     }
-     cursor.each(function (err, user) {
-         if (err) {
-             return console.log(err);
-         }
-         onsole.log(JSON.stringify(user));
-     });
- });
-
- // Get the total number of all users in the collection:
- entree.users.select(function (err, currsor) {
-     cursor.count(err, count) {
-         if (err) {
-             return console.log(err);
-         }
-         console.log(count);
-     });
- });</pre>
+        
+    <pre class="sunlight-highlight-javascript"> // Select at most 10 teenagers starting from the 21th that matches the criteria: entree.users.select({ age: { $gte: 13,  $lte: 19 }})     .skip(20)     .limit(10)     .sort({ age: 1 })     .each(function (err, user)) {         if (err) {             return console.log(err);         }         console.log(JSON.stringify(user));     }); // Do the same but with a callback - the recommended way if interceptors are used on the select method: entree.users.select({ age: { $gte: 13, $lte: 19 }}, function (err, cursor) {     if (err) {         return console.log(err);     }     cursor         .skip(20)         .limit(10)         .sort({ age: 1 })         .each(function (err, user) {             if (err) {                 return console.log(err);             }             console.log(JSON.stringify(user));         }); }); // Again the same but limitations set as options: entree.users.select({ age: { $gte: 13,  $lte: 19 }}, { skip: 20, limit: 10, sort: { age: 1 }}, function (err, cursor) {     if (err) {         return console.log(err);     }     cursor.each(function (err, user) {         if (err) {             return console.log(err);         }         onsole.log(JSON.stringify(user));     }); }); // Get the total number of all users in the collection: entree.users.select(function (err, currsor) {     cursor.count(err, count) {         if (err) {             return console.log(err);         }         console.log(count);     }); });</pre>
 
 
-
+    
 </dd>
 
-
-
+        
+            
 <dt>
     <h4 class="name" id="update"><span class="type-signature"></span>update<span class="signature">(<span class="optional">context</span>, item, callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Updates the specified item with the provided fields.
 If an item with the specified identity could not be found an error is returned.</p>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
-
+		
 		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>context</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>provides context for the current execution.
 Usually this is information about the user making the call.
 Although this parameter is optional, it might be required by some interceptors, such as authorization.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>item</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>the item to be updated.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>callback</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type"><a href="Provider.html#actionCallback">Provider~actionCallback</a></span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>The callback that handles the result of this action.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-195">line 195</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-191">line 191</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
     <h5>Returns:</h5>
-
-
+    
+            
 
 
 <dl>
@@ -1436,7 +1406,7 @@ Although this parameter is optional, it might be required by some interceptors, 
 		Type
 	</dt>
 	<dd>
-
+		
 <span class="param-type">null</span>
 
 
@@ -1444,204 +1414,204 @@ Although this parameter is optional, it might be required by some interceptors, 
 </dl>
 
 
-
-
-
+        
+    
+    
 </dd>
 
-
-
+        
+            
 <dt>
     <h4 class="name" id="upsert"><span class="type-signature"></span>upsert<span class="signature">(<span class="optional">context</span>, item, callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Inserts new item in the data store if the item is not present, otherwise updates it.</p>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
-
+		
 		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>context</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>provides context for the current execution.
 Usually this is information about the user making the call.
 Although this parameter is optional, it might be required by some interceptors, such as authorization.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>item</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">Object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>the item to be added or updated.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>callback</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type"><a href="Provider.html#actionCallback">Provider~actionCallback</a></span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>The callback that handles the result of this action.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-176">line 176</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-172">line 172</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
     <h5>Returns:</h5>
-
-
+    
+            
 
 
 <dl>
@@ -1649,7 +1619,7 @@ Although this parameter is optional, it might be required by some interceptors, 
 		Type
 	</dt>
 	<dd>
-
+		
 <span class="param-type">null</span>
 
 
@@ -1657,27 +1627,27 @@ Although this parameter is optional, it might be required by some interceptors, 
 </dl>
 
 
-
-
-
+        
+    
+    
 </dd>
 
         </dl>
+    
 
-
-
+    
         <h3 class="subsection-title">Type Definitions</h3>
 
         <dl>
-
+                
 <dt>
     <h4 class="name" id="actionCallback"><span class="type-signature"></span>actionCallback<span class="signature">(err, res)</span><span class="type-signature"></span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>This callback will be called after executing the method.
 The first parameter will contain an error object if an error occurred during execution,
@@ -1687,138 +1657,138 @@ that were originally passed plus any fields that were automatically updated, suc
 <p>NOTE: the returned result on insert, update and delete may differ slightly for the different providers, but if no
 error is returned the operation is considered successful.</p>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>err</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
+            
 
-
-
+            
 
             <td class="description last"><p>the error object upon unsuccessful execution.</p></td>
         </tr>
 
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>res</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
+            
 
-
-
+            
 
             <td class="description last"><p>the result object upon successful execution.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-129">line 129</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-125">line 125</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
+    
+    
 </dd>
 
             </dl>
+    
 
-
-
+    
 </article>
 
 </section>
@@ -1830,25 +1800,25 @@ error is returned the operation is considered successful.</p>
 
 				<div class="clearfix"></div>
 				<footer>
-
-
+					
+					
 		<span class="copyright">
 		Entree Copyright © 2012-2013 The contributors to the Entree projects.
 		</span>
 					<br />
-
+					
 		<span class="jsdoc-message">
-		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Tue Jan 28 2014 23:44:15 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
+		on Wed Feb 05 2014 17:40:42 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
 
-
+			
 			<div class="span3">
 				<div id="toc"></div>
 			</div>
-
+			
 			<br clear="both">
 		</div>
 
@@ -1880,7 +1850,7 @@ error is returned the operation is considered successful.</p>
 		} );
 	</script>
 
-
+	
 
 </body>
 </html>
