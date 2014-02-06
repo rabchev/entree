@@ -55,7 +55,25 @@
 						</li>
 						
 						<li>
+							<a href="Manager.html">Manager</a>
+						</li>
+						
+						<li>
 							<a href="Provider.html">Provider</a>
+						</li>
+						
+
+					</ul>
+				</li>
+				
+				<li class="dropdown">
+					<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b
+						class="caret"></b></a>
+
+					<ul class="dropdown-menu ">
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
 						</li>
 						
 
@@ -95,7 +113,7 @@ All provider implementations should derive from this class.</p></div>
     
         
 <dt>
-    <h4 class="name" id="Provider"><span class="type-signature"></span>new Provider<span class="signature">(opts, schema)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Provider"><span class="type-signature"></span>new Provider<span class="signature">(opts, <span class="optional">schema</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -107,10 +125,6 @@ All provider implementations should derive from this class.</p></div>
 <p>Options</p>
 <ul>
 <li><code>connStr</code> {String} &lt;required&gt;, connection string.</li>
-</ul>
-<p>Schema</p>
-<ul>
-<li><code>__collName</code> {String} &lt;rquiered&gt;, the name of the data collection (table) for the provider.</li>
 </ul>
     </div>
     
@@ -133,6 +147,8 @@ All provider implementations should derive from this class.</p></div>
 		<th>Type</th>
 
 		
+		<th>Argument</th>
+		
 
 		
 
@@ -151,17 +167,25 @@ All provider implementations should derive from this class.</p></div>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>additional options. The only required options is <code>connStr</code>.</p></td>
+            <td class="description last"><p>additional options. The only required option is <code>connStr</code>.</p></td>
         </tr>
 
 	
@@ -174,17 +198,27 @@ All provider implementations should derive from this class.</p></div>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>defines the database schema. The only required attribute is <code>__collName</code>.</p></td>
+            <td class="description last"><p>defines the database schema such as fields, indexes, types and structure.</p></td>
         </tr>
 
 	
@@ -216,7 +250,7 @@ All provider implementations should derive from this class.</p></div>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-117">line 117</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-113">line 113</a>
     </li></ul></dd>
     
 
@@ -435,7 +469,7 @@ Although this parameter is optional, it might be required by some interceptors, 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-214">line 214</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-210">line 210</a>
     </li></ul></dd>
     
 
@@ -655,7 +689,7 @@ Although this parameter is optional, it might be required by some interceptors, 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-233">line 233</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-229">line 229</a>
     </li></ul></dd>
     
 
@@ -870,7 +904,7 @@ Although this parameter is optional, it might be required by some interceptors, 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-158">line 158</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-154">line 154</a>
     </li></ul></dd>
     
 
@@ -1126,7 +1160,7 @@ Although this parameter is optional, it might be required by some interceptors, 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-313">line 313</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-309">line 309</a>
     </li></ul></dd>
     
 
@@ -1405,7 +1439,7 @@ Although this parameter is optional, it might be required by some interceptors, 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-195">line 195</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-191">line 191</a>
     </li></ul></dd>
     
 
@@ -1618,7 +1652,7 @@ Although this parameter is optional, it might be required by some interceptors, 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-176">line 176</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-172">line 172</a>
     </li></ul></dd>
     
 
@@ -1790,7 +1824,7 @@ error is returned the operation is considered successful.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-129">line 129</a>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-125">line 125</a>
     </li></ul></dd>
     
 
@@ -1833,13 +1867,13 @@ error is returned the operation is considered successful.</p>
 					
 					
 		<span class="copyright">
-		Entree Copyright © 2012-2013 The contributors to the Entree projects.
+		Entree Copyright © 2013-2014 The contributors to the Entree projects.
 		</span>
 					<br />
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Tue Jan 28 2014 23:44:15 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Fri Feb 07 2014 01:17:21 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
