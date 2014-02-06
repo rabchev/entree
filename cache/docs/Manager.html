@@ -66,6 +66,20 @@
 					</ul>
 				</li>
 				
+				<li class="dropdown">
+					<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b
+						class="caret"></b></a>
+
+					<ul class="dropdown-menu ">
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
+						</li>
+						
+
+					</ul>
+				</li>
+				
 			</ul>
 		</div>
 	</div>
@@ -702,7 +716,7 @@ If omitted the default connection will be used.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-586">line 586</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-588">line 588</a>
     </li></ul></dd>
     
 
@@ -771,6 +785,7 @@ Each connection represents a connection to a database or data storage service wi
 <li>provider: &quot;file-system&quot;</li>
 <li>connection string: &quot;./data&quot; - the path is relative to the <code>process.cwd()</code></li>
 </ul>
+<p>The default connection can be changed: <code>entree.defaultConnection = &quot;mongo-default&quot;;</code></p>
     </div>
     
 
@@ -904,7 +919,7 @@ This argument is required and at least connection string must be present.</p></t
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-540">line 540</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-542">line 542</a>
     </li></ul></dd>
     
 
@@ -1127,7 +1142,7 @@ This argument is required and at least connection string must be present.</p></t
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-607">line 607</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-609">line 609</a>
     </li></ul></dd>
     
 
@@ -1180,7 +1195,7 @@ This argument is required and at least connection string must be present.</p></t
         
             
 <dt>
-    <h4 class="name" id="configure"><span class="type-signature"></span>configure<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="configure"><span class="type-signature"></span>configure<span class="signature">(<span class="optional">opts</span>, <span class="optional">callback</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -1188,7 +1203,14 @@ This argument is required and at least connection string must be present.</p></t
     
     
     <div class="description">
-        <p>Configures this instance.</p>
+        <p>Sets up the entire infrastructure for the current Entree instance.
+That includes database connections, data collections, data schemas, interceptors, replica sets and shards.
+The configuration information can be provided either as an object argument for this method or a configuration document (file) in JSON format.
+For full description of the configuration format please see the <a href="tutorial-configuration.html">Configuration</a> tutorial.</p>
+<p>If the <code>opts</code> argument is omitted, Entree will try to find &quot;data-model&quot; document in the <a href="tutorial-default-config-collection.html">Default Config Collection</a>.
+By convention &quot;data-model&quot; is the default configuration file for Entree.
+There may be additional configuration documents as described in the <a href="tutorial-default-config-collection.html">Default Config Collection</a> tutorial.</p>
+<p>This method may be called multiple times; in which case all non-overlapping settings will be appended and overlapping ones will be merged.</p>
     </div>
     
 
@@ -1196,6 +1218,100 @@ This argument is required and at least connection string must be present.</p></t
     
     
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+		<th>Argument</th>
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Object containing configuration information and additional options.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>An optional callback that will be called after the configuration is processed and all connections are initialized.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     
@@ -1221,7 +1337,7 @@ This argument is required and at least connection string must be present.</p></t
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-641">line 641</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-669">line 669</a>
     </li></ul></dd>
     
 
@@ -1345,7 +1461,7 @@ rights of the caller for the current operation.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-678">line 678</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-706">line 706</a>
     </li></ul></dd>
     
 
@@ -1412,7 +1528,7 @@ rights of the caller for the current operation.</p>
     
     
     <div class="description">
-        <p>Closes all opened database connections and clears current state and all cached data if any.
+        <p>Closes all opened database connections, clears current state and cached data if any.
 The manager instance can no longer be used after dispose.</p>
     </div>
     
@@ -1495,7 +1611,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-617">line 617</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-619">line 619</a>
     </li></ul></dd>
     
 
@@ -1583,7 +1699,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-648">line 648</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-676">line 676</a>
     </li></ul></dd>
     
 
@@ -1701,7 +1817,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-596">line 596</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-598">line 598</a>
     </li></ul></dd>
     
 
@@ -1856,7 +1972,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-549">line 549</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-551">line 551</a>
     </li></ul></dd>
     
 
@@ -1909,7 +2025,7 @@ The manager instance can no longer be used after dispose.</p>
         
             
 <dt>
-    <h4 class="name" id="resolveInterceptor"><span class="type-signature"></span>resolveInterceptor<span class="signature">()</span><span class="type-signature"> &rarr; {module}</span></h4>
+    <h4 class="name" id="resolveInterceptor"><span class="type-signature"></span>resolveInterceptor<span class="signature">(name)</span><span class="type-signature"> &rarr; {module}</span></h4>
     
     
 </dt>
@@ -1925,6 +2041,55 @@ The manager instance can no longer be used after dispose.</p>
     
     
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of a built-in interceptor or path to a custom interception module.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     
@@ -1950,7 +2115,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-633">line 633</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-651">line 651</a>
     </li></ul></dd>
     
 
@@ -1998,12 +2163,18 @@ The manager instance can no longer be used after dispose.</p>
         
     
     
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript"> var entree = require("entree"),     cache = enree.resolveInterceptor("cache"),     stores    = [         { store: "memory", max: 1000, ttl: 10 },         { store: "redis", db: 0, ttl: 100 }     ],     caching = cache.interception(stores, ["get", "select"]); entree.addCollection("users", [caching]); // or add interceptor at later stage entree.users.use(caching);</pre>
+
+
+    
 </dd>
 
         
             
 <dt>
-    <h4 class="name" id="resolveProvider"><span class="type-signature"></span>resolveProvider<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="Provider.html">Provider</a>}</span></h4>
+    <h4 class="name" id="resolveProvider"><span class="type-signature"></span>resolveProvider<span class="signature">(name)</span><span class="type-signature"> &rarr; {<a href="Provider.html">Provider</a>}</span></h4>
     
     
 </dt>
@@ -2019,6 +2190,55 @@ The manager instance can no longer be used after dispose.</p>
     
     
     
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The name of a built-in data provider or path to a custom provider module.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
     
     
     
@@ -2044,7 +2264,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-625">line 625</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-628">line 628</a>
     </li></ul></dd>
     
 
@@ -2187,7 +2407,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-572">line 572</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-574">line 574</a>
     </li></ul></dd>
     
 
@@ -2257,13 +2477,13 @@ The manager instance can no longer be used after dispose.</p>
 					
 					
 		<span class="copyright">
-		Entree Copyright © 2012-2013 The contributors to the Entree projects.
+		Entree Copyright © 2013-2014 The contributors to the Entree projects.
 		</span>
 					<br />
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Wed Feb 05 2014 17:40:41 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Thu Feb 06 2014 17:52:49 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
