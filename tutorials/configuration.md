@@ -12,7 +12,9 @@ The following table describes the elements considered at the first level of the 
 
 Elements are processed in the order listed above.
 
-### <a name='connections'></a> Connections
+<a name='connections'></a>
+
+### Connections
 
 The following table describes connection settings:
 
@@ -35,7 +37,9 @@ Every instance has one predefined connection which has the following settings:
     }
 ```
 
-### <a name='schema'></a> Schema
+<a name='schema'></a>
+
+### Schema
 
 **TODO:** Schema support is not fully implemented yet.
 
@@ -58,7 +62,9 @@ Example:
     }
 ```
 
-### <a name='collections' Collections
+<a name='collections'></a>
+
+### Collections
 
 The following table describes connection settings:
 
