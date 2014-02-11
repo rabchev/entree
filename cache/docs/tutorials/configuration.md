@@ -10,9 +10,9 @@ The following table describes the elements considered at the first level of the 
 | [shards](#shards)             | `Array`   | An array of shard definitions.                                                        |
 | [environments](#environments) | `Object`  | A collection of objects, each representing an environment. An environment can contain any of the above elements. |
 
-Elements are processed in the order listed above.
+*Elements are processed in the order listed above.*
 
-<a name='connections'></a>
+<a name='connections'>&nbsp;</a>
 
 ### Connections
 
@@ -37,7 +37,7 @@ Every instance has one predefined connection which has the following settings:
     }
 ```
 
-<a name='schema'></a>
+<a name='schema'>&nbsp;</a>
 
 ### Schema
 
@@ -62,7 +62,7 @@ Example:
     }
 ```
 
-<a name='collections'></a>
+<a name='collections'>&nbsp;</a>
 
 ### Collections
 
