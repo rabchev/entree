@@ -52,7 +52,18 @@
             ]
         },
         {
-            "name": "comments",
+            "name": "comments-mongo-hq",
+            "schema": "comment",
+            "connecton": "mongo-hq",
+            "interceptors": [
+                {
+                    "interceptor": "log",
+                    "disable": true
+                }
+            ]
+        },
+        {
+            "name": "comments-local",
             "schema": "comment",
             "connecton": "mongo-node:2",
             "interceptors": [
@@ -64,12 +75,46 @@
         },
         {
             "name": "posts",
-            "schema": "post",
-            "master": "mongo-node:1"
+            "schema": "post"
         },
         {
-            "name": "users",
+            "name": "users-special",
+            "connecton": "mongo-node:1",
             "schema": "user"
+        },
+        {
+            "name": "users-reqular",
+            "connecton": "mongo-node:2",
+            "schema": "user"
+        }
+    ],
+    "replicas": [
+        {
+            "name": "comments",
+            "collections": ["comments-mongo-hq", "comments-mongo-local"],
+            "options": {
+                "master": "comments-mongo-hq",
+                "wait": "master"
+            }
+        }
+    ],
+    "shards": [
+        {
+            "name": "users",
+            "rules": [
+                {
+                    "condition": {
+                        "license": "foo"
+                    },
+                    "consequence": "users-special"
+                },
+                {
+                    "condition": {
+                        "license": "bar"
+                    },
+                    "consequence": "users-reqular"
+                }
+            ]
         }
     ],
     "schema": {
