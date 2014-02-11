@@ -156,7 +156,7 @@ Please see the {@tutorial sharding} tutorial for more details.
 
 ### Environments
 
-The environments collection contains groups of settings that are applied only if NODE_ENV environment variable matches the settings group name.
+The environments collection contains groups of settings that are applied only if `NODE_ENV` environment variable matches the settings group name.
 
 Consider the following example:
 ```javascript
@@ -195,7 +195,7 @@ Consider the following example:
     }
 ```
 
-In the example above: if the **$NODE_ENV** environment variable equals "testing", than the **connStr** for "main-data" connection will be "mongodb://test-db.domain.com".
-If **NODE_ENV** is not set or it doesn’t match any of the environment groups, than the configuration that is outside of the "environments" collection will take place.
+In the example above: if the `$NODE_ENV` environment variable equals "testing", than the `connStr` for "main-data" connection will be "mongodb://test-db.domain.com".
+If `NODE_ENV` is not set or it doesn’t match any of the environment groups, than the configuration that is outside of the "environments" collection will take place.
 
 Matching elements inside environments are merged with the once that are outside. This allows you to configure only the properties which values differ.
