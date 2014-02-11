@@ -62,6 +62,13 @@ html {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
 }
+thead {
+  background-color: lightgray;
+  text-align: left;
+}
+td {
+  padding-right: 20px;
+}
 a:focus {
   outline: thin dotted #333;
   outline: 5px auto -webkit-focus-ring-color;
@@ -182,6 +189,8 @@ textarea {
   }
   thead {
     display: table-header-group;
+    background-color: lightgray;
+    text-align: left;
   }
   tr,
   img {
