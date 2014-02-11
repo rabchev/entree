@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Entree tutorialConfiguration</title>
+	<title>EntreeJS tutorialConfiguration</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -19,7 +19,7 @@
 <div class="container-fluid">
 	<div class="navbar navbar-fixed-top ">
 		<div class="navbar-inner">
-			<a class="brand" href="index.html">Entree</a>
+			<a class="brand" href="index.html">EntreeJS</a>
 			<ul class="nav">
 				
 				<li class="dropdown">
@@ -76,6 +76,18 @@
 							<a href="tutorial-configuration.html">Configuration</a>
 						</li>
 						
+						<li>
+							<a href="tutorial-replicas.html">Application Level Replication</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
 
 					</ul>
 				</li>
@@ -103,7 +115,7 @@
 </header>  
 
 <article>
-    <p>The following table describes the elements considered at the first level of the configuration document/object:</p>
+    <p>The following table describes the elements considered at the first level of the configuration document / object:</p>
 <table>
 <thead>
 <tr>
@@ -115,37 +127,37 @@
 <tbody>
 <tr>
 <td><a href="#connections">connections</a></td>
-<td><code>Object</code></td>
+<td><code>object</code></td>
 <td>A collection of connection settings.</td>
 </tr>
 <tr>
 <td>defaultConnection</td>
-<td><code>String</code></td>
+<td><code>string</code></td>
 <td>Sets the default connection for the instance. Defaults to &quot;fs-default&quot;.</td>
 </tr>
 <tr>
 <td><a href="#schema">schema</a></td>
-<td><code>Objec</code></td>
+<td><code>object</code></td>
 <td>Defines persistent objects, relations, mapping and indexes.</td>
 </tr>
 <tr>
 <td><a href="#collections">collections</a></td>
-<td><code>Array</code></td>
+<td><code>object[]</code></td>
 <td>An array of data collection settings.</td>
 </tr>
 <tr>
 <td><a href="#replicas">replicas</a></td>
-<td><code>Array</code></td>
+<td><code>object[]</code></td>
 <td>An array of replica set definitions.</td>
 </tr>
 <tr>
 <td><a href="#shards">shards</a></td>
-<td><code>Array</code></td>
+<td><code>object[]</code></td>
 <td>An array of shard definitions.</td>
 </tr>
 <tr>
 <td><a href="#environments">environments</a></td>
-<td><code>Object</code></td>
+<td><code>object</code></td>
 <td>A collection of objects, each representing an environment. An environment can contain any of the above elements.</td>
 </tr>
 </tbody>
@@ -165,13 +177,18 @@
 <tbody>
 <tr>
 <td>provider</td>
-<td><code>String</code></td>
+<td><code>string</code></td>
 <td>The name of a built-in or external data provider or the path to a custom provider.</td>
 </tr>
 <tr>
 <td>options</td>
-<td><code>Object</code></td>
+<td><code>object</code></td>
 <td>Provider specific configuration options. However, it must provide <code>connStr</code> value.</td>
+</tr>
+<tr>
+<td><a href="#interceptors">interceptors</a></td>
+<td><code>object[]</code></td>
+<td>An array of interception settings to attach to every data collection using this connection.</td>
 </tr>
 </tbody>
 </table>
@@ -207,7 +224,7 @@
     }</code></pre>
 <p><a name='collections'>&nbsp;</a></p>
 <h3>Collections</h3>
-<p>The following table describes connection settings:</p>
+<p>The following table describes collection settings:</p>
 <table>
 <thead>
 <tr>
@@ -219,21 +236,161 @@
 <tbody>
 <tr>
 <td>name</td>
-<td><code>String</code></td>
+<td><code>string</code></td>
 <td>The name of the data collection. The name must be unique within a Manger instance.</td>
 </tr>
 <tr>
 <td>connection</td>
-<td><code>String</code></td>
+<td><code>string</code></td>
 <td>Specifies which connection should be used to store and retrieve data. If omitted the default connection will be used.</td>
 </tr>
 <tr>
-<td>interceptors</td>
-<td><code>Array</code></td>
+<td>schema</td>
+<td><code>string</code></td>
+<td>Maps the collection to data model schema.</td>
+</tr>
+<tr>
+<td><a href="#interceptors">interceptors</a></td>
+<td><code>object[]</code></td>
 <td>An array of interception settings to attach to the collection.</td>
 </tr>
 </tbody>
 </table>
+<p><a name='interceptors'>&nbsp;</a></p>
+<h3>Interceptors</h3>
+<p>The following tabel describes interceptor settings:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>interceptor</td>
+<td><code>string</code></td>
+<td>The name of a built-in or external interceptor or the path to a custom interceptor.</td>
+</tr>
+<tr>
+<td>disable</td>
+<td><code>boolean</code></td>
+<td>If set to true, causes the interceptor to be ignored.</td>
+</tr>
+<tr>
+<td>options</td>
+<td><code>object</code></td>
+<td>Interceptor implementation specific configuration options.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>IMPORTANT:</strong> The order of which the interceptors are defined is vital for their proper functioning.</p>
+<p>Interceptors defined on connection level are automatically attached to all collections using that connection, prior to interceptors defined on the collection level. It is possible to avoid an interceptor for a specific collection even if it was defined on the connection level by setting disable property to true.</p>
+<p>Please see the <a href="tutorial-interceptors.html">Interceptors</a> tutorial for more details.</p>
+<p>Example:</p>
+<pre><code class="lang-javascript">    {
+        &quot;interceptors&quot;: [
+            {
+                &quot;interceptor&quot;: &quot;cache&quot;,
+                &quot;disable&quot;: false,
+                &quot;options&quot;: {
+                    &quot;stores&quot;: [
+                        { &quot;store&quot;: &quot;memory&quot;, &quot;max&quot;: 1000, &quot;ttl&quot;: 10 }
+                    ],
+                    &quot;actions&quot;: [&quot;get&quot;, &quot;select&quot;]
+                }
+            }
+        ]
+    }</code></pre>
+<p><a name='replicas'>&nbsp;</a></p>
+<h3>Replica Sets</h3>
+<p>The following tabel describes replicas settings:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>name</td>
+<td><code>string</code></td>
+<td>The name of the replica set. The name must be unique within a Manger instance.</td>
+</tr>
+<tr>
+<td>collections</td>
+<td><code>string[]</code></td>
+<td>An array of collection names, the ones that will constitute the replica set.</td>
+</tr>
+<tr>
+<td>options</td>
+<td><code>object</code></td>
+<td>Additional options for the replica set.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>IMPORTANT:</strong> Replica sets are accessed and treated just like regular data collections. Therefore, their names should be unique altogether within collections and shards.</p>
+<p>Please see the <a href="tutorial-replicas.html">Application Level Replication</a> tutorial for more details.</p>
+<p>Example:</p>
+<pre><code class="lang-javascript">    {
+        &quot;replicas&quot;: [
+            {
+                &quot;name&quot;: &quot;comments&quot;,
+                &quot;collections&quot;: [&quot;comments-mongo-hq&quot;, &quot;comments-local&quot;],
+                &quot;options&quot;: {
+                    &quot;master&quot;: &quot;comments-mongo-hq&quot;,
+                    &quot;wait&quot;: &quot;master&quot;
+                }
+            }
+        ]
+    }</code></pre>
+<p><a name='shards'>&nbsp;</a></p>
+<h3>Shards</h3>
+<p><strong>TODO:</strong> In progress.</p>
+<p>Please see the <a href="tutorial-sharding.html">Application Level Sharding</a> tutorial for more details.</p>
+<p><a name='environments'>&nbsp;</a></p>
+<h3>Environments</h3>
+<p>The environments collection contains groups of settings that are applied only if <code>NODE_ENV</code> environment variable matches the settings group name.</p>
+<p>Consider the following example:</p>
+<pre><code class="lang-javascript">    {
+        &quot;defaultConnection&quot;: &quot;main-data&quot;,
+        &quot;connections&quot;: {
+            &quot;main-data&quot;: {
+                &quot;provider&quot;: &quot;file-system&quot;,
+                &quot;options&quot;: {
+                    &quot;connStr&quot;: &quot;./data&quot;
+                }
+            }
+        },
+        &quot;environments&quot;: {
+            &quot;testing&quot;: {
+                &quot;connections&quot;: {
+                    &quot;main-data&quot;: {
+                        &quot;provider&quot;: &quot;mongodb&quot;,
+                        &quot;options&quot;: {
+                            &quot;connStr&quot;: &quot;mongodb://test-db.domain.com&quot;
+                        }
+                    }
+                }
+            },
+            &quot;production&quot;: {
+                &quot;connections&quot;: {
+                    &quot;main-data&quot;: {
+                        &quot;provider&quot;: &quot;mongodb&quot;,
+                        &quot;options&quot;: {
+                            &quot;connStr&quot;: &quot;mongodb://db.domian.com&quot;
+                        }
+                    }
+                }
+            }
+        }
+    }</code></pre>
+<p>In the example above: if the <code>$NODE_ENV</code> environment variable equals &quot;testing&quot;, than the <code>connStr</code> for &quot;main-data&quot; connection will be &quot;mongodb://test-db.domain.com&quot;.
+If <code>NODE_ENV</code> is not set or it doesn’t match any of the environment groups, than the configuration that is outside of the &quot;environments&quot; collection will take place.</p>
+<p>Matching elements inside environments are merged with the once that are outside. This allows you to configure only the properties which values differ.</p>
 </article>
 
 </section>  
@@ -245,13 +402,13 @@
 					
 					
 		<span class="copyright">
-		Entree Copyright © 2013-2014 The contributors to the Entree projects.
+		EntreeJS Copyright © 2013-2014 The contributors to the Entree projects.
 		</span>
 					<br />
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Tue Feb 11 2014 06:52:00 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Wed Feb 12 2014 00:27:25 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
