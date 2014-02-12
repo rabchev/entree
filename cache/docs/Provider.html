@@ -77,19 +77,19 @@
 						</li>
 						
 						<li>
-							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
-						</li>
-						
-						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
-						</li>
-						
-						<li>
 							<a href="tutorial-replicas.html">Application Level Replication</a>
 						</li>
 						
 						<li>
 							<a href="tutorial-sharding.html">Application Level Sharding</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-interceptors.html">Interceptors</a>
 						</li>
 						
 
@@ -140,7 +140,7 @@ All provider implementations should derive from this class.</p></div>
         <p>Constructor for the data provider base class. This class cannot be used directly.</p>
 <p>Options</p>
 <ul>
-<li><code>connStr</code> {String} <required>, connection string.</li>
+<li><code>connStr</code> {String} &lt;required&gt;, connection string.</li>
 </ul>
     </div>
     
@@ -1229,9 +1229,306 @@ Although this parameter is optional, it might be required by some interceptors, 
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript"> // Select at most 10 teenagers starting from the 21th that matches the criteria: entree.users.select({ age: { $gte: 13,  $lte: 19 }})     .skip(20)     .limit(10)     .sort({ age: 1 })     .each(function (err, user)) {         if (err) {             return console.log(err);         }         console.log(JSON.stringify(user));     }); // Do the same but with a callback - the recommended way if interceptors are used on the select method: entree.users.select({ age: { $gte: 13, $lte: 19 }}, function (err, cursor) {     if (err) {         return console.log(err);     }     cursor         .skip(20)         .limit(10)         .sort({ age: 1 })         .each(function (err, user) {             if (err) {                 return console.log(err);             }             console.log(JSON.stringify(user));         }); }); // Again the same but limitations set as options: entree.users.select({ age: { $gte: 13,  $lte: 19 }}, { skip: 20, limit: 10, sort: { age: 1 }}, function (err, cursor) {     if (err) {         return console.log(err);     }     cursor.each(function (err, user) {         if (err) {             return console.log(err);         }         onsole.log(JSON.stringify(user));     }); }); // Get the total number of all users in the collection: entree.users.select(function (err, currsor) {     cursor.count(err, count) {         if (err) {             return console.log(err);         }         console.log(count);     }); });</pre>
+    <pre class="sunlight-highlight-javascript"> // Select at most 10 teenagers starting from the 21th that matches the criteria:
+ entree.users.select({ age: { $gte: 13,  $lte: 19 }})
+     .skip(20)
+     .limit(10)
+     .sort({ age: 1 })
+     .each(function (err, user)) {
+         if (err) {
+             return console.log(err);
+         }
+         console.log(JSON.stringify(user));
+     });
+
+ // Do the same but with a callback - the recommended way if interceptors are used on the select method:
+ entree.users.select({ age: { $gte: 13, $lte: 19 }}, function (err, cursor) {
+     if (err) {
+         return console.log(err);
+     }
+     cursor
+         .skip(20)
+         .limit(10)
+         .sort({ age: 1 })
+         .each(function (err, user) {
+             if (err) {
+                 return console.log(err);
+             }
+             console.log(JSON.stringify(user));
+         });
+ });
+
+ // Again the same but limitations set as options:
+ entree.users.select({ age: { $gte: 13,  $lte: 19 }}, { skip: 20, limit: 10, sort: { age: 1 }}, function (err, cursor) {
+     if (err) {
+         return console.log(err);
+     }
+     cursor.each(function (err, user) {
+         if (err) {
+             return console.log(err);
+         }
+         onsole.log(JSON.stringify(user));
+     });
+ });
+
+ // Get the total number of all users in the collection:
+ entree.users.select(function (err, currsor) {
+     cursor.count(err, count) {
+         if (err) {
+             return console.log(err);
+         }
+         console.log(count);
+     });
+ });</pre>
 
 
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="selectOne"><span class="type-signature"></span>selectOne<span class="signature">(<span class="optional">context</span>, <span class="optional">query</span>, <span class="optional">options</span>, callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>This method is the same as <code>select</code>, but instead of cursor it returns the first item that
+matches the select and sort criteria. If there is no match, null is returned.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+		<th>Argument</th>
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Provides context for the current execution.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>query</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Specifies selection criteria.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional options for the cursor.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Provider.html#actionCallback">Provider~actionCallback</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The callback that handles the result of this action.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-326">line 326</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">null</span>
+
+
+	</dd>
+</dl>
+
+
+        
+    
     
 </dd>
 
@@ -1662,6 +1959,144 @@ Although this parameter is optional, it might be required by some interceptors, 
     
 </dd>
 
+        
+            
+<dt>
+    <h4 class="name" id="use"><span class="type-signature"></span>use<span class="signature">(fn)</span><span class="type-signature"> &rarr; {null}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Adds an interception module to this provider instance.
+See <a href="tutorial-interceptors.html">Interceptors</a> tutorial for more details.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The function that handles the interception.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="provider.js.html">provider.js</a>, <a href="provider.js.html#sunlight-1-line-352">line 352</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">null</span>
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
         </dl>
     
 
@@ -1833,13 +2268,13 @@ error is returned the operation is considered successful.</p>
 					
 					
 		<span class="copyright">
-		EntreeJS Copyright © 2013-2014 The contributors to the Entree projects.
+		EntreeJS Copyright © 2013-2014 The contributors to the EntreeJS project.
 		</span>
 					<br />
 					
 		<span class="jsdoc-message">
-		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Wed Feb 12 2014 18:24:05 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
+		on Wed Feb 12 2014 23:29:38 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
