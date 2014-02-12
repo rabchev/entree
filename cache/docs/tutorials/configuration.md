@@ -148,7 +148,7 @@ Example:
 
 ### Shards
 
-**TODO:** In progress.
+// TODO: Sharding is in progress. [2014-01-12]
 
 Please see the {@tutorial sharding} tutorial for more details.
 

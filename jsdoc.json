@@ -24,7 +24,7 @@
         },
         "systemName"      : "EntreeJS",
         "footer"          : "",
-        "copyright"       : "EntreeJS Copyright © 2013-2014 The contributors to the Entree projects.",
+        "copyright"       : "EntreeJS Copyright © 2013-2014 The contributors to the EntreeJS project.",
         "navType"         : "vertical",
         "theme"           : "custom",
         "linenums"        : true,

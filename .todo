@@ -1,0 +1,7 @@
+{
+    "search": {
+        "scope": "project",
+        "excludeFolders": ["node_modules", "img", "scripts", "styles"],
+        "excludeFiles": [".html"]
+    }
+}

@@ -77,15 +77,19 @@
 						</li>
 						
 						<li>
+							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
 							<a href="tutorial-replicas.html">Application Level Replication</a>
 						</li>
 						
 						<li>
 							<a href="tutorial-sharding.html">Application Level Sharding</a>
-						</li>
-						
-						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
 						</li>
 						
 
@@ -194,7 +198,7 @@
 
             
 
-            <td class="description last"><p>Deprecated: Use [configure]<a href="Manager.html#configure">Manager#configure</a> method to setup the instance.</p></td>
+            <td class="description last"><p>Deprecated: Use <a href="Manager.html#configure">configure</a> method to setup the instance.</p></td>
         </tr>
 
 	
@@ -331,7 +335,7 @@
 <dd>
     
     <div class="description">
-        <p>A collection of predefined data storage connections.</p>
+        <p>A collection of predefined data store (database) connections.</p>
     </div>
     
     
@@ -789,7 +793,7 @@ If omitted the default connection will be used.</p></td>
     
     
     <div class="description">
-        <p>Adds new data sotrage connection for this instance.
+        <p>Adds new data sotre connection for this instance.
 Each connection represents a connection to a database or data storage service with specific configuration (options).</p>
 <p>Every manager instance has one pre-initialized default connection with the following parameters:</p>
 <ul>
@@ -981,15 +985,7 @@ This argument is required and at least connection string must be present.</p></t
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript"> var entree = require("entree");
-
- entree.addConnection("fs-default", "file-system", "./data");
- entree.addConnection("mongo-default", "mongodb", "mongodb://localhost/entreeTest");
- entree.addConnection("mongo-2", "mongodb", { connStr: "mongodb://191.168.0.100/node2" });
- entree.addConnection("everlive", "everlive", {
-     connStr: "http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/",
-     authorization: "MasterKey PqmmvlWWBF8svReW8p3mkYG9X61nus1w"
- });</pre>
+    <pre class="sunlight-highlight-javascript"> var entree = require("entree"); entree.addConnection("fs-default", "file-system", "./data"); entree.addConnection("mongo-default", "mongodb", "mongodb://localhost/entreeTest"); entree.addConnection("mongo-2", "mongodb", { connStr: "mongodb://191.168.0.100/node2" }); entree.addConnection("everlive", "everlive", {     connStr: "http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/",     authorization: "MasterKey PqmmvlWWBF8svReW8p3mkYG9X61nus1w" });</pre>
 
 
     
@@ -1006,7 +1002,7 @@ This argument is required and at least connection string must be present.</p></t
     
     
     <div class="description">
-        <p>Does the same as [addCollection]<a href="Manager.html#addCollection">Manager#addCollection</a> method, but it accepts data provider instance instead of configuration.</p>
+        <p>Does the same as <a href="Manager.html#addCollection">addCollection</a> method, but it accepts data provider instance instead of configuration.</p>
     </div>
     
 
@@ -1394,7 +1390,7 @@ There may be additional configuration documents as described in the <a href="tut
     
     <div class="description">
         <p>Creates a context object that is passed as the first argument in action methods
-such as [insert]<a href="Provider.html#insert">Provider#insert</a>, [update]<a href="Provider.html#update">Provider#update</a>, [select]<a href="Provider.html#select">Provider#select</a> and etc.
+such as <a href="Provider.html#insert">insert</a>, <a href="Provider.html#update">update</a>, <a href="Provider.html#select">select</a> and etc.
 This function just wraps the original context that is passed as an argument.
 The wrapper is needed to properly distinguish the context from the rest of the arguments.</p>
 <p>Execution context is used to pass arguments to interceptors and shards. For instance,
@@ -1531,18 +1527,7 @@ rights of the caller for the current operation.</p>
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript"> var entree = require("entree");
-
- app.post("/items", function (req, res) {
-     var context = entree.createContext(req.user);
-     entree.items.insert(context, req.body, function (err, result) {
-         if (err) {
-             res.statusCode = 500;
-             return res.send(err.message);
-         }
-         res.send(JSON.stringify(result));
-     });
- });</pre>
+    <pre class="sunlight-highlight-javascript"> var entree = require("entree"); app.post("/items", function (req, res) {     var context = entree.createContext(req.user);     entree.items.insert(context, req.body, function (err, result) {         if (err) {             res.statusCode = 500;             return res.send(err.message);         }         res.send(JSON.stringify(result));     }); });</pre>
 
 
     
@@ -1697,7 +1682,7 @@ The manager instance can no longer be used after dispose.</p>
     
     
     <div class="description">
-        <p>Alias to [configure]<a href="Manager.html#configure">Manager#configure</a> method.</p>
+        <p>Alias to <a href="Manager.html#configure">configure</a> method.</p>
     </div>
     
 
@@ -2196,18 +2181,7 @@ The manager instance can no longer be used after dispose.</p>
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript"> var entree = require("entree"),
-     cache = enree.resolveInterceptor("cache"),
-     stores    = [
-         { store: "memory", max: 1000, ttl: 10 },
-         { store: "redis", db: 0, ttl: 100 }
-     ],
-     caching = cache.interception(stores, ["get", "select"]);
-
- entree.addCollection("users", [caching]);
-
- // or add interceptor at later stage
- entree.users.use(caching);</pre>
+    <pre class="sunlight-highlight-javascript"> var entree = require("entree"),     cache = enree.resolveInterceptor("cache"),     stores    = [         { store: "memory", max: 1000, ttl: 10 },         { store: "redis", db: 0, ttl: 100 }     ],     caching = cache.interception(stores, ["get", "select"]); entree.addCollection("users", [caching]); // or add interceptor at later stage entree.users.use(caching);</pre>
 
 
     
@@ -2493,18 +2467,7 @@ The manager instance can no longer be used after dispose.</p>
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">manager
- .setCollections("users")
-     .setConnection("mongo-default")
-     .setSchema({ __name__: "user", name: String, age: Number, roles: Array })
-     .use(logging)
-     .use(caching)
- .addCollection("comments")
-     .setConnection("mongo-hq")
-     .use(caching)
- .done(function (err) {
-     // collections are ready to be used
- });</pre>
+    <pre class="sunlight-highlight-javascript">manager .setCollections("users")     .setConnection("mongo-default")     .setSchema({ __name__: "user", name: String, age: Number, roles: Array })     .use(logging)     .use(caching) .addCollection("comments")     .setConnection("mongo-hq")     .use(caching) .done(function (err) {     // collections are ready to be used });</pre>
 
 
     
@@ -2535,8 +2498,8 @@ The manager instance can no longer be used after dispose.</p>
 					<br />
 					
 		<span class="jsdoc-message">
-		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Wed Feb 12 2014 00:27:25 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
+		on Wed Feb 12 2014 18:24:05 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
