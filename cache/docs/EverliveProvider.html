@@ -55,7 +55,15 @@
 						</li>
 						
 						<li>
+							<a href="FsProvider.html">FsProvider</a>
+						</li>
+						
+						<li>
 							<a href="Manager.html">Manager</a>
+						</li>
+						
+						<li>
+							<a href="MongoProvider.html">MongoProvider</a>
 						</li>
 						
 						<li>
@@ -77,19 +85,19 @@
 						</li>
 						
 						<li>
-							<a href="tutorial-replicas.html">Application Level Replication</a>
-						</li>
-						
-						<li>
-							<a href="tutorial-sharding.html">Application Level Sharding</a>
-						</li>
-						
-						<li>
 							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
 						</li>
 						
 						<li>
 							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-replicas.html">Application Level Replication</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
 						</li>
 						
 
@@ -117,7 +125,7 @@
     EverliveProvider
     </h2>
     
-        <div class="class-description"><p>Represents a provider for Everlive cloud storage.</p></div>
+        <div class="class-description"><p>Represents a provider for <a href="http://www.telerik.com/backend-services">Everlive</a> cloud storage.</p></div>
     
 </header>
 
@@ -128,7 +136,7 @@
     
         
 <dt>
-    <h4 class="name" id="EverliveProvider"><span class="type-signature"></span>new EverliveProvider<span class="signature">(opts, schema)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="EverliveProvider"><span class="type-signature"></span>new EverliveProvider<span class="signature">(opts, <span class="optional">schema</span>)</span><span class="type-signature"></span></h4>
     
     
 </dt>
@@ -136,18 +144,16 @@
     
     
     <div class="description">
-        <p>Constructor for the Everlive provider. This class inherits from <a href="Provider.html">Provider</a>.</p>
+        <p>Constructor for the <a href="http://www.telerik.com/backend-services">Everlive</a> provider. This class inherits from <a href="Provider.html">Provider</a>.</p>
+<p>Each data collection in EntreeJS represents a data provider instance, therefore an
+Everlive provider instance corresponds to an Everlive <a href="http://docs.telerik.com/platform/backend-services/getting-started/types-and-fields">type</a>.</p>
+<p>For usage reference, please refer to <a href="Provider.html">Provider documentation</a>.</p>
 <p>Options</p>
 <ul>
-<li><code>connStr</code> {String} &lt;required&gt;, connection string. The base URL to Everlive service, including the API Key.
+<li><code>connStr</code> {String} <required> Connection string. The base URL to Everlive service, including the API Key.
 <strong>Example:</strong> <code>&quot;http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/&quot;</code></li>
-<li><code>authorization</code> {String} &lt;optional&gt;, the value of the authorization HTTP header if the service is protected.
+<li><code>authorization</code> {String} <optional> The value of the authorization HTTP header if the service is protected.
 <strong>Example:</strong> <code>&quot;MasterKey PqmmvlWWBF5svReW7p3mkYG9X61nus1w&quot;</code></li>
-</ul>
-<p>Schema</p>
-<ul>
-<li><code>__collName</code> {String} &lt;rquiered&gt;, the name of the data collection for this provider.
-This parameter corresponds to Everlive type.</li>
 </ul>
     </div>
     
@@ -170,6 +176,8 @@ This parameter corresponds to Everlive type.</li>
 		<th>Type</th>
 
 		
+		<th>Argument</th>
+		
 
 		
 
@@ -188,17 +196,25 @@ This parameter corresponds to Everlive type.</li>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>additional options. The only required options is <code>connStr</code>.</p></td>
+            <td class="description last"><p>Additional options. The only required option is <code>connStr</code>.</p></td>
         </tr>
 
 	
@@ -211,17 +227,27 @@ This parameter corresponds to Everlive type.</li>
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>defines the database schema. The only required attribute is <code>__collName</code>.</p></td>
+            <td class="description last"><p>Defines the fields of the collection represented by the provider instance.</p></td>
         </tr>
 
 	
@@ -317,8 +343,8 @@ This parameter corresponds to Everlive type.</li>
 					<br />
 					
 		<span class="jsdoc-message">
-		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Wed Feb 12 2014 23:29:38 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
+		on Thu Feb 13 2014 17:15:22 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>

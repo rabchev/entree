@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>EntreeJS Source: strings.js</title>
+	<title>EntreeJS Class: MongoProvider</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -111,58 +111,219 @@
 	<div class="row-fluid">
 
 		
-			<div class="span12">
-				
+		<div class="span8">
+			
 				<div id="main">
 					
 
 
-		<h1 class="page-title">Source: strings.js</h1>
+	<h1 class="page-title">Class: MongoProvider</h1>
+<section>
+
+<header>
+    <h2>
+    MongoProvider
+    </h2>
     
-    <section>
-        <article>
-            <pre class="sunlight-highlight-javascript linenums">/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
+        <div class="class-description"><p>Represents a provider for MongoDB storage.</p></div>
+    
+</header>
 
-"use strict";
+<article>
+    <div class="container-overview">
+    
 
-var strings = {
-    /**
-     * Errors
-     */
-    "NOT_IMPLEMENTED"           : "Method not implemented.",
-    "CURSOR_CLOSED"             : "Cursor is closed.",
-    "REQUIRES_INT"              : "Argument \"%s\" requires an integer.",
-    "MISSING_ARG"               : "Argument \"%s\" is mandatory.",
-    "ITEM_EXISTS"               : "Item exits.",
-    "ITEM_DOESNOT_EXIST"        : "Item does not exist.",
-    "MISSING_ID"                : "Identifier not specified.",
-    "MISSING_CONN_STR"          : "Missing connStr (connection string) argument.",
-    "MISSING_CONF_PROV"         : "Cofiguration provider must be specified (config.provider).",
-    "MISSING_CONF_FOR_ENV"      : "There is no configuration for environment \"%s\".",
-    "NO_PROVIDERS"              : "No providers configured for environment \"%s\". ",
-    "DEF_MAN_INITED"            : "The default manager is already initialized.",
-    "REQUIRED_CALLBACK"         : "Callback function is required.",
-    "MISSING_PROV_ARGS"         : "Missing provider arguments. The minimum required arguments are: Provider({ connStr: \"database connection string\" });",
-    "PROVIDER_EXISTS"           : "A collection with the name of \"%s\" is already registered.",
-    "CONN_EXISTS"               : "A connection with the name of \"%s\" is already registered.",
-    "NO_SUCH_PROVIDER"          : "A collection with the name of \"%s\" has not been registered.",
-    "NO_SUCH_CONN"              : "A connection with the name of \"%s\" has not been registered.",
-    "ERR_ALREADY_INIT"          : "Entree is already initialized. If you want to override the current setup provide replace argument.",
-    "UNSUP_MAP_TYPE"            : "Unsuported mapping type.",
-    "NO_CONF_FILE"              : "The specified configuration document doesn't exist.",
-    "MISSING_CONFIG"            : "Missing configuration. A configuration object should be provided to init method or alternatively a configuration file should be present at the following default location: \"./data/config/dataModel.json\".",
-    "MISSING_CONF_PARAMS"       : "When config is specified, all its parameters are required. Pleas see Manager.init documentation.",
-    "SCHEMA_EXISTS"             : "A schema with the name of \"%s\" is already registered.",
-    "NO_SUCH_SCHEMA"            : "A schema with the name of \"%s\" has not been registered.",
-    "REQUIRED_NAME_PROP"        : "\"name\" property is required for %s object.",
-    "REQUIRED_SCHEMA_NAME"      : "\"__name__\" property is required when setting schema object.",
-};
+    
+        
+<dt>
+    <h4 class="name" id="MongoProvider"><span class="type-signature"></span>new MongoProvider<span class="signature">(opts, <span class="optional">schema</span>)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Constructor for MongoDB provider. This class inherits from <a href="Provider.html">Provider</a>.</p>
+<p>This provider is a thin wrapper around the native MongoDB <a href="https://github.com/mongodb/node-mongodb-native">driver</a> for NodeJS.
+Each provider instance represents a MongoDB <a href="http://docs.mongodb.org/manual/reference/glossary/#term-collection">collection</a>.</p>
+<p>For usage reference, please refer to <a href="Provider.html">Provider documentation</a>.</p>
+<p>Options</p>
+<ul>
+<li><code>connStr</code> {String} <required> The <a href="http://docs.mongodb.org/manual/reference/connection-string">connection string</a> to MongoDB instance.</li>
+</ul>
+    </div>
+    
 
-module.exports = strings;
-</pre>
-        </article>
-    </section>
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
 
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+		<th>Argument</th>
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional options. The only required option is <code>connStr</code>.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>schema</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Defines the fields of the collection represented by the provider instance.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="mongodb.js.html">providers/mongodb.js</a>, <a href="mongodb.js.html#sunlight-1-line-263">line 263</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
@@ -185,6 +346,10 @@ module.exports = strings;
 				</footer>
 			</div>
 
+			
+			<div class="span3">
+				<div id="toc"></div>
+			</div>
 			
 			<br clear="both">
 		</div>
