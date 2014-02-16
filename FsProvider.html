@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>EntreeJS tutorialInterceptors</title>
+	<title>EntreeJS Class: FsProvider</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -115,54 +115,224 @@
 	<div class="row-fluid">
 
 		
-			<div class="span12">
-				
+		<div class="span8">
+			
 				<div id="main">
-					<section>
-    
-<header>
-    
+					
 
-    <h2>Interceptors</h2>
-</header>  
+
+	<h1 class="page-title">Class: FsProvider</h1>
+<section>
+
+<header>
+    <h2>
+    FsProvider
+    </h2>
+    
+        <div class="class-description"><p>Represents a provider for local file system storage.</p></div>
+    
+</header>
 
 <article>
-    <p>Interceptors are pluggable modules that can interact with the following data provider (collection) methods:</p>
-<ul>
-<li><a href="Provider.html#insert">Provider#insert</a></li>
-<li><a href="Provider.html#upsert">Provider#upsert</a></li>
-<li><a href="Provider.html#update">Provider#update</a></li>
-<li><a href="Provider.html#delete">Provider#delete</a></li>
-<li><a href="Provider.html#get">Provider#get</a></li>
-<li><a href="Provider.html#select">Provider#select</a></li>
-</ul>
-<p>Interceptors work very similarly to Connect middleware. They use the same concept to allow pluggable
-modules to alter the input arguments and the output result of the intercepted methods.
-They operate at the lowest possible level above the native drivers, which makes them suitable place for cross-cutting concerns
-logic such as data access authorization, caching and logging.</p>
-<p>Bundled interceptors:</p>
-<ul>
-<li><a href="module-cache.html">module:cache</a> - Allows multi-tiered caching of results.</li>
-<li><a href="module-log.html">module:log</a>   - Allows logging of activities and performance.</li>
-</ul>
-<p>External interceptors:</p>
-<ul>
-<li><a href="http://rabchev.github.io/authority/">AuthorityJS</a> - Allows authorization of method calls via predefined rules or ACL.</li>
-</ul>
-<p>Example:</p>
-<pre><code class="lang-javascript">    var entree  = require(&quot;entree&quot;),
-        cache     = entree.resolveInterceptor(&quot;cache&quot;),
-        stores    = [
-            { store: &quot;memory&quot;, max: 1000, ttl: 10 },
-            { store: require(&quot;./redis_store&quot;), db: 0, ttl: 100 }
-        ];
+    <div class="container-overview">
+    
 
-    entree.posts.use(cache.interception(stores, [&quot;get&quot;]));</code></pre>
-<h3>Custom Interceptors</h3>
-<p>// TODO: Explain custom interceptors. [2014-01-12]</p>
+    
+        
+<dt>
+    <h4 class="name" id="FsProvider"><span class="type-signature"></span>new FsProvider<span class="signature">(opts, <span class="optional">schema</span>)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Constructor for the file system provider. This class inherits from <a href="Provider.html">Provider</a>.</p>
+<p>Each data collection in EntreeJS represents a data provider instance.
+A sub directory will be created for every data collection using this provider.
+The directories will be placed in the data root specified in the options <code>connStr</code> argument and
+will have the same names as their corresponding collection names.</p>
+<p>For usage reference, please refer to [Provider documentation]<a href="Provider.html">Provider</a>.</p>
+<p>Options</p>
+<ul>
+<li><code>connStr</code> {String} &lt;required&gt; Specifies the root directory relative to <code>process.cwd()</code>. <strong>Example:</strong> <code>./data</code></li>
+</ul>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+		<th>Argument</th>
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Additional options. The only required option is <code>connStr</code>.</p></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>schema</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Defines the fields of the collection represented by the provider instance.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="file-system.js.html">providers/file-system.js</a>, <a href="file-system.js.html#sunlight-1-line-168">line 168</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
 </article>
 
-</section>  
+</section>
+
+
+
 
 				</div>
 
@@ -177,11 +347,15 @@ logic such as data access authorization, caching and logging.</p>
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Sun Feb 16 2014 23:30:45 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Sun Feb 16 2014 23:30:44 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
 
+			
+			<div class="span3">
+				<div id="toc"></div>
+			</div>
 			
 			<br clear="both">
 		</div>

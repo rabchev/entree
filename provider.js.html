@@ -55,11 +55,23 @@
 						</li>
 						
 						<li>
+							<a href="FsProvider.html">FsProvider</a>
+						</li>
+						
+						<li>
 							<a href="Manager.html">Manager</a>
 						</li>
 						
 						<li>
+							<a href="MongoProvider.html">MongoProvider</a>
+						</li>
+						
+						<li>
 							<a href="Provider.html">Provider</a>
+						</li>
+						
+						<li>
+							<a href="Replica.html">Replica</a>
 						</li>
 						
 
@@ -219,11 +231,13 @@ function validateSelectArgs(args) {
  *
  * - `connStr` {String} &lt;required>, connection string.
  *
- * @class Represents a base class for storage specific providers.
+ * @class Represents a base class for storage specific data providers.
  * All provider implementations should derive from this class.
  *
- * @param {object} opts - additional options. The only required option is `connStr`.
- * @param {object=} schema - defines the database schema such as fields, indexes, types and structure.
+ * In EntreeJS every data collection is an instance of Provider class.
+ *
+ * @param {object} opts - Additional options. The only required option is `connStr`.
+ * @param {object=} schema - Defines the database schema such as fields, indexes, types and structure.
 */
 function Provider(options, schema) {
 
@@ -254,8 +268,8 @@ function Provider(options, schema) {
  */
 
 /**
- * Inserts new item in the data store.
- * If an item with the same identity is already present in the data store,
+ * Inserts new item in the data collecton.
+ * If an item with the same identity is already present in the data collection,
  * the operation is aborted and an error is returned.
  *
  * @param {Object=} context - Provides context for the current execution.
@@ -274,7 +288,7 @@ Provider.prototype.insert = function () {
 };
 
 /**
- * Inserts new item in the data store if the item is not present, otherwise updates it.
+ * Inserts new item in the data collection if the item is not present, otherwise updates it.
  *
  * @param {Object=} context - provides context for the current execution.
  * Usually this is information about the user making the call.
@@ -311,7 +325,7 @@ Provider.prototype.update = function () {
 };
 
 /**
- * Removes the specified item from the data store.
+ * Removes the specified item from the data collection.
  * If an item with the specified identity is not found an error is returned.
  *
  * @param {Object=} context - provides context for the current execution.
@@ -330,7 +344,7 @@ Provider.prototype.delete = function () {
 };
 
 /**
- * Retrieves the specified item from the data store.
+ * Retrieves the specified item from the data collection.
  * If an item with the specified identity is not found an error is returned.
  *
  * @param {Object=} context - provides context for the current execution.
@@ -349,7 +363,7 @@ Provider.prototype.get = function () {
 };
 
 /**
- * Selects items in the data store and returns a {@link Cursor} to the selected items.
+ * Selects items in the data collection and returns a {@link Cursor} to the selected items.
  *
  * This method can return a Cursor either directly or with a callback. In most cases a cursor is created and returned synchronously, but some interceptors like {@link module:cache} require a callback. If you plan to use asynchronous interceptors you have to use the callback form.
  *
@@ -468,6 +482,9 @@ Provider.prototype.use = function (fn) {
     this._stack.push(fn);
 };
 
+/**
+ * @protected
+ */
 Provider.prototype._getId = function (item) {
     if (typeof item === "object" && !(item instanceof Array)) {
         return item[this._getIdKey()];
@@ -476,16 +493,25 @@ Provider.prototype._getId = function (item) {
     }
 };
 
+/**
+ * @protected
+ */
 Provider.prototype._setId = function (item, id) {
     if (typeof item === "object" && !(item instanceof Array)) {
         item[this._getIdKey()] = id;
     }
 };
 
+/**
+ * @protected
+ */
 Provider.prototype._getIdKey = function () {
     return this.schema.__identifier__ || "_id";
 };
 
+/**
+ * @protected
+ */
 Provider.prototype._do = function (action, context, item, callback) {
     var idx = 0,
         that = this;
@@ -502,6 +528,15 @@ Provider.prototype._do = function (action, context, item, callback) {
     return next(item, callback);
 };
 
+/**
+ * Merges the own properties of the source object to the destination object.
+ *
+ * This is utility method intended mainly for data provider implementers.
+ *
+ * @param {object} src - The source object.
+ * @param {object} trg - The target object.
+ * @return {object} - The the destination object with merged properties.
+ */
 Provider.prototype.merge = function (src, trg) {
     if (src !== trg) {
         return _.defaults(src, trg);
@@ -509,16 +544,39 @@ Provider.prototype.merge = function (src, trg) {
     return src;
 };
 
+/**
+ * This is utility method intended mainly for data provider implementers.
+ *
+ * @param {function} - Optional callback that will be called when the provider is initialized.
+ * @return {null}
+ */
 Provider.prototype.init = function (callback) {
-    // Override if you need to initialize database connection.
+    // NOTE: Override if you need to initialize database connection.
     callback();
 };
 
+/**
+ * Releases its database connection, clears current state and any cached data.
+ *
+ * This is utility method intended mainly for data provider implementers.
+ *
+ * @param {function} -  Optional callback that will be called when the provider is disposed.
+ * @return {null}
+ */
 Provider.prototype.dispose = function (callback) {
-    // Override if you need to dispose database connection.
+    // NOTE: Override if you need to dispose database connection.
     callback();
 };
 
+/**
+ * Creates new error object with the specified error message or error code.
+ *
+ * This is utility method intended mainly for data provider implementers.
+ *
+ * @param {(string|Error)} - This argument should be either error message, EntreeJS error code or error object.
+ * @param {function=} - Error handler. If omitted the error will be thrown immediately.
+ * @return {null}
+ */
 Provider.prototype.handleError = function (err, callback) {
     if (typeof err === "string") {
         err = new Err(err);
@@ -531,33 +589,40 @@ Provider.prototype.handleError = function (err, callback) {
     }
 };
 
+/**
+ * @abstract
+ */
 Provider.prototype._insert = function (items, callback) {
-    // abstract
     callback(new Error(Strings.NOT_IMPLEMENTED));
 };
 
+/** @abstract */
 Provider.prototype._upsert = function (item, callback) {
-    // abstract
     callback(new Error(Strings.NOT_IMPLEMENTED));
 };
 
+/**
+ * @abstract
+ */
 Provider.prototype._update = function (item, callback) {
-    // abstract
     callback(new Error(Strings.NOT_IMPLEMENTED));
 };
 
 Provider.prototype._delete = function (item, callback) {
-    // abstract
     callback(new Error(Strings.NOT_IMPLEMENTED));
 };
 
+/**
+ * @abstract
+ */
 Provider.prototype._get = function (item, callback) {
-    // abstract
     callback(new Error(Strings.NOT_IMPLEMENTED));
 };
 
+/**
+ * @abstract
+ */
 Provider.prototype._select = function (args, callback) {
-    // abstract
     throw new Error(Strings.NOT_IMPLEMENTED);
 };
 
@@ -583,7 +648,7 @@ module.exports = Provider;
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
-		on Wed Feb 12 2014 23:29:38 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Sun Feb 16 2014 23:30:44 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>

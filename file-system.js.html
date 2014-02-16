@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>EntreeJS Source: providers/file-system.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	
+	<link type="text/css" rel="stylesheet" href="styles/site.custom.css">
+	
+</head>
+
+<body>
+<div class="container-fluid">
+	<div class="navbar navbar-fixed-top ">
+		<div class="navbar-inner">
+			<a class="brand" href="index.html">EntreeJS</a>
+			<ul class="nav">
+				
+				<li class="dropdown">
+					<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b
+						class="caret"></b></a>
+
+					<ul class="dropdown-menu ">
+						
+						<li>
+							<a href="module-cache.html">cache</a>
+						</li>
+						
+						<li>
+							<a href="module-log.html">log</a>
+						</li>
+						
+
+					</ul>
+				</li>
+				
+				<li class="dropdown">
+					<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b
+						class="caret"></b></a>
+
+					<ul class="dropdown-menu ">
+						
+						<li>
+							<a href="Cursor.html">Cursor</a>
+						</li>
+						
+						<li>
+							<a href="EverliveProvider.html">EverliveProvider</a>
+						</li>
+						
+						<li>
+							<a href="FsProvider.html">FsProvider</a>
+						</li>
+						
+						<li>
+							<a href="Manager.html">Manager</a>
+						</li>
+						
+						<li>
+							<a href="MongoProvider.html">MongoProvider</a>
+						</li>
+						
+						<li>
+							<a href="Provider.html">Provider</a>
+						</li>
+						
+						<li>
+							<a href="Replica.html">Replica</a>
+						</li>
+						
+
+					</ul>
+				</li>
+				
+				<li class="dropdown">
+					<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b
+						class="caret"></b></a>
+
+					<ul class="dropdown-menu ">
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-replicas.html">Application Level Replication</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+
+					</ul>
+				</li>
+				
+			</ul>
+		</div>
+	</div>
+
+	<div class="row-fluid">
+
+		
+			<div class="span12">
+				
+				<div id="main">
+					
+
+
+		<h1 class="page-title">Source: providers/file-system.js</h1>
+    
+    <section>
+        <article>
+            <pre class="sunlight-highlight-javascript linenums">/*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, es5: true, indent: 4, maxerr: 50 */
+
+"use strict";
+
+var Cursor      = require("../cursor"),
+    Provider    = require("../provider"),
+    Strings     = require("../strings"),
+    Err         = require("../error"),
+    util        = require("util"),
+    sift        = require("sift"),
+    path        = require("path"),
+    uuid        = require("node-uuid"),
+    fs          = require("fs"),
+    async       = require("async"),
+    _           = require("lodash");
+
+function FsCursor(provider, query, options) {
+    this._files = null;
+    if (query) {
+        this.sifter = sift(query);
+    }
+
+    Cursor.call(this, provider, query, options);
+    this.reset();
+}
+
+util.inherits(FsCursor, Cursor);
+
+FsCursor.prototype.reset = function () {
+    this.current = this.skipValue;
+    if (this.current !== 0 && this.limitValue !== 0) {
+        this.limitValue += this.current;
+    }
+
+    if (this.mapping && !_.isArray(this.mapping)) {
+        if (_.isObject(this.mapping)) {
+            this.mapping = _.keys(this.mapping);
+        } else if (_.isString(this.mapping)) {
+            this.mapping = [this.mapping];
+        } else if (!_.isFunction(this.mapping)) {
+            throw new Err("UNSUP_MAP_TYPE");
+        }
+    }
+
+    return this;
+};
+
+FsCursor.prototype._isMatch = function (item) {
+    if (this.sifter) {
+        return this.sifter.test(item);
+    }
+    return true;
+};
+
+FsCursor.prototype._map = function (item) {
+    if (item && this.mapping) {
+        if (_.isFunction(this.mapping)) {
+            return this.mapping(item);
+        }
+        return _.pick.apply(null, [item].concat(this.mapping));
+    }
+    return item;
+};
+
+FsCursor.prototype._nextObject = function (callback) {
+    var self = this;
+
+    function nextItem() {
+        var item, file;
+        if (self.limitValue === 0 || self.current &lt; self.limitValue) {
+            file = self._files[self.current++];
+            while (file) {
+                item = require(path.join(self.provider.dir, file));
+                if (self._isMatch(item)) {
+                    break;
+                }
+                item = null;
+                file = self._files[self.current++];
+            }
+        }
+        callback(null, self._map(item));
+    }
+
+    if (!self._files) {
+        fs.readdir(self.provider.dir, function (err, files) {
+            if (err) {
+                return callback(err);
+            }
+            self._files = files;
+            nextItem();
+        });
+    } else {
+        nextItem();
+    }
+};
+
+FsCursor.prototype.count = function (callback) {
+    var that = this;
+    that.exec(function (err) {
+        if (err) {
+            callback(err);
+        } else {
+            if (that.items) {
+                callback(null, that.items.length);
+            } else {
+                if (that.query) {
+                    that.toArray(function (err, list) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        return callback(err, list.length);
+                    });
+                } else {
+                    fs.readdir(that.provider.dir, function (err, files) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        that._files = files;
+                        callback(null, that._files.length);
+                    });
+                }
+            }
+        }
+    });
+
+    return this;
+};
+
+FsCursor.prototype._exec = function (callback) {
+    var that = this;
+    if (this.criteria) {
+        this.toArray(function (err, list) {
+            if (!err) {
+                if (_.isFunction(that.criteria)) {
+                    list.sort(that.criteria);
+                } else {
+                    list.sort(function (a, b) {
+                        return that.comparer(a, b);
+                    });
+                }
+                that.items = list;
+            }
+            return callback(err);
+        });
+    } else {
+        callback();
+    }
+};
+
+/**
+ * Constructor for the file system provider. This class inherits from {@link Provider}.
+ *
+ * Each data collection in EntreeJS represents a data provider instance.
+ * A sub directory will be created for every data collection using this provider.
+ * The directories will be placed in the data root specified in the options `connStr` argument and
+ * will have the same names as their corresponding collection names.
+ *
+ * For usage reference, please refer to [Provider documentation]{@link Provider}.
+ *
+ * Options
+ *
+ * - `connStr` {String} &lt;required> Specifies the root directory relative to `process.cwd()`. **Example:** `./data`
+ *
+ * @class Represents a provider for local file system storage.
+ * @param {object} opts - Additional options. The only required option is `connStr`.
+ * @param {object=} schema - Defines the fields of the collection represented by the provider instance.
+*/
+function FsProvider(opts, schema) {
+    Provider.call(this, opts, schema);
+
+    var orgCwd,
+        connStr = path.resolve(process.cwd(), opts.connStr);
+
+    this.dir = path.join(connStr, schema.__collName);
+    if (!fs.existsSync(this.dir)) {
+        orgCwd = process.cwd();
+        process.chdir(connStr);
+        fs.mkdirSync(schema.__collName);
+        process.chdir(orgCwd);
+    }
+}
+
+util.inherits(FsProvider, Provider);
+
+FsProvider.prototype._insert = function (items, callback) {
+    var that        = this;
+
+    function storeItem(item, cb) {
+        var id  = that._getId(item),
+            filePath;
+
+        if (!id) {
+            id = uuid.v1();
+            that._setId(item, id);
+        }
+
+        filePath = path.join(that.dir, id + ".json");
+        fs.exists(filePath, function (exists) {
+            if (exists) {
+                cb(Strings.ITEM_EXISTS);
+            } else {
+                fs.writeFile(filePath, JSON.stringify(item), cb);
+            }
+        });
+    }
+
+    function completeRequest(err) {
+        if (err) {
+            that.handleError(err, callback);
+        } else {
+            callback(null, items);
+        }
+    }
+
+    if (_.isArray(items)) {
+        async.each(items, storeItem, completeRequest);
+    } else {
+        storeItem(items, completeRequest);
+    }
+};
+
+FsProvider.prototype._upsert = function (item, callback) {
+    var that        = this,
+        id          = that._getId(item),
+        filePath;
+
+    if (!id) {
+        return that._insert(item, callback);
+    }
+
+    filePath = path.join(this.dir, id + ".json");
+    fs.exists(filePath, function (exists) {
+        if (exists) {
+            that._update(item, callback);
+        } else {
+            that._insert(item, callback);
+        }
+    });
+};
+
+FsProvider.prototype._update = function (item, callback) {
+    var that = this;
+
+    that._get(item, function (err, res) {
+        if (err) {
+            return that.handleError(err, callback);
+        }
+
+        var mrg         = that.merge(item, res),
+            id          = that._getId(mrg),
+            filePath    = path.join(that.dir, id + ".json");
+
+        fs.writeFile(filePath, JSON.stringify(mrg), function (err) {
+            if (err) {
+                that.handleError(err, callback);
+            } else {
+                callback(null, mrg);
+            }
+        });
+    });
+};
+
+FsProvider.prototype._get = function (item, callback) {
+    var that        = this,
+        id          = that._getId(item),
+        filePath;
+
+    if (!id) {
+        return that.handleError("MISSING_ID", callback);
+    }
+
+    filePath = path.join(this.dir, id + ".json");
+    fs.readFile(filePath, { encoding: "utf8" }, function (err, data) {
+        if (err) {
+            if (err.code === "ENOENT") {
+                that.handleError("ITEM_DOESNOT_EXIST", callback);
+            } else {
+                that.handleError(err, callback);
+            }
+        } else {
+            callback(null, JSON.parse(data));
+        }
+    });
+};
+
+FsProvider.prototype._delete = function (item, callback) {
+    var that    = this,
+        id      = that._getId(item);
+
+    if (!id) {
+        return this.handleError("MISSING_ID", callback);
+    }
+
+    var filePath = path.join(this.dir, id + ".json");
+    fs.unlink(filePath, function (err) {
+        if (err) {
+            if (err.code === "ENOENT") {
+                that.handleError("ITEM_DOESNOT_EXIST", callback);
+            } else {
+                that.handleError(err, callback);
+            }
+        } else {
+            callback(null, item);
+        }
+    });
+};
+
+FsProvider.prototype._select = function (args, callback) {
+    var cursor = new FsCursor(this, args.query, args.options);
+    if (callback) {
+        callback(null, cursor);
+    } else {
+        return cursor;
+    }
+};
+
+module.exports = FsProvider;
+</pre>
+        </article>
+    </section>
+
+
+
+
+
+				</div>
+
+				<div class="clearfix"></div>
+				<footer>
+					
+					
+		<span class="copyright">
+		EntreeJS Copyright © 2013-2014 The contributors to the EntreeJS project.
+		</span>
+					<br />
+					
+		<span class="jsdoc-message">
+		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0</a>
+		on Sun Feb 16 2014 23:30:44 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		</span>
+				</footer>
+			</div>
+
+			
+			<br clear="both">
+		</div>
+
+	</div>
+	<script src="scripts/sunlight.js"></script>
+	<script src="scripts/sunlight.javascript.js"></script>
+	<script src="scripts/sunlight-plugin.doclinks.js"></script>
+	<script src="scripts/sunlight-plugin.linenumbers.js"></script>
+	<script src="scripts/sunlight-plugin.menu.js"></script>
+	<script src="scripts/jquery.min.js"></script>
+	<script src="scripts/jquery.scrollTo.js"></script>
+	<script src="scripts/jquery.localScroll.js"></script>
+	<script src="scripts/bootstrap-dropdown.js"></script>
+	<script src="scripts/toc.js"></script>
+
+
+	<script>  Sunlight.highlightAll({lineNumbers:true,  showMenu: true, enableDoclinks :true}); </script>
+
+	<script>
+		$( function () {
+			$( "#toc" ).toc( {
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : 60
+			} );
+			$( "#toc>ul" ).addClass( "nav nav-pills nav-stacked" );
+			$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+
+		} );
+	</script>
+
+	
+
+</body>
+</html>
