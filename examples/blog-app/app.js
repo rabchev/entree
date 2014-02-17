@@ -34,3 +34,11 @@ entree
 entree.users.get("blah@lbah.com", function (err, user) {
 
 });
+
+var tran = entree.transaction.begin();
+tran.users.update({});
+tran.posts.update({});
+tran.comments.delete({});
+tran.commit(function (err, results) {
+
+});
