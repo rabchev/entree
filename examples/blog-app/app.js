@@ -35,10 +35,12 @@ entree.users.get("blah@lbah.com", function (err, user) {
 
 });
 
-var tran = entree.transaction.begin();
-tran.users.update({});
-tran.posts.update({});
-tran.comments.delete({});
-tran.commit(function (err, results) {
+entree.transaction.set("trans:foo@bar.com", ["itmes", "users", "comments"], function (items, users, comments, trans) {
 
+    trans.rolebackModule = "./trans/my-rollback-logic";
+    var cur = items.select({ age: 15 });
+    cur.update({ title: "foo" });
+    trans.commit(function (errors, results) {
+
+    });
 });
