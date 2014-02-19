@@ -119,7 +119,12 @@
     ],
     "schema": {
         "blog": {
-            "__identifier__": "_id",
+            "__identifier__"    : "_id",
+            "__modified__"      : "_lastModified",
+            "__modifiedBy__"    : "_lastModifiedBy",
+            "__createdAt__"     : "_createdAt",
+            "__createdBy__"     : "_createdBy",
+            "__version__"       : "_version",
             "title": "string"
         },
         "post": {
