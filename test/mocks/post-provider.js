@@ -114,7 +114,7 @@ PostProvider.prototype._get = function (item, callback) {
     setTimeout(function () {
         var sid = empty + id;
         if (!that.store[sid]) {
-            that.handleError("Item does not exist.", callback);
+            that.handleError("ITEM_DOESNOT_EXIST", callback);
         } else {
             if (callback) {
                 callback(null, that.store[sid]);

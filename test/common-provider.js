@@ -252,6 +252,44 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                     test.done();
                 });
         },
+        "Update Item Without Callback": function (test) {
+
+            test.expect(3);
+
+            provider.update({
+                _id: "797ff043-11eb-11e1-80d6-510998755d10",
+                title: "Updated Post 2",
+                age: 155
+            });
+
+            setTimeout(function () {
+                provider.get("797ff043-11eb-11e1-80d6-510998755d10",
+                    function (err, result) {
+                        test.ok(!err);
+                        test.equal(result.title, "Updated Post 2");
+                        test.equal(result.age, 155);
+                        test.done();
+                    });
+            }, 150);
+        },
+        "Update Item & Context Without Callback": function (test) {
+
+            test.expect(2);
+
+            provider.update(context, {
+                _id: "797ff043-11eb-11e1-80d6-510998755d10",
+                age: 255
+            });
+
+            setTimeout(function () {
+                provider.get("797ff043-11eb-11e1-80d6-510998755d10",
+                    function (err, result) {
+                        test.ok(!err);
+                        test.equal(result.age, 255);
+                        test.done();
+                    });
+            }, 150);
+        },
         "Delete Item by ID": function (test) {
 
             test.expect(2);
@@ -275,7 +313,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
 
                     test.ok(err);
                     test.ok(!result);
-                    test.equal(err.message, msg.item_doesnt_exist);
+                    test.equal(err.code, "ITEM_DOESNOT_EXIST");
                     test.done();
                 });
         },
