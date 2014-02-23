@@ -5,7 +5,7 @@
 var testCase        = require("nodeunit").testCase,
     Provider        = require("../lib/providers/file-system"),
     Strings         = require("../lib/strings"),
-    Context         = require("../lib/context"),
+    Context         = require("../lib/utils/context"),
     fs              = require("fs"),
     path            = require("path"),
     uuid            = require('node-uuid'),
@@ -82,9 +82,11 @@ module.exports = testCase({
         test.expect(7);
 
         blogs.upsert(context, {
-            _id: ids.firstItem,
-            title: "My Updated Blog",
-            age: 22
+            $set: {
+                _id: ids.firstItem,
+                title: "My Updated Blog",
+                age: 22
+            }
         }, function (err, result) {
             test.ok(!err);
             test.ok(result);
@@ -122,9 +124,11 @@ module.exports = testCase({
         test.expect(7);
 
         blogs.update(context, {
-            _id: ids.secondId,
-            author: "",
-            age: 127
+            $set: {
+                _id: ids.secondId,
+                author: "",
+                age: 127
+            }
         }, function (err, result) {
             test.ok(!err);
             test.ok(result);

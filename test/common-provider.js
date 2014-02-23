@@ -5,7 +5,7 @@
 var _               = require("lodash"),
     testCase        = require("nodeunit").testCase,
     interceptor     = require("./mocks/interceptor"),
-    Context         = require("../lib/context"),
+    Context         = require("../lib/utils/context"),
     provider,
     context;
 
