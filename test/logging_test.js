@@ -403,7 +403,7 @@ module.exports = testCase({
         manager.testProv.use(log.interception({ log: { profile: true, action: true } }));
 
         var cur = manager.testProv.select({ age: 21 });
-        cur.update({ age: 52 }, function (err, res) {
+        cur.update({$set: { age: 52 }}, function (err, res) {
             test.ok(!err);
             test.ok(!res);
             test.equal(msgs.length, 2);

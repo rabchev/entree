@@ -215,7 +215,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                     test.done();
                 });
         },
-        "Update Item": function (test) {
+        "Update Item With Replace": function (test) {
 
             test.expect(6);
 
@@ -252,7 +252,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                     test.done();
                 });
         },
-        "Update Item Without Callback": function (test) {
+        "Update Item With Replace and Without Callback": function (test) {
 
             test.expect(3);
 
@@ -753,7 +753,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
 
             provider
                 .select(new Context(null), {"publisher.name": "TLC"})
-                .update({ age: 555 },
+                .update({$set: { age: 555 }},
                     function (err) {
                         test.ok(!err);
                         provider
