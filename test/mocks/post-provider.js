@@ -3,6 +3,8 @@
 "use strict";
 
 var Provider    = require("../../lib/provider"),
+    Err         = require("../../lib/utils/error"),
+    object      = require("../../lib/utils/object"),
     Cursor      = require("./cursor-mock"),
     util        = require("util"),
     uuid        = require('node-uuid'),
@@ -25,11 +27,18 @@ function PostProvider(options, schema) {
 util.inherits(PostProvider, Provider);
 
 PostProvider.prototype._insert = function (items, callback) {
-    var that    = this;
+    var that    = this,
+        failed;
 
     this.insertCalls++;
 
     function storeItem(item) {
+        if (object.validateKeys(item) !== "fields") {
+            that.handleError("OPERS_NOT_ALLOWED", callback);
+            failed = true;
+            return false;
+        }
+
         var id = that._getId(item);
 
         if (!id) {
@@ -40,20 +49,23 @@ PostProvider.prototype._insert = function (items, callback) {
         var sid = empty + id;
         if (that.store[sid]) {
             that.handleError("Item exists.", callback);
+            failed = true;
+            return false;
         } else {
             that.store[sid] = item;
         }
+        return true;
     }
 
     setTimeout(function () {
         if (_.isArray(items)) {
             _.each(items, function (item) {
-                storeItem(item);
+                return storeItem(item);
             });
         } else {
             storeItem(items);
         }
-        if (callback) {
+        if (callback && !failed) {
             callback(null, items);
         }
     }, this.delay);

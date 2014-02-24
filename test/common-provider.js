@@ -809,6 +809,92 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                 });
             });
         },
+        "Insert With Operators Should Throw": function (test) {
+            test.expect(1);
+
+            provider.insert({
+                $set: {
+                    title: "Blah Blah Blah",
+                    author: "ad laborum",
+                    age: 20,
+                    publisher: {
+                        name: "TLC",
+                        address: {
+                            street: "eram officia quis eram fugiat",
+                            number: 1544
+                        },
+                        priority: 0.4
+                    }
+                }
+            }, function (err, cursor) {
+                test.equal(err.code, "OPERS_NOT_ALLOWED");
+                test.done();
+            });
+        },
+        "Bulk Insert With Operators Should": function (test) {
+            test.expect(7);
+
+            provider.insert([
+                {
+                    _id: "op-001",
+                    title: "Foo Bar Foo Bar",
+                    author: "ad laborum",
+                    age: 30,
+                    publisher: {
+                        name: "TLC",
+                        address: {
+                            street: "eram officia quis eram fugiat",
+                            number: 1544
+                        },
+                        priority: 0.5
+                    }
+                },
+                {
+                    $set: {
+                        _id: "op-002",
+                        title: "Blah Blah Blah",
+                        author: "ad laborum",
+                        age: 20,
+                        publisher: {
+                            name: "TLC",
+                            address: {
+                                street: "eram officia quis eram fugiat",
+                                number: 1544
+                            },
+                            priority: 0.4
+                        }
+                    }
+                },
+                {
+                    _id: "op-003",
+                    title: "nulla veniam graviterque officia",
+                    author: "ad laborum",
+                    age: 35,
+                    publisher: {
+                        name: "TLC",
+                        address: {
+                            street: "eram officia quis eram fugiat",
+                            number: 1544
+                        },
+                        priority: 0.4
+                    }
+                }
+            ], function (err, cursor) {
+                test.equal(err.code, "OPERS_NOT_ALLOWED");
+                provider.select({author: "ad laborum"})
+                    .sort({_id: 1})
+                    .toArray(function (err, arr) {
+                        test.ok(!err);
+                        test.equal(arr.length, 2);
+                        test.equal(arr[0]._id, "op-001");
+                        test.equal(arr[0].title, "Foo Bar Foo Bar");
+                        test.equal(arr[1]._id, "op-003");
+                        test.equal(arr[1].title, "nulla veniam graviterque officia");
+
+                        test.done();
+                    });
+            });
+        },
         "Bulk Delete Selected": function (test) {
             test.expect(3);
 
