@@ -28,17 +28,12 @@ util.inherits(PostProvider, Provider);
 
 PostProvider.prototype._insert = function (items, callback) {
     var that    = this,
-        failed;
+        failed,
+        i;
 
     this.insertCalls++;
 
     function storeItem(item) {
-        if (object.validateKeys(item) !== "fields") {
-            that.handleError("OPERS_NOT_ALLOWED", callback);
-            failed = true;
-            return false;
-        }
-
         var id = that._getId(item);
 
         if (!id) {
@@ -59,10 +54,18 @@ PostProvider.prototype._insert = function (items, callback) {
 
     setTimeout(function () {
         if (_.isArray(items)) {
+            for (i = 0; i < items.length; i++) {
+                if (object.validateKeys(items[i]) !== "fields") {
+                    return that.handleError("OPERS_NOT_ALLOWED", callback);
+                }
+            }
             _.each(items, function (item) {
                 return storeItem(item);
             });
         } else {
+            if (object.validateKeys(items) !== "fields") {
+                return that.handleError("OPERS_NOT_ALLOWED", callback);
+            }
             storeItem(items);
         }
         if (callback && !failed) {
