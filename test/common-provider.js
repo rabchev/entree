@@ -895,6 +895,19 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                     });
             });
         },
+        "Increment": function (test) {
+            test.expect(3);
+            provider
+                .select({title: "A Hopeful Life"})
+                .update({$inc: { "publisher.priority": 1 }}, function (err, res) {
+                    test.ok(!err);
+                    provider.selectOne({title: "A Hopeful Life"}, function (err, res) {
+                        test.ok(!err);
+                        test.equal(res.publisher.priority, 1.25);
+                        test.done();
+                    });
+                });
+        },
         "Bulk Delete Selected": function (test) {
             test.expect(3);
 
