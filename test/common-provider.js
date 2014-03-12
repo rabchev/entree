@@ -290,6 +290,24 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                     });
             }, 150);
         },
+        "Update Item - Increment Age": function (test) {
+
+            test.expect(3);
+
+            provider.update(context, {
+                _id: "797ff043-11eb-11e1-80d6-510998755d10",
+                $inc: { age: 1 }
+            }, function (err, result) {
+                test.ok(!err);
+                provider.get(
+                    "797ff043-11eb-11e1-80d6-510998755d10",
+                    function (err, res) {
+                        test.ok(!err);
+                        test.equal(res.age, 256);
+                        test.done();
+                    });
+            });
+        },
         "Delete Item by ID": function (test) {
 
             test.expect(2);
@@ -895,7 +913,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                     });
             });
         },
-        "Increment": function (test) {
+        "Increment Selected": function (test) {
             test.expect(3);
             provider
                 .select({title: "A Hopeful Life"})

@@ -95,6 +95,7 @@ PostProvider.prototype._upsert = function (item, callback) {
 
 PostProvider.prototype._update = function (item, callback) {
     var that    = this,
+        idKey   = that._getIdKey(),
         id      = that._getId(item);
 
     this.updateCalls++;
@@ -104,10 +105,19 @@ PostProvider.prototype._update = function (item, callback) {
     }
 
     setTimeout(function () {
-        var sid = empty + id;
-        if (!that.store[sid]) {
+        var sid = empty + id,
+            trg = that.store[sid];
+
+        if (!trg) {
             that.handleError("Item does not exist.", callback);
         } else {
+            delete item[idKey];
+            try {
+                item = object.update(item, trg);
+            } catch (err) {
+                that.handleError(err, callback);
+            }
+            item[idKey] = id;
             that.store[sid] = item;
             if (callback) {
                 callback(null, item);
