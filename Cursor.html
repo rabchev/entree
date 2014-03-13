@@ -153,10 +153,10 @@ This cursor object is unidirectional and cannot traverse backwards.
 Clients should not be creating a cursor directly, but use select to acquire a cursor.</p>
 <p>Options</p>
 <ul>
-<li><code>skip</code> {number}, The number of documents to skip from the beginning of the matching result.</li>
-<li><code>limit</code> {number}, Limit the number of documents to return.</li>
-<li><code>sort</code> {object}, Controls the order that the query returns matching documents.</li>
-<li><code>map</code> {object}, Specifies which fields from the document should be returned.</li>
+<li><code>skip</code> {number}, The number of items to skip from the beginning of the matching result.</li>
+<li><code>limit</code> {number}, Limit the number of items to return.</li>
+<li><code>sort</code> {object}, Controls the order that the query returns matching items.</li>
+<li><code>map</code> {object}, Specifies which fields from the item should be returned.</li>
 </ul>
     </div>
     
@@ -199,7 +199,7 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -230,7 +230,7 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -248,7 +248,7 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
 
             
 
-            <td class="description last"><p>an object containing the conditions that have to match to include a document in the result set.</p></td>
+            <td class="description last"><p>an object containing the conditions for an item to be included in the result set.</p></td>
         </tr>
 
 	
@@ -261,7 +261,7 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -393,7 +393,7 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-533">line 533</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-578">line 578</a>
     </li></ul></dd>
     
 
@@ -447,7 +447,7 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-519">line 519</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-564">line 564</a>
     </li></ul></dd>
     
 
@@ -501,7 +501,7 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-526">line 526</a>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-571">line 571</a>
     </li></ul></dd>
     
 
@@ -525,6 +525,294 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
         <dl>
             
 <dt>
+    <h4 class="name" id="count"><span class="type-signature"></span>count<span class="signature">(callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Counts the number of items matching the select query.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain the number of matching items.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-443">line 443</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">null</span>
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript"> provider
+     .select({"publisher.name": "TLC"})
+     .count(function (err, count) {
+         if (err) {
+             console.log(err);
+         } else {
+             console.log(count);
+         }
+     });</pre>
+
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="delete"><span class="type-signature"></span>delete<span class="signature">(callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Deletes all items that match the select query.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain the number of deleted items.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-501">line 501</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">null</span>
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="each"><span class="type-signature"></span>each<span class="signature">(callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
     
     
@@ -533,7 +821,7 @@ Clients should not be creating a cursor directly, but use select to acquire a cu
     
     
     <div class="description">
-        <p>Iterates over all the documents for this cursor. As with <strong>{cursor.toArray}</strong>,
+        <p>Iterates over all the items for this cursor. As with <strong>{cursor.toArray}</strong>,
 not all of the elements will be iterated if this cursor had been previouly accessed.</p>
     </div>
     
@@ -584,9 +872,9 @@ not all of the elements will be iterated if this cursor had been previouly acces
 
             
 
-            <td class="description last"><p>this will be called for while iterating every document of the query result.
+            <td class="description last"><p>Will be called for while iterating every item of the query result.
 The first parameter will contain the Error object if an error occured, or null otherwise.
-While the second parameter will contain the document.</p></td>
+While the second parameter will contain the item.</p></td>
         </tr>
 
 	
@@ -619,6 +907,143 @@ While the second parameter will contain the document.</p></td>
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-362">line 362</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">null</span>
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="first"><span class="type-signature"></span>first<span class="signature">(callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Gets the first item that matches the select query and sorting criteria.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain the first item that matches the query.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-472">line 472</a>
     </li></ul></dd>
     
 
@@ -715,7 +1140,7 @@ While the second parameter will contain the document.</p></td>
             <td class="type">
             
                 
-<span class="param-type">Number</span>
+<span class="param-type">number</span>
 
 
             
@@ -857,7 +1282,7 @@ While the second parameter will contain the document.</p></td>
     
     
     <div class="description">
-        <p>Specifies which fields from the document should be returned.</p>
+        <p>Specifies which fields from the item should be returned.</p>
     </div>
     
 
@@ -933,7 +1358,7 @@ While the second parameter will contain the document.</p></td>
 
             
 
-            <td class="description last"><p>This will be called after executing this method.
+            <td class="description last"><p>Will be called after executing this method.
 The first parameter will contain an error object when the cursor is already closed
 while the second parameter will contain a reference to this object upon successful execution.</p></td>
         </tr>
@@ -1017,13 +1442,10 @@ while the second parameter will contain a reference to this object upon successf
     
         <h5>Examples</h5>
         
-    <pre class="sunlight-highlight-javascript"> provider     .select()     .map(["name", "age"])     .toArray(function (err, arr) {         // -> The documents in the array will have only name and age fields.     });</pre>
+    <pre class="sunlight-highlight-javascript"> provider     .select()     .map(["name", "age"])     .toArray(function (err, arr) {         // -> The items in the array will have only name and age fields.
+     });</pre>
 
-    <pre class="sunlight-highlight-javascript"> provider
-     .select()
-     .map({ name: 1, age: 1 })
-     .toArray(function (err, arr) {
-         // -> The documents in the array will have only name and age fields.
+    <pre class="sunlight-highlight-javascript"> provider     .select()     .map({ name: 1, age: 1 })     .toArray(function (err, arr) {         // -> The items in the array will have only name and age fields.
      });</pre>
 
 
@@ -1091,7 +1513,7 @@ while the second parameter will contain a reference to this object upon successf
 
             
 
-            <td class="description last"><p>this will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain a object from the returned result or null if there are no more results.</p></td>
+            <td class="description last"><p>Will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain a object from the returned result or null if there are no more results.</p></td>
         </tr>
 
 	
@@ -1201,7 +1623,7 @@ while the second parameter will contain a reference to this object upon successf
             <td class="type">
             
                 
-<span class="param-type">Number</span>
+<span class="param-type">number</span>
 
 
             
@@ -1383,7 +1805,7 @@ while the second parameter will contain a reference to this object upon successf
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">object</span>
 
 
             
@@ -1416,7 +1838,7 @@ while the second parameter will contain a reference to this object upon successf
 
             
 
-            <td class="description last"><p>this will be called after executing this method. The first parameter will contain an error object when the cursor is already closed while the second parameter will contain a reference to this object upon successful execution.</p></td>
+            <td class="description last"><p>Will be called after executing this method. The first parameter will contain an error object when the cursor is already closed while the second parameter will contain a reference to this object upon successful execution.</p></td>
         </tr>
 
 	
@@ -1576,7 +1998,7 @@ while the second parameter will contain a reference to this object upon successf
     
     
     <div class="description">
-        <p>Returns an array of documents. The caller is responsible for making sure that there
+        <p>Returns an array of items. The caller is responsible for making sure that there
 is enough memory to store the results.</p>
     </div>
     
@@ -1627,7 +2049,7 @@ is enough memory to store the results.</p>
 
             
 
-            <td class="description last"><p>This will be called after executing this method successfully. The first parameter will contain the Error object if an error occurred, or null otherwise. The second parameter will contain an array of objects as a result of the query.</p></td>
+            <td class="description last"><p>Will be called after executing this method successfully. The first parameter will contain the Error object if an error occurred, or null otherwise. The second parameter will contain an array of objects as a result of the query.</p></td>
         </tr>
 
 	
@@ -1703,6 +2125,151 @@ is enough memory to store the results.</p>
     
 </dd>
 
+        
+            
+<dt>
+    <h4 class="name" id="update"><span class="type-signature"></span>update<span class="signature">(callback)</span><span class="type-signature"> &rarr; {null}</span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Updates all items that match the select query.</p>
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Will be called after executing this method. The first parameter will contain an error object on error. The second parameter may defer for the different providers, e. g. file-system returns an array of all updated items while mongodb will return the number of updated items.</p></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="cursor.js.html">cursor.js</a>, <a href="cursor.js.html#sunlight-1-line-490">line 490</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">null</span>
+
+
+	</dd>
+</dl>
+
+
+        
+    
+    
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript"> provider
+     .select({"publisher.name": "TLC"})
+     .update({$set: { age: 555 }});</pre>
+
+
+    
+</dd>
+
         </dl>
     
 
@@ -1729,7 +2296,7 @@ is enough memory to store the results.</p>
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Tue Mar 11 2014 11:17:17 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Thu Mar 13 2014 10:52:15 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
