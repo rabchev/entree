@@ -186,15 +186,15 @@ function uprem(cursor, data, callback) {
  *
  * Options
  *
- *  - `skip` {number}, The number of documents to skip from the beginning of the matching result.
- *  - `limit` {number}, Limit the number of documents to return.
- *  - `sort` {object}, Controls the order that the query returns matching documents.
- *  - `map` {object}, Specifies which fields from the document should be returned.
+ *  - `skip` {number}, The number of items to skip from the beginning of the matching result.
+ *  - `limit` {number}, Limit the number of items to return.
+ *  - `sort` {object}, Controls the order that the query returns matching items.
+ *  - `map` {object}, Specifies which fields from the item should be returned.
  *
  * @class Represents a Cursor.
- * @param {Object} provider - the provider that created this cursor.
- * @param {Object} query - an object containing the conditions that have to match to include a document in the result set.
- * @param {Object=} options - additional options for the cursor.
+ * @param {object} provider - the provider that created this cursor.
+ * @param {object} query - an object containing the conditions for an item to be included in the result set.
+ * @param {object=} options - additional options for the cursor.
 */
 function Cursor(provider, query, options) {
     this.provider   = provider;
@@ -218,8 +218,8 @@ function Cursor(provider, query, options) {
 /**
  * Sets the limit parameter of this cursor to the given value.
  *
- * @param {Number} limit the new limit.
- * @param {Function} [callback] An optional callback that will be called after executing this method. The first parameter will contain an error object when the limit given is not a valid number or when the cursor is already closed while the second parameter will contain a reference to this object upon successful execution.
+ * @param {number} limit the new limit.
+ * @param {function} [callback] An optional callback that will be called after executing this method. The first parameter will contain an error object when the limit given is not a valid number or when the cursor is already closed while the second parameter will contain a reference to this object upon successful execution.
  * @return {Cursor} an instance of this object.
  * @api public
  */
@@ -262,8 +262,8 @@ Cursor.prototype.take = function (limit, callback) {
 /**
  * Sets the skip parameter of this cursor to the given value.
  *
- * @param {Number} skip the new skip value.
- * @param {Function} [callback] this optional callback will be called after executing this method. The first parameter will contain an error object when the skip value given is not a valid number or when the cursor is already closed while the second parameter will contain a reference to this object upon successful execution.
+ * @param {number} skip the new skip value.
+ * @param {function} [callback] this optional callback will be called after executing this method. The first parameter will contain an error object when the skip value given is not a valid number or when the cursor is already closed while the second parameter will contain a reference to this object upon successful execution.
  * @return {Cursor} an instance of this object.
  * @api public
  */
@@ -299,8 +299,8 @@ Cursor.prototype.skip = function (skip, callback) {
 /**
  * Sets the sort parameter of this cursor to the given value.
  *
- * @param {Object} criteria - the criteria by which the result set will be sorted.
- * @param {Function} callback - this will be called after executing this method. The first parameter will contain an error object when the cursor is already closed while the second parameter will contain a reference to this object upon successful execution.
+ * @param {object} criteria - the criteria by which the result set will be sorted.
+ * @param {function} callback - Will be called after executing this method. The first parameter will contain an error object when the cursor is already closed while the second parameter will contain a reference to this object upon successful execution.
  * @return {Cursor} an instance of this object.
  * @api public
  */
@@ -393,14 +393,14 @@ Cursor.prototype.comparer = function (a, b) {
 };
 
 /**
- * Specifies which fields from the document should be returned.
+ * Specifies which fields from the item should be returned.
  *
  * @example
  *  provider
  *      .select()
  *      .map(["name", "age"])
  *      .toArray(function (err, arr) {
- *          // -> The documents in the array will have only name and age fields.
+ *          // -> The items in the array will have only name and age fields.
  *      });
  *
  * @example
@@ -408,11 +408,11 @@ Cursor.prototype.comparer = function (a, b) {
  *      .select()
  *      .map({ name: 1, age: 1 })
  *      .toArray(function (err, arr) {
- *          // -> The documents in the array will have only name and age fields.
+ *          // -> The items in the array will have only name and age fields.
  *      });
  *
  * @param {(object|string[])} mapping - Either, an object specifying which fields to include or exclude (not both) or an array of field names to include.
- * @param {function} callback - This will be called after executing this method.
+ * @param {function} callback - Will be called after executing this method.
  * The first parameter will contain an error object when the cursor is already closed
  * while the second parameter will contain a reference to this object upon successful execution.
  * @return {Cursor} - An instance of this object.
@@ -437,10 +437,10 @@ Cursor.prototype.map = function (mapping, callback) {
 };
 
 /**
- * Returns an array of documents. The caller is responsible for making sure that there
+ * Returns an array of items. The caller is responsible for making sure that there
  * is enough memory to store the results.
  *
- * @param {Function} callback This will be called after executing this method successfully. The first parameter will contain the Error object if an error occurred, or null otherwise. The second parameter will contain an array of objects as a result of the query.
+ * @param {function} callback - Will be called after executing this method successfully. The first parameter will contain the Error object if an error occurred, or null otherwise. The second parameter will contain an array of objects as a result of the query.
  * @return {null}
  * @api public
  */
@@ -477,12 +477,12 @@ Cursor.prototype.toArray = function (callback) {
 };
 
 /**
- * Iterates over all the documents for this cursor. As with **{cursor.toArray}**,
+ * Iterates over all the items for this cursor. As with **{cursor.toArray}**,
  * not all of the elements will be iterated if this cursor had been previouly accessed.
  *
- * @param {Function} callback this will be called for while iterating every document of the query result.
+ * @param {function} callback - Will be called for while iterating every item of the query result.
  * The first parameter will contain the Error object if an error occured, or null otherwise.
- * While the second parameter will contain the document.
+ * While the second parameter will contain the item.
  * @return {null}
  * @api public
  */
@@ -524,7 +524,7 @@ Cursor.prototype.each = function (callback) {
 /**
  * Gets the next object from the cursor.
  *
- * @param {Function} callback this will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain a object from the returned result or null if there are no more results.
+ * @param {function} callback - Will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain a object from the returned result or null if there are no more results.
  * @api public
  */
 Cursor.prototype.next = function (callback) {
@@ -549,6 +549,24 @@ Cursor.prototype.next = function (callback) {
     });
 };
 
+/**
+ * Counts the number of items matching the select query.
+ *
+ * @example
+ *  provider
+ *      .select({"publisher.name": "TLC"})
+ *      .count(function (err, count) {
+ *          if (err) {
+ *              console.log(err);
+ *          } else {
+ *              console.log(count);
+ *          }
+ *      });
+ *
+ * @param {function} callback - Will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain the number of matching items.
+ * @return {null}
+ * @api public
+ */
 Cursor.prototype.count = function (callback) {
     var that = this;
 
@@ -571,15 +589,42 @@ Cursor.prototype.count = function (callback) {
     });
 };
 
+/**
+ * Gets the first item that matches the select query and sorting criteria.
+ *
+ * @param {function} callback - Will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain the first item that matches the query.
+ * @return {null}
+ * @api public
+ */
 Cursor.prototype.first = function (callback) {
     this.limitValue = 1;
     this.next(callback);
 };
 
+/**
+ * Updates all items that match the select query.
+ *
+ * @example
+ *  provider
+ *      .select({"publisher.name": "TLC"})
+ *      .update({$set: { age: 555 }});
+ *
+ * @data {object} data - An object containing the fields and values to update.
+ * @param {function} callback - Will be called after executing this method. The first parameter will contain an error object on error. The second parameter may defer for the different providers, e. g. file-system returns an array of all updated items while mongodb will return the number of updated items.
+ * @return {null}
+ * @api public
+ */
 Cursor.prototype.update = function (data, callback) {
     uprem(this, data, callback);
 };
 
+/**
+ * Deletes all items that match the select query.
+ *
+ *  @param {function} callback - Will be called after executing this method. The first parameter will contain an error object on error while the second parameter will contain the number of deleted items.
+ * @return {null}
+ * @api public
+ */
 Cursor.prototype.delete = function (callback) {
     uprem(this, null, callback);
 };
@@ -681,7 +726,7 @@ module.exports = Cursor;
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Tue Mar 11 2014 11:17:17 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Thu Mar 13 2014 10:52:14 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
