@@ -4,14 +4,14 @@
 
 module.exports = function (grunt) {
     grunt.initConfig({
-        jsdoc           : {
-            dist            : {
-                src             : ["./lib", "README.md"],
-                options         : {
-                    destination     : "./cache/docs",
-                    tutorials       : "./cache/docs/tutorials",
-                    template        : "./node_modules/grunt-jsdoc/node_modules/ink-docstrap/template",
-                    configure       : "./jsdoc.json"
+        jsdoc: {
+            dist: {
+                src: ["./lib", "README.md"],
+                options: {
+                    destination: "./cache/docs",
+                    tutorials: "./cache/docs/tutorials",
+                    template: "./node_modules/grunt-jsdoc/node_modules/ink-docstrap/template",
+                    configure: "./jsdoc.json"
                 }
             }
         },
@@ -21,21 +21,24 @@ module.exports = function (grunt) {
             },
             src: ["**"]
         },
-        nodeunit        : {
-            all             : ["*_test.js"],
-            base            : ["provider-base_test.js"],
-            fileSys         : ["file-system_test.js", "fs-spec_test.js"],
-            mongodb         : ["mongodb_test.js"],
-            everlive        : ["everlive_test.js"],
-            manager         : ["manager_test.js"],
-            entree          : ["entree_test.js"],
-            cache           : ["cache_test.js"],
-            logging         : ["logging_test.js"]
+        nodeunit: {
+            all: ["*_test.js"],
+            base: ["provider-base_test.js"],
+            fileSys: ["file-system_test.js", "fs-spec_test.js"],
+            mongodb: ["mongodb_test.js"],
+            everlive: ["everlive_test.js"],
+            manager: ["manager_test.js"],
+            entree: ["entree_test.js"],
+            cache: ["cache_test.js"],
+            logging: ["logging_test.js"],
+            autofields: ["autofields_test.js"]
         },
-        shell           : {
-            debug           : {
-                options         : { stdout: true },
-                command         : function (target) {
+        shell: {
+            debug: {
+                options: {
+                    stdout: true
+                },
+                command: function (target) {
                     if (process.platform === "win32") {
                         return "grunt-debug test:" + target;
                     }
@@ -44,20 +47,23 @@ module.exports = function (grunt) {
                 }
             }
         },
-        concurrent      : {
-            options         : { logConcurrentOutput: true },
-            debug_all       : ["node-inspector", "shell:debug:all"],
-            debug_base      : ["node-inspector", "shell:debug:base"],
-            debug_fileSys   : ["node-inspector", "shell:debug:fileSys"],
-            debug_mongodb   : ["node-inspector", "shell:debug:mongodb"],
-            debug_everlive  : ["node-inspector", "shell:debug:everlive"],
-            debug_manager   : ["node-inspector", "shell:debug:manager"],
-            debug_entree    : ["node-inspector", "shell:debug:entree"],
-            debug_cache     : ["node-inspector", "shell:debug:cache"],
-            debug_logging   : ["node-inspector", "shell:debug:logging"]
+        concurrent: {
+            options: {
+                logConcurrentOutput: true
+            },
+            debug_all: ["node-inspector", "shell:debug:all"],
+            debug_base: ["node-inspector", "shell:debug:base"],
+            debug_fileSys: ["node-inspector", "shell:debug:fileSys"],
+            debug_mongodb: ["node-inspector", "shell:debug:mongodb"],
+            debug_everlive: ["node-inspector", "shell:debug:everlive"],
+            debug_manager: ["node-inspector", "shell:debug:manager"],
+            debug_entree: ["node-inspector", "shell:debug:entree"],
+            debug_cache: ["node-inspector", "shell:debug:cache"],
+            debug_logging: ["node-inspector", "shell:debug:logging"],
+            debug_autofields: ["node-inspector", "shell:debug:autofields"]
         },
         "node-inspector": {
-            "default"       : {}
+            "default": {}
         }
     });
 
