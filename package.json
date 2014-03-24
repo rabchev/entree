@@ -1,48 +1,51 @@
 {
-  "name": "entree",
-  "description": "Data Access Framework for NodeJS",
-  "version": "0.1.12",
-  "main": "index",
-  "author": "Boyan Rabchev <boyan@rabchev.com>",
-  "contributors": [
-    {
-      "name": "Boyan Rabchev",
-      "email": "boyan@rabchev.com"
+    "name": "entree",
+    "description": "Data Access Framework for NodeJS",
+    "version": "0.1.12",
+    "main": "index",
+    "author": "Boyan Rabchev <boyan@rabchev.com>",
+    "contributors": [
+        {
+            "name": "Boyan Rabchev",
+            "email": "boyan@rabchev.com"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/rabchev/entree.git"
+    },
+    "bugs": {
+        "email": "boyan@rabchev.com",
+        "url": "https://github.com/rabchev/entree/issues"
+    },
+    "license": {
+        "type": "MIT",
+        "url": "http://github.com/rabchev/entree/blob/master/LICENSE"
+    },
+    "homepage": "http://rabchev.github.io/entree",
+    "dependencies": {
+        "node-uuid": "*",
+        "sift": "*",
+        "lodash": "*",
+        "async": "*",
+        "mongodb": "*",
+        "cache-manager": "*",
+        "winston": "*"
+    },
+    "devDependencies": {
+        "nodeunit": "*",
+        "wrench": "*",
+        "map-stream": "*",
+        "grunt": "*",
+        "grunt-release": "*",
+        "grunt-contrib-nodeunit": "*",
+        "grunt-jsdoc": "*",
+        "grunt-shell": "*",
+        "grunt-node-inspector": "*",
+        "grunt-concurrent": "*",
+        "grunt-gh-pages": "*"
+    },
+    "scripts": {
+        "test": "grunt test"
     }
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/rabchev/entree.git"
-  },
-  "bugs": {
-    "email": "boyan@rabchev.com",
-    "url": "https://github.com/rabchev/entree/issues"
-  },
-  "license": {
-    "type": "MIT",
-    "url": "http://github.com/rabchev/entree/blob/master/LICENSE"
-  },
-  "homepage": "http://rabchev.github.io/entree",
-  "dependencies": {
-    "node-uuid": "*",
-    "sift": "*",
-    "lodash": "*",
-    "async": "*",
-    "mongodb": "*",
-    "cache-manager": "*",
-    "winston": "*"
-  },
-  "devDependencies": {
-    "nodeunit": "*",
-    "wrench": "*",
-    "map-stream": "*",
-    "grunt": "*",
-    "grunt-release": "*",
-    "grunt-contrib-nodeunit": "*",
-    "grunt-jsdoc": "*",
-    "grunt-shell": "*",
-    "grunt-node-inspector": "*",
-    "grunt-concurrent": "*",
-    "grunt-gh-pages": "*"
-  }
 }

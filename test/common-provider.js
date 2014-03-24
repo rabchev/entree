@@ -767,13 +767,14 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                 });
         },
         "Bulk Update Selected": function (test) {
-            test.expect(4);
+            test.expect(5);
 
             provider
                 .select(new Context(null), {"publisher.name": "TLC"})
                 .update({$set: { age: 555 }},
-                    function (err) {
+                    function (err, res) {
                         test.ok(!err);
+                        test.equal(res, 3);
                         provider
                             .select({ age: 555})
                             .toArray(function (err, arr) {

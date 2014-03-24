@@ -405,7 +405,7 @@ module.exports = testCase({
         var cur = manager.testProv.select({ age: 21 });
         cur.update({$set: { age: 52 }}, function (err, res) {
             test.ok(!err);
-            test.ok(!res);
+            test.equal(res, 3);
             test.equal(msgs.length, 2);
             test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") === 0);
             var obj = JSON.parse(msgs[1]);

@@ -50,7 +50,7 @@ module.exports = testCase({
             test.done();
         });
     },
-    "Insert Item With Object Context": function (test) {
+    "Update Item With Object Context": function (test) {
         test.expect(7);
         manager.testProv.update({ user: { name: "john" }}, {_id: 2, $set: { age: 22 }}, function (err, item) {
             test.ok(!err);
@@ -62,6 +62,56 @@ module.exports = testCase({
             test.equal(item._version, 2);
 
             test.done();
+        });
+    },
+    "Select and Update": function (test) {
+        test.expect(13);
+        var context = manager.createContext({ user: { name: "john" }});
+        manager.testProv.select(context).update({ $set: { age: 55 }}, function (err, res) {
+            test.ok(!err);
+            test.ok(res);
+
+            manager.testProv.select().toArray(function (err, arr) {
+                test.ok(!err);
+                test.ok(arr);
+                test.equal(arr.length, 2);
+                test.equal(arr[0].age, 55);
+                test.equal(arr[0]._createdBy, "bob");
+                test.equal(arr[0]._modifiedBy, "john");
+                test.equal(arr[0]._version, 2);
+                test.equal(arr[1].age, 55);
+                test.equal(arr[1]._createdBy, null);
+                test.equal(arr[1]._modifiedBy, "john");
+                test.equal(arr[1]._version, 3);
+                test.done();
+            });
+        });
+    },
+    "Select and Update With Callback": function (test) {
+        test.expect(15);
+        var context = manager.createContext({ user: "susan" });
+        manager.testProv.select(context, function (err, cur) {
+            test.ok(!err);
+            test.ok(cur);
+            cur.update({ $set: { age: 66 }}, function (err, res) {
+                test.ok(!err);
+                test.ok(res);
+
+                manager.testProv.select().toArray(function (err, arr) {
+                    test.ok(!err);
+                    test.ok(arr);
+                    test.equal(arr.length, 2);
+                    test.equal(arr[0].age, 66);
+                    test.equal(arr[0]._createdBy, "bob");
+                    test.equal(arr[0]._modifiedBy, "susan");
+                    test.equal(arr[0]._version, 3);
+                    test.equal(arr[1].age, 66);
+                    test.equal(arr[1]._createdBy, null);
+                    test.equal(arr[1]._modifiedBy, "susan");
+                    test.equal(arr[1]._version, 4);
+                    test.done();
+                });
+            });
         });
     },
     "Fixture Tear Down": function (test) {
