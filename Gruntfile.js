@@ -64,6 +64,11 @@ module.exports = function (grunt) {
         },
         "node-inspector": {
             "default": {}
+        },
+        release: {
+            options: {
+                npm: false
+            }
         }
     });
 
