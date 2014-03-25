@@ -51,7 +51,7 @@ function getData() {
             }
         },
         {
-            title: "A Hopeful Life",
+            title: "Пепел от рози",
             author: "Carlos Rivera",
             age: 52,
             publisher: {
@@ -297,7 +297,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
             provider.update(context, {
                 _id: "797ff043-11eb-11e1-80d6-510998755d10",
                 $inc: { age: 1 }
-            }, function (err, result) {
+            }, function (err) {
                 test.ok(!err);
                 provider.get(
                     "797ff043-11eb-11e1-80d6-510998755d10",
@@ -845,7 +845,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                         priority: 0.4
                     }
                 }
-            }, function (err, cursor) {
+            }, function (err) {
                 test.equal(err.code, "OPERS_NOT_ALLOWED");
                 test.done();
             });
@@ -898,7 +898,7 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                         priority: 0.4
                     }
                 }
-            ], function (err, cursor) {
+            ], function (err) {
                 test.equal(err.code, "OPERS_NOT_ALLOWED");
                 provider.select({author: "ad laborum"})
                     .sort({_id: 1})
@@ -917,10 +917,10 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
         "Increment Selected": function (test) {
             test.expect(3);
             provider
-                .select({title: "A Hopeful Life"})
-                .update({$inc: { "publisher.priority": 1 }}, function (err, res) {
+                .select({title: "Пепел от рози"})
+                .update({$inc: { "publisher.priority": 1 }}, function (err) {
                     test.ok(!err);
-                    provider.selectOne({title: "A Hopeful Life"}, function (err, res) {
+                    provider.selectOne({title: "Пепел от рози"}, function (err, res) {
                         test.ok(!err);
                         test.equal(res.publisher.priority, 1.25);
                         test.done();

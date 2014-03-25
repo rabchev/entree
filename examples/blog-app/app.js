@@ -35,9 +35,15 @@ entree.users.get("blah@lbah.com", function (err, user) {
 
 });
 
-entree.transaction.set("trans:foo@bar.com", ["itmes", "users", "comments"], function (items, users, comments, trans) {
+entree.transaction.set("trans:foo@bar.com", ["itmes", "users", "comments"], function (err, items, users, comments, trans) {
+    if (err) {
+        throw err;
+    }
 
-    trans.rolebackModule = "./trans/my-rollback-logic";
+    trans.on("rollback", function () {
+
+    });
+
     var cur = items.select({ age: 15 });
     cur.update({ title: "foo" });
     trans.commit(function (errors, results) {

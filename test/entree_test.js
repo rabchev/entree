@@ -16,7 +16,7 @@ module.exports = testCase({
             test.equal(manager.collections.length, 0);
             manager.init(function (err) {
                 test.ok(!err);
-                test.equal(manager.collections.length, 5);
+                test.equal(manager.collections.length, 6);
                 test.ok(manager.config);
                 test.ok(manager.blogs);
                 test.ok(manager.posts);
@@ -40,7 +40,7 @@ module.exports = testCase({
 
         entree.init(function (err) {
             test.ok(!err);
-            test.equal(entree.collections.length, 5);
+            test.equal(entree.collections.length, 6);
             test.ok(entree.config);
             test.ok(entree.blogs);
             test.ok(entree.posts);
@@ -60,7 +60,7 @@ module.exports = testCase({
 
         entree.configure(opts, function (err) {
             test.ok(!err);
-            test.equal(entree.collections.length, 6);
+            test.equal(entree.collections.length, 7);
             test.ok(entree.foo);
             test.equal(entree.foo.dir, path.join(fsPath, "foo"));
             test.done();
