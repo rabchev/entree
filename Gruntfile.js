@@ -31,7 +31,6 @@ module.exports = function (grunt) {
                 "manager_test.js",
                 "entree_test.js",
                 "cache_test.js",
-                "logging_test.js",
                 "autofields_test.js"
             ],
             base: ["provider-base_test.js"],

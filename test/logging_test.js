@@ -80,7 +80,6 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(items);
             test.equal(msgs.length, 1);
-            console.log(msgs[0]);
             test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._insert { duration:") !== -1);
             test.done();
         });
