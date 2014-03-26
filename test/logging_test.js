@@ -80,6 +80,7 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(items);
             test.equal(msgs.length, 1);
+            console.log(msgs[0]);
             test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._insert { duration:") === 0);
             test.done();
         });
@@ -207,6 +208,7 @@ module.exports = testCase({
             test.ok(err);
             test.ok(!item);
             test.equal(msgs.length, 2);
+            console.log(msgs[0]);
             test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get { duration:") === 0);
             obj = JSON.parse(msgs[1]);
             test.equal(obj.error.message, "Item does not exist.");
@@ -227,6 +229,7 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(item);
             test.equal(msgs.length, 1);
+            console.log(msgs[0]);
             test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get\",\"timestamp\":") === 0);
             test.done();
         });
