@@ -23,6 +23,17 @@ module.exports = function (grunt) {
         },
         nodeunit: {
             all: ["*_test.js"],
+            sanity: [
+                "provider-base_test.js",
+                "file-system_test.js",
+                "fs-spec_test.js",
+                "mongodb_test.js",
+                "manager_test.js",
+                "entree_test.js",
+                "cache_test.js",
+                "logging_test.js",
+                "autofields_test.js"
+            ],
             base: ["provider-base_test.js"],
             fileSys: ["file-system_test.js", "fs-spec_test.js"],
             mongodb: ["mongodb_test.js"],

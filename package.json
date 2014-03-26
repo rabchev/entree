@@ -46,6 +46,6 @@
     "grunt-gh-pages": "*"
   },
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test:sanity"
   }
 }
