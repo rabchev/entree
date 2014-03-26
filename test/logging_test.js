@@ -38,30 +38,36 @@ module.exports = testCase({
         });
     },
     "Log Insert Action": function (test) {
-        test.expect(4);
+        test.expect(6);
 
         manager.testProv.insert({_id: 1, name: "Foo", age: 20 }, function (err, item) {
             test.ok(!err);
             test.ok(item);
             test.equal(msgs.length, 1);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._insert\",\"timestamp\":") !== -1);
+            var msg = JSON.parse(msgs[0]);
+            test.equal(msg.level, "info");
+            test.equal(msg.message, "testProv._insert");
+            test.ok(msg.timestamp);
             test.done();
         });
     },
     "Log Get Action": function (test) {
-        test.expect(4);
+        test.expect(6);
 
         msgs.length = 0;
         manager.testProv.get(1, function (err, item) {
             test.ok(!err);
             test.ok(item);
             test.equal(msgs.length, 1);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get\",\"timestamp\":") !== -1);
+            var msg = JSON.parse(msgs[0]);
+            test.equal(msg.level, "info");
+            test.equal(msg.message, "testProv._get");
+            test.ok(msg.timestamp);
             test.done();
         });
     },
     "Log Performance": function (test) {
-        test.expect(4);
+        test.expect(7);
 
         var itmes   = [
                 {_id: 2, name: "Bar", age: 21 },
@@ -80,7 +86,11 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(items);
             test.equal(msgs.length, 1);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._insert { duration:") !== -1);
+            var msg = JSON.parse(msgs[0]);
+            test.equal(msg.level, "info");
+            test.equal(msg.message, "testProv._insert");
+            test.ok(msg.timestamp);
+            test.ok(msg.duration);
             test.done();
         });
     },
@@ -195,7 +205,7 @@ module.exports = testCase({
         });
     },
     "Log Get Query, Profile & Error": function (test) {
-        test.expect(8);
+        test.expect(11);
 
         var obj;
 
@@ -207,7 +217,13 @@ module.exports = testCase({
             test.ok(err);
             test.ok(!item);
             test.equal(msgs.length, 2);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get { duration:") !== -1);
+
+            var msg = JSON.parse(msgs[0]);
+            test.equal(msg.level, "info");
+            test.equal(msg.message, "testProv._get");
+            test.ok(msg.timestamp);
+            test.ok(msg.duration);
+
             obj = JSON.parse(msgs[1]);
             test.equal(obj.error.message, "Item does not exist.");
             test.equal(obj.message, "testProv._get");
@@ -228,6 +244,7 @@ module.exports = testCase({
             test.ok(item);
             test.equal(msgs.length, 1);
             test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get\",\"timestamp\":") !== -1);
+
             test.done();
         });
     },
@@ -378,7 +395,7 @@ module.exports = testCase({
         });
     },
     "Log Cursor Profile First": function (test) {
-        test.expect(5);
+        test.expect(8);
 
         msgs.length = 0;
         manager.testProv._stack.length = 0;
@@ -390,13 +407,17 @@ module.exports = testCase({
                 test.ok(!err);
                 test.equal(res.name, "Bar");
                 test.equal(msgs.length, 1);
-                test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") !== -1);
+                var msg = JSON.parse(msgs[0]);
+                test.equal(msg.level, "info");
+                test.equal(msg.message, "testProv._select");
+                test.ok(msg.timestamp);
+                test.ok(msg.duration);
                 test.done();
             });
         });
     },
     "Log Cursor Profile & Action Update": function (test) {
-        test.expect(5);
+        test.expect(8);
 
         msgs.length = 0;
         manager.testProv._stack.length = 0;
@@ -407,14 +428,18 @@ module.exports = testCase({
             test.ok(!err);
             test.equal(res, 3);
             test.equal(msgs.length, 2);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") !== -1);
+            var msg = JSON.parse(msgs[0]);
+            test.equal(msg.level, "info");
+            test.equal(msg.message, "testProv._select");
+            test.ok(msg.timestamp);
+            test.ok(msg.duration);
             var obj = JSON.parse(msgs[1]);
             test.equal(obj.message, "testProv._select.update");
             test.done();
         });
     },
     "Log Cursor Profile & Result Each": function (test) {
-        test.expect(8);
+        test.expect(11);
 
         var count = 0;
 
@@ -428,7 +453,11 @@ module.exports = testCase({
                 if (!res) {
                     test.equal(count, 3);
                     test.equal(msgs.length, 2);
-                    test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") !== -1);
+                    var msg = JSON.parse(msgs[0]);
+                    test.equal(msg.level, "info");
+                    test.equal(msg.message, "testProv._select");
+                    test.ok(msg.timestamp);
+                    test.ok(msg.duration);
                     var obj = JSON.parse(msgs[1]);
                     test.equal(obj.message, "testProv._select.each");
                     test.done();
