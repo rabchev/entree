@@ -44,7 +44,7 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(item);
             test.equal(msgs.length, 1);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._insert\",\"timestamp\":") === 0);
+            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._insert\",\"timestamp\":") !== -1);
             test.done();
         });
     },
@@ -56,7 +56,7 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(item);
             test.equal(msgs.length, 1);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get\",\"timestamp\":") === 0);
+            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get\",\"timestamp\":") !== -1);
             test.done();
         });
     },
@@ -80,8 +80,7 @@ module.exports = testCase({
             test.ok(!err);
             test.ok(items);
             test.equal(msgs.length, 1);
-            console.log(msgs[0]);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._insert { duration:") === 0);
+            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._insert { duration:") !== -1);
             test.done();
         });
     },
@@ -209,7 +208,7 @@ module.exports = testCase({
             test.ok(!item);
             test.equal(msgs.length, 2);
             console.log(msgs[0]);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get { duration:") === 0);
+            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get { duration:") !== -1);
             obj = JSON.parse(msgs[1]);
             test.equal(obj.error.message, "Item does not exist.");
             test.equal(obj.message, "testProv._get");
@@ -230,7 +229,7 @@ module.exports = testCase({
             test.ok(item);
             test.equal(msgs.length, 1);
             console.log(msgs[0]);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get\",\"timestamp\":") === 0);
+            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._get\",\"timestamp\":") !== -1);
             test.done();
         });
     },
@@ -393,7 +392,7 @@ module.exports = testCase({
                 test.ok(!err);
                 test.equal(res.name, "Bar");
                 test.equal(msgs.length, 1);
-                test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") === 0);
+                test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") !== -1);
                 test.done();
             });
         });
@@ -410,7 +409,7 @@ module.exports = testCase({
             test.ok(!err);
             test.equal(res, 3);
             test.equal(msgs.length, 2);
-            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") === 0);
+            test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") !== -1);
             var obj = JSON.parse(msgs[1]);
             test.equal(obj.message, "testProv._select.update");
             test.done();
@@ -431,7 +430,7 @@ module.exports = testCase({
                 if (!res) {
                     test.equal(count, 3);
                     test.equal(msgs.length, 2);
-                    test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") === 0);
+                    test.ok(msgs[0].indexOf("{\"level\":\"info\",\"message\":\"testProv._select { duration:") !== -1);
                     var obj = JSON.parse(msgs[1]);
                     test.equal(obj.message, "testProv._select.each");
                     test.done();
