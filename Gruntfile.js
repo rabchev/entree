@@ -32,7 +32,8 @@ module.exports = function (grunt) {
                 "entree_test.js",
                 "cache_test.js",
                 "logging_test.js",
-                "autofields_test.js"
+                "autofields_test.js",
+                "transaction_test.js"
             ],
             base: ["provider-base_test.js"],
             fileSys: ["file-system_test.js", "fs-spec_test.js"],
@@ -42,7 +43,8 @@ module.exports = function (grunt) {
             entree: ["entree_test.js"],
             cache: ["cache_test.js"],
             logging: ["logging_test.js"],
-            autofields: ["autofields_test.js"]
+            autofields: ["autofields_test.js"],
+            transaction: ["transaction_test.js"]
         },
         shell: {
             debug: {
@@ -71,7 +73,8 @@ module.exports = function (grunt) {
             debug_entree: ["node-inspector", "shell:debug:entree"],
             debug_cache: ["node-inspector", "shell:debug:cache"],
             debug_logging: ["node-inspector", "shell:debug:logging"],
-            debug_autofields: ["node-inspector", "shell:debug:autofields"]
+            debug_autofields: ["node-inspector", "shell:debug:autofields"],
+            debug_transaction: ["node-inspector", "shell:debug:transaction"]
         },
         "node-inspector": {
             "default": {}

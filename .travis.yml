@@ -12,3 +12,5 @@ deploy:
   on:
     tags: true
     repo: rabchev/entree
+    node: 0.10
+    branch: master
