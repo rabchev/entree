@@ -9,54 +9,56 @@ var testCase        = require("nodeunit").testCase,
     manager;
 
 module.exports = testCase({
-//    "Fixture Setup": function (test) {
-//        test.expect(3);
-//
-//        var provider    = new Provider({ connStr: "test connection string" }, { __collName: "test" });
-//
-//        manager = new Manager();
-//        async.parallel([
-//            function (done) {
-//                manager.addProvider(provider, "users", function (err) {
-//                    test.ok(!err);
-//                    done(err);
-//                });
-//            },
-//            function (done) {
-//                manager.addProvider(provider, "posts", function (err) {
-//                    test.ok(!err);
-//                    done(err);
-//                });
-//            },
-//            function (done) {
-//                manager.addProvider(provider, "comments", function (err) {
-//                    test.ok(!err);
-//                    done(err);
-//                });
-//            },
-//            function (done) {
-//                manager.configure({ omitModelDoc: true }, done);
-//            }
-//        ], function () {
-//            test.done();
-//        });
-//    },
-//    "Commit With Transaction": function (test) {
-//        test.expect(4);
-//
-//        manager.transaction.set(["posts", "comments"], function (err, posts, comments, trans) {
-//            test.ok(!err);
-//            test.ok(posts);
-//            test.ok(comments);
-//            test.ok(trans);
-//            test.done();
-//        });
-//    },
-//    "Fixture Tear Down": function (test) {
-//        test.expect(1);
-//        manager.dispose(function (err) {
-//            test.ok(!err);
-//            test.done();
-//        });
-//    }
+    "Fixture Setup": function (test) {
+        test.expect(3);
+
+        var usersProv   = new Provider({ connStr: "test connection string" }, { __collName: "test" }),
+            postsProv   = new Provider({ connStr: "test connection string" }, { __collName: "test" }),
+            commProv    = new Provider({ connStr: "test connection string" }, { __collName: "test" });
+
+        manager = new Manager();
+        async.parallel([
+            function (done) {
+                manager.addProvider(usersProv, "users", function (err) {
+                    test.ok(!err);
+                    done(err);
+                });
+            },
+            function (done) {
+                manager.addProvider(postsProv, "posts", function (err) {
+                    test.ok(!err);
+                    done(err);
+                });
+            },
+            function (done) {
+                manager.addProvider(commProv, "comments", function (err) {
+                    test.ok(!err);
+                    done(err);
+                });
+            },
+            function (done) {
+                manager.configure({ omitModelDoc: true }, done);
+            }
+        ], function () {
+            test.done();
+        });
+    },
+    "Commit With Transaction": function (test) {
+        test.expect(4);
+
+        manager.transaction.set(["posts", "comments"], function (err, posts, comments, trans) {
+            test.ok(!err);
+            test.ok(posts);
+            test.ok(comments);
+            test.ok(trans);
+            test.done();
+        });
+    },
+    "Fixture Tear Down": function (test) {
+        test.expect(1);
+        manager.dispose(function (err) {
+            test.ok(!err);
+            test.done();
+        });
+    }
 });
