@@ -38,7 +38,7 @@ PostProvider.prototype._insert = function (items, callback) {
 
         if (!id) {
             id = uuid.v1();
-            item[that.schema.identifier] = id;
+            that._setId(item, id);
         }
 
         var sid = empty + id;
