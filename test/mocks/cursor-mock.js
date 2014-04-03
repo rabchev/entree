@@ -75,7 +75,7 @@ CursorMock.prototype._nextObject = function (callback) {
                 item = self._map(item);
             }
         }
-        callback(null, item);
+        callback(null, _.cloneDeep(item));
     }
 
     if (this.provider.sync) {

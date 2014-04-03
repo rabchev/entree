@@ -97,19 +97,19 @@ module.exports = testCase({
     "Fail on Get Old Data": function (test) {
         test.expect(16);
 
+        var prov    = manager.comments,
+            store   = prov.store,
+            keys    = Object.keys(store);
+
+        prov.insertCalls = 0;
+        prov.upsertCalls = 0;
+        prov.getCalls = 0;
+        prov.updateCalls = 0;
+        prov.selectCalls = 0;
+        prov.deleteCalls = 0;
+
         manager.transaction.set(function (err, trans) {
             test.ok(!err);
-
-            var prov    = manager.comments,
-                store   = prov.store,
-                keys    = Object.keys(store);
-
-            prov.insertCalls = 0;
-            prov.upsertCalls = 0;
-            prov.getCalls = 0;
-            prov.updateCalls = 0;
-            prov.selectCalls = 0;
-            prov.deleteCalls = 0;
 
             trans.comments.insert({ _id: 2, title: "Foobar" });
             trans.comments.insert({ _id: 3, title: "Quux" });
@@ -137,6 +137,106 @@ module.exports = testCase({
                 test.equal(prov.deleteCalls, 0);
                 test.equal(prov.getCalls, 3);
 
+                test.done();
+            });
+        });
+    },
+    "Rollback": function (test) {
+        test.expect(16);
+
+        var prov    = manager.comments,
+            store   = prov.store,
+            keys    = Object.keys(store),
+            orgFn   = prov.update,
+            once;
+
+        prov.update = function (context, item, callback) {
+            if (!once && item._id === keys[2]) {
+                once = true;
+                callback(new Error("Update denied."));
+            } else {
+                orgFn.call(prov, context, item, callback);
+            }
+        };
+
+        prov.insertCalls = 0;
+        prov.upsertCalls = 0;
+        prov.getCalls = 0;
+        prov.updateCalls = 0;
+        prov.selectCalls = 0;
+        prov.deleteCalls = 0;
+
+        manager.transaction.set(function (err, trans) {
+            test.ok(!err);
+
+            trans.comments.insert({ _id: 2, title: "Foobar" });
+            trans.comments.insert({ _id: 3, title: "Quux" });
+            trans.comments.update({ _id: 1, $set: { title: "Updated Comment" }});
+            trans.comments.delete(keys[1]);
+            trans.comments.update({ _id: keys[2], $set: { title: "com2 update not allowed!" }});
+
+            test.equal(Object.keys(store).length, 4);
+
+            test.equal(prov.insertCalls, 0);
+            test.equal(prov.updateCalls, 0);
+            test.equal(prov.deleteCalls, 0);
+            test.equal(prov.getCalls, 0);
+
+            trans.commit(function (err, res) {
+                test.ok(err);
+                test.ok(res);
+                test.equal(Object.keys(store).length, 4);
+                test.equal(store[1].title, "First Comment");
+                test.ok(!store[2]);
+                test.ok(store[keys[1]]);
+
+                test.equal(prov.insertCalls, 3);
+                test.equal(prov.updateCalls, 3);
+                test.equal(prov.deleteCalls, 3);
+                test.equal(prov.getCalls, 3);
+
+                prov.update = orgFn;
+                test.done();
+            });
+        });
+    },
+    "Rollback Select": function (test) {
+        test.expect(4);
+
+        var prov    = manager.comments,
+            store   = prov.store,
+            keys    = Object.keys(store),
+            orgFn   = prov._update,
+            once;
+
+        prov._update = function (item, callback) {
+            if (!once && item._id === keys[2]) {
+                once = true;
+                callback(new Error("Update denied."));
+            } else {
+                orgFn.call(prov, item, callback);
+            }
+        };
+
+        prov.insertCalls = 0;
+        prov.upsertCalls = 0;
+        prov.getCalls = 0;
+        prov.updateCalls = 0;
+        prov.selectCalls = 0;
+        prov.deleteCalls = 0;
+
+        manager.transaction.set(["comments"], function (err, comments, trans) {
+            test.ok(!err);
+
+            var selected = comments.select({ title: { $regex: "^com" } });
+            selected.update({ $set: { foo: "quxbaz" } });
+            trans.commit(function (err, res) {
+                test.ok(err);
+                test.equal(res[0].length, 3);
+                var keys = Object.keys(manager.comments.store);
+                test.equal(manager.comments.store[keys[3]].foo, "bar");
+
+                prov.update = orgFn;
                 test.done();
             });
         });

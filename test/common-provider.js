@@ -905,11 +905,6 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                     .toArray(function (err, arr) {
                         test.ok(!err);
                         test.equal(arr.length, 0);
-//                        test.equal(arr[0]._id, "op-001");
-//                        test.equal(arr[0].title, "Foo Bar Foo Bar");
-//                        test.equal(arr[1]._id, "op-003");
-//                        test.equal(arr[1].title, "nulla veniam graviterque officia");
-
                         test.done();
                     });
             });
@@ -926,6 +921,58 @@ exports.getTestCase = function (Provider, options, schema, messages, init) {
                         test.done();
                     });
                 });
+        },
+        "Upsert New Item": function (test) {
+            test.expect(2);
+            provider.upsert({
+                _id: "FFDD1564",
+                title: "Test Upsert",
+                author: "Me Me Me",
+                age: 45
+            }, function (err, result) {
+                test.ok(!err);
+                test.ok(result);
+                test.done();
+            });
+        },
+        "Upsert Existing Item": function (test) {
+            test.expect(2);
+            provider.upsert({
+                _id: "FFDD1564",
+                author: "Bluba Lu"
+            }, function (err, result) {
+                test.ok(!err);
+                test.ok(result);
+                test.done();
+            });
+        },
+        "Upsert New Item With $set": function (test) {
+            test.expect(2);
+            provider.upsert({
+                _id: "FFDD8888",
+                $set: {
+                    title: "Test Upsert With $set",
+                    author: "Me Me Me",
+                    age: 45
+                }
+            }, function (err, result) {
+                test.ok(!err);
+                test.ok(result);
+                test.done();
+            });
+        },
+        "Upsert Existing Item With $set": function (test) {
+            test.expect(2);
+            provider.upsert({
+                _id: "FFDD8888",
+                $set: {
+                    author: "Bluba Lu"
+                }
+            }, function (err, result) {
+                test.ok(!err);
+                test.ok(result);
+                test.done();
+            });
         },
         "Bulk Delete Selected": function (test) {
             test.expect(3);

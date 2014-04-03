@@ -3,7 +3,6 @@
 "use strict";
 
 var Provider    = require("../../lib/provider"),
-    Err         = require("../../lib/utils/error"),
     object      = require("../../lib/utils/object"),
     Cursor      = require("./cursor-mock"),
     util        = require("util"),
@@ -22,6 +21,47 @@ function PostProvider(options, schema) {
     this.selectCalls = 0;
     this.deleteCalls = 0;
     this.delay = 0;
+}
+
+function update(prov, item, insert, callback) {
+    var idKey   = prov._getIdKey(),
+        id      = prov._getId(item);
+
+    setTimeout(function () {
+        var sid = empty + id,
+            trg = prov.store[sid];
+
+        if (insert) {
+            if (!trg) {
+                trg = {};
+                if (!id) {
+                    id = uuid.v1();
+                }
+            } else {
+                insert = false;
+            }
+        }
+
+        if (!id) {
+            return prov.handleError("Identifier not specified.", callback);
+        }
+
+        if (!trg) {
+            prov.handleError("Item does not exist.", callback);
+        } else {
+            delete item[idKey];
+            try {
+                item = object.update(item, trg, insert);
+            } catch (err) {
+                prov.handleError(err, callback);
+            }
+            item[idKey] = id;
+            prov.store[sid] = item;
+            if (callback) {
+                callback(null, item);
+            }
+        }
+    }, prov.delay);
 }
 
 util.inherits(PostProvider, Provider);
@@ -75,55 +115,13 @@ PostProvider.prototype._insert = function (items, callback) {
 };
 
 PostProvider.prototype._upsert = function (item, callback) {
-    var that    = this,
-        id      = that._getId(item);
-
     this.upsertCalls++;
-
-    if (!id) {
-        id = uuid.v1();
-        item[this.schema.identifier] = id;
-    }
-
-    setTimeout(function () {
-        that.store[empty + id] = item;
-        if (callback) {
-            callback(null, item);
-        }
-    }, this.delay);
+    update(this, item, true, callback);
 };
 
 PostProvider.prototype._update = function (item, callback) {
-    var that    = this,
-        idKey   = that._getIdKey(),
-        id      = that._getId(item);
-
     this.updateCalls++;
-
-    if (!id) {
-        return this.handleError("Identifier not specified.", callback);
-    }
-
-    setTimeout(function () {
-        var sid = empty + id,
-            trg = that.store[sid];
-
-        if (!trg) {
-            that.handleError("Item does not exist.", callback);
-        } else {
-            delete item[idKey];
-            try {
-                item = object.update(item, trg);
-            } catch (err) {
-                that.handleError(err, callback);
-            }
-            item[idKey] = id;
-            that.store[sid] = item;
-            if (callback) {
-                callback(null, item);
-            }
-        }
-    }, this.delay);
+    update(this, item, false, callback);
 };
 
 PostProvider.prototype._get = function (item, callback) {
@@ -142,7 +140,7 @@ PostProvider.prototype._get = function (item, callback) {
             that.handleError("ITEM_DOESNOT_EXIST", callback);
         } else {
             if (callback) {
-                callback(null, that.store[sid]);
+                callback(null, _.cloneDeep(that.store[sid]));
             }
         }
     }, this.delay);

@@ -114,6 +114,80 @@ module.exports = testCase({
             });
         });
     },
+    "Upsert New Item With $set": function (test) {
+        test.expect(7);
+        manager.testProv.upsert("bob", {_id: 3, $set: { name: "Baz", age: 55 }}, function (err, item) {
+            test.ok(!err);
+            test.ok(item);
+            test.ok(item._createdAt instanceof Date);
+            test.equal(item._createdBy, "bob");
+            test.ok(item._lastModified instanceof Date);
+            test.equal(item._modifiedBy, "bob");
+            test.equal(item._version, 1);
+
+            test.done();
+        });
+    },
+    "Upsert Existing Item With $set": function (test) {
+        test.expect(7);
+        manager.testProv.upsert("john", {_id: 3, $set: { name: "Quux", age: 65 }}, function (err, item) {
+            test.ok(!err);
+            test.ok(item);
+            test.ok(item._createdAt instanceof Date);
+            test.equal(item._createdBy, "bob");
+            test.ok(item._lastModified instanceof Date);
+            test.equal(item._modifiedBy, "john");
+            test.equal(item._version, 2);
+
+            test.done();
+        });
+    },
+    "Upsert New Item Without $set": function (test) {
+        test.expect(7);
+        manager.testProv.upsert("bob", {_id: 4, name: "Bluba", age: 125 }, function (err, item) {
+            test.ok(!err);
+            test.ok(item);
+            test.ok(item._createdAt instanceof Date);
+            test.equal(item._createdBy, "bob");
+            test.ok(item._lastModified instanceof Date);
+            test.equal(item._modifiedBy, "bob");
+            test.equal(item._version, 1);
+
+            test.done();
+        });
+    },
+    "Upsert Existing Item Without $set": function (test) {
+        test.expect(7);
+        manager.testProv.upsert("john", {_id: 4, name: "Bluba Lu", age: 165 }, function (err, item) {
+            test.ok(!err);
+            test.ok(item);
+            test.ok(item._createdAt instanceof Date);
+            test.equal(item._createdBy, "john");
+            test.ok(item._lastModified instanceof Date);
+            test.equal(item._modifiedBy, "john");
+            test.equal(item._version, 1);
+
+            test.done();
+        });
+    },
+    "Assert Upserted Values": function (test) {
+        test.expect(8);
+
+        var itm1 = manager.testProv.store[3],
+            itm2 = manager.testProv.store[4];
+
+        test.ok(itm1);
+        test.ok(itm2);
+
+        test.equal(itm1.name, "Quux");
+        test.equal(itm2.name, "Bluba Lu");
+        test.equal(itm1._createdBy, "bob");
+        test.equal(itm2._createdBy, "john");
+        test.equal(itm1._modifiedBy, "john");
+        test.equal(itm2._modifiedBy, "john");
+
+        test.done();
+    },
     "Fixture Tear Down": function (test) {
         test.expect(1);
         manager.dispose(function (err) {
