@@ -49,9 +49,8 @@ function update(prov, item, insert, callback) {
         if (!trg) {
             prov.handleError("Item does not exist.", callback);
         } else {
-            delete item[idKey];
             try {
-                item = object.update(item, trg, insert);
+                item = object.update(item, trg, insert, idKey);
             } catch (err) {
                 prov.handleError(err, callback);
             }

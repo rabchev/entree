@@ -26,7 +26,7 @@ entree
         .setConnection("mongo-node:1")
         .setSchema(schema)
         .done()
-    .addReplicaSet("articles", ["-odd-articles", "-even-articles"], options)
+    .addReplicaSet("articles", ["_odd-articles", "_even-articles"], options)
     .addShard("comments")
         .setConnections([connection1, connection2])
         .setSchema(schema);
@@ -39,10 +39,6 @@ entree.transaction.set("trans:foo@bar.com", ["itmes", "users", "comments"], func
     if (err) {
         throw err;
     }
-
-    trans.on("rollback", function () {
-
-    });
 
     var cur = items.select({ age: 15 });
     cur.update({ title: "foo" });
