@@ -191,7 +191,7 @@ module.exports = testCase({
                 test.ok(store[keys[1]]);
 
                 test.equal(prov.insertCalls, 3);
-                test.equal(prov.updateCalls, 3);
+                test.equal(prov.updateCalls, 2);
                 test.equal(prov.deleteCalls, 3);
                 test.equal(prov.getCalls, 3);
 

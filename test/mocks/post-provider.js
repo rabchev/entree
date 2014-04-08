@@ -43,11 +43,11 @@ function update(prov, item, insert, callback) {
         }
 
         if (!id) {
-            return prov.handleError("Identifier not specified.", callback);
+            return prov.handleError("MISSING_ID", callback);
         }
 
         if (!trg) {
-            prov.handleError("Item does not exist.", callback);
+            prov.handleError("ITEM_DOESNOT_EXIST", callback);
         } else {
             try {
                 item = object.update(item, trg, insert, idKey);
@@ -82,7 +82,7 @@ PostProvider.prototype._insert = function (items, callback) {
 
         var sid = empty + id;
         if (that.store[sid]) {
-            that.handleError("Item exists.", callback);
+            that.handleError("ITEM_EXISTS", callback);
             failed = true;
             return false;
         } else {
