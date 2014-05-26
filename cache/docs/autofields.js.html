@@ -10,9 +10,9 @@
 	<![endif]-->
 	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
 
-
+	
 	<link type="text/css" rel="stylesheet" href="styles/site.custom.css">
-
+	
 </head>
 
 <body>
@@ -21,117 +21,115 @@
 		<div class="navbar-inner">
 			<a class="brand" href="index.html">EntreeJS</a>
 			<ul class="nav">
-
+				
 				<li class="dropdown">
 					<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="module-autofields.html">autofields</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
-
+						
 						<li>
 							<a href="module-log.html">log</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 				<li class="dropdown">
 					<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="Cursor.html">Cursor</a>
 						</li>
-
+						
 						<li>
 							<a href="EverliveProvider.html">EverliveProvider</a>
 						</li>
-
+						
 						<li>
 							<a href="FsProvider.html">FsProvider</a>
 						</li>
-
+						
 						<li>
 							<a href="Manager.html">Manager</a>
 						</li>
-
+						
 						<li>
 							<a href="MongoProvider.html">MongoProvider</a>
 						</li>
-
+						
 						<li>
 							<a href="Provider.html">Provider</a>
 						</li>
-
+						
 						<li>
 							<a href="Replica.html">Replica</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 				<li class="dropdown">
 					<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
-						<li>
-							<a href="tutorial-configuration.html">Configuration</a>
-						</li>
-
+						
 						<li>
 							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
 						</li>
-
-						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
-						</li>
-
-						<li>
-							<a href="tutorial-replicas.html">Application Level Replication</a>
-						</li>
-
+						
 						<li>
 							<a href="tutorial-sharding.html">Application Level Sharding</a>
 						</li>
-
+						
+						<li>
+							<a href="tutorial-replicas.html">Application Level Replication</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
+						</li>
+						
 
 					</ul>
 				</li>
-
+				
 			</ul>
 		</div>
 	</div>
 
 	<div class="row-fluid">
 
-
+		
 			<div class="span12">
-
+				
 				<div id="main">
-
+					
 
 
 		<h1 class="page-title">Source: interceptors/autofields.js</h1>
-
+    
     <section>
         <article>
-            <pre class="sunlight-highlight-javascript linenums">/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, indent: 4, maxerr: 50 */
-
-/**
+            <pre class="sunlight-highlight-javascript linenums">/**
  * Interception module for creating and updating fields automatically.
  * That is, fields that don't have to be explicitly set on a document.
  *
@@ -158,13 +156,15 @@
 
 "use strict";
 
+var object  = require("../utils/object");
+
 function tryToFind(val) {
     var type = typeof val;
     if (type === "string" || type === "number") {
         return val;
     }
 
-    return val._id || val.username || val.email;
+    return val._id || val.username || val.email || val.name;
 }
 
 function getUserIdentity(context) {
@@ -178,28 +178,64 @@ function getUserIdentity(context) {
     return null;
 }
 
-function updateAutoFields(item, context, opts, insert) {
+function updateAutoFields(item, context, opts, upsert) {
     var identity, date;
-    if (insert && opts.createdAt) {
-        item[opts.createdAt] = date = new Date().toISOString();
 
-        if (context && opts.createdBy) {
+    if (object.validateKeys(item) === "fields") {
+        if (opts.createdAt) {
+            item[opts.createdAt] = date = new Date();
+        }
+
+        if (opts.createdBy) {
             item[opts.createdBy] = identity = getUserIdentity(context);
         }
-    }
 
-    if (opts.version) {
-        var fld = {};
-        fld[opts.version] = 1;
-        item.$inc = fld;
-    }
+        if (opts.version) {
+            item[opts.version] = 1;
+        }
 
-    if (opts.lastModified) {
-        item[opts.lastModified] = date || new Date().toISOString();
-    }
+        if (opts.lastModified) {
+            item[opts.lastModified] = date || new Date();
+        }
 
-    if (context && opts.modifiedBy) {
-        item[opts.modifiedBy] = identity || getUserIdentity(context);
+        if (opts.modifiedBy) {
+            item[opts.modifiedBy] = identity || getUserIdentity(context);
+        }
+    } else {
+        if (upsert && (opts.createdAt || opts.createdBy)) {
+            if (!item.$setOnInsert) {
+                item.$setOnInsert = {};
+            }
+
+            if (opts.createdAt) {
+                item.$setOnInsert[opts.createdAt] = date = new Date();
+            }
+
+            if (opts.createdBy) {
+                item.$setOnInsert[opts.createdBy] = identity = getUserIdentity(context);
+            }
+        }
+
+        if (opts.version) {
+            if (!item.$inc) {
+                item.$inc = {};
+            }
+            item.$inc[opts.version] = 1;
+        }
+
+        if (opts.lastModified || opts.modifiedBy) {
+            if (!item.$set) {
+                item.$set = {};
+            }
+
+            if (opts.lastModified) {
+                item.$set[opts.lastModified] = date || new Date();
+            }
+
+            if (opts.modifiedBy) {
+                item.$set[opts.modifiedBy] = identity || getUserIdentity(context);
+            }
+        }
     }
 }
 
@@ -209,6 +245,7 @@ function wrapCursor(cursor, context, opts) {
         updateAutoFields(data, context, opts);
         orgFn.call(cursor, data, callback);
     };
+    return cursor;
 }
 
 /**
@@ -219,10 +256,11 @@ function wrapCursor(cursor, context, opts) {
  * - `createdAt` {(boolean|string)=} - if true, defaults to "_createdAt".
  * - `createdBy` {(boolean|string)=} - if true, defaults to "_createdBy".
  * - `lastModified` {(boolean|string)=} - if true, defaults to "_lastModified".
- * - `lastModifiedBy` {(boolean|string)=} - if true, defaults to "_lastModifiedBy".
+ * - `modifiedBy` {(boolean|string)=} - if true, defaults to "_modifiedBy".
  * - `version` {(boolean|string)=} - if true, defaults to "_version".
  *
  * If any of the options is a string, then the value is used for field name for that option.
+ * If options are omitted, all supported fields will be configured with their default names.
  *
  * @param {object=} opts - Autofields options, defines which auto-fileds should be handled and their names.
  * @return {function}
@@ -233,7 +271,7 @@ exports.interception = function (opts) {
             createdAt       : "_createdAt",
             createdBy       : "_createdBy",
             lastModified    : "_lastModified",
-            lastModifiedBy  : "_lastModifiedBy",
+            modifiedBy      : "_modifiedBy",
             version         : "_version"
         };
     } else {
@@ -246,8 +284,8 @@ exports.interception = function (opts) {
         if (opts.lastModified && typeof opts.lastModified !== "string") {
             opts.lastModified = "_lastModified";
         }
-        if (opts.lastModifiedBy && typeof opts.lastModifiedBy !== "string") {
-            opts.lastModifiedBy = "_lastModifiedBy";
+        if (opts.modifiedBy && typeof opts.modifiedBy !== "string") {
+            opts.modifiedBy = "_modifiedBy";
         }
         if (opts.version && typeof opts.version !== "string") {
             opts.version = "_version";
@@ -255,28 +293,35 @@ exports.interception = function (opts) {
     }
 
     return function (action, context, item, next, out) {
-        switch (action) {
-        case "_insert":
-            updateAutoFields(item, context, opts, true);
-            break;
-        case "_update":
-        case "_upsert":
-            updateAutoFields(item, context, opts);
-            break;
-        case "_select":
-            if (out) {
-                next(item, function (err, cur) {
-                    if (cur) {
-                        wrapCursor(cur, context, opts);
-                    }
-                    out(err, cur);
-                });
-            } else {
-                wrapCursor(next(item), context, opts);
+        try {
+            switch (action) {
+            case "_insert":
+            case "_update":
+                updateAutoFields(item, context, opts);
+                break;
+            case "_upsert":
+                updateAutoFields(item, context, opts, true);
+                break;
+            case "_select":
+                if (out) {
+                    next(item, function (err, cur) {
+                        if (cur) {
+                            wrapCursor(cur, context, opts);
+                        }
+                        out(err, cur);
+                    });
+                } else {
+                    return wrapCursor(next(item), context, opts);
+                }
+                return;
             }
-            return;
+            next(item, out);
+        } catch (err) {
+            if (out) {
+                return out(err);
+            }
+            throw err;
         }
-        next(item, out);
     };
 };
 </pre>
@@ -291,21 +336,21 @@ exports.interception = function (opts) {
 
 				<div class="clearfix"></div>
 				<footer>
-
-
+					
+					
 		<span class="copyright">
 		EntreeJS Copyright © 2013-2014 The contributors to the EntreeJS project.
 		</span>
 					<br />
-
+					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Fri Mar 21 2014 12:06:40 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Mon May 26 2014 17:43:41 GMT+0300 (EEST) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
 
-
+			
 			<br clear="both">
 		</div>
 
@@ -337,7 +382,7 @@ exports.interception = function (opts) {
 		} );
 	</script>
 
-
+	
 
 </body>
 </html>

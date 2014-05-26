@@ -31,7 +31,7 @@
 						<li>
 							<a href="module-autofields.html">autofields</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
@@ -89,15 +89,11 @@
 					<ul class="dropdown-menu ">
 						
 						<li>
-							<a href="tutorial-configuration.html">Configuration</a>
-						</li>
-						
-						<li>
 							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
 						</li>
 						
 						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
 						</li>
 						
 						<li>
@@ -105,7 +101,11 @@
 						</li>
 						
 						<li>
-							<a href="tutorial-sharding.html">Application Level Sharding</a>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
 						</li>
 						
 
@@ -129,112 +129,15 @@
     
     <section>
         <article>
-            <pre class="sunlight-highlight-javascript linenums">/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, es5: true, indent: 4, maxerr: 50 */
+            <pre class="sunlight-highlight-javascript linenums">/* jshint -W098 */
 
 "use strict";
 
 var Strings     = require("./strings"),
-    Context     = require("./utils/context"),
     Err         = require("./utils/error"),
+    object      = require("./utils/object"),
     _           = require("lodash"),
-    uuid        = require("node-uuid"),
-    util        = require("util");
-
-function validateArgs(args, name) {
-    var res = {};
-    if (args.length === 1) {
-        res.item = args[0];
-    } else if (args.length === 2) {
-        if (typeof args[1] === "function") {
-            res.item = args[0];
-            res.callback = args[1];
-        } else {
-            res.context = args[0];
-            res.item = args[1];
-        }
-    } else if (args.length > 2) {
-        res.context = args[0];
-        res.item = args[1];
-        res.callback = args[2];
-    }
-
-    if (!res.callback) {
-        res.callback = function () {};
-    }
-
-    if (!res.item) {
-        res.callback(new Err(Strings.MISSING_ARG, name));
-        return null;
-    }
-
-    if (res.context && res.context.__orgObj) {
-        res.context = res.context.__orgObj;
-    }
-
-    return res;
-}
-
-function validateSelectArgs(args) {
-    var res = {},
-        val;
-
-    switch (args.length) {
-    case 4:
-        res.context = args[0];
-        res.query = args[1];
-        res.options = args[2];
-        res.callback = args[3];
-        break;
-    case 3:
-        if (args[0] instanceof Context) {
-            res.context = args[0];
-            res.query = args[1];
-            if (_.isFunction(args[2])) {
-                res.callback = args[2];
-            } else {
-                res.options = args[2];
-            }
-        } else {
-            res.query = args[0];
-            res.options = args[1];
-            res.callback = args[2];
-        }
-        break;
-    case 2:
-        if (args[0] instanceof Context) {
-            res.context = args[0];
-            if (_.isFunction(args[1])) {
-                res.callback = args[1];
-            } else {
-                res.query = args[1];
-            }
-        } else {
-            res.query = args[0];
-            if (_.isFunction(args[1])) {
-                res.callback = args[1];
-            } else {
-                res.options = args[1];
-            }
-        }
-        break;
-    case 1:
-        val = args[0];
-        if (val instanceof Context) {
-            res.context = val;
-        } else if (typeof val === "function") {
-            res.callback = val;
-        } else {
-            res.query = val;
-        }
-        break;
-    }
-
-    if (res.context && res.context.__orgObj) {
-        res.context = res.context.__orgObj;
-    }
-
-    return res;
-}
+    uuid        = require("node-uuid");
 
 /**
  * Constructor for the data provider base class. This class cannot be used directly.
@@ -293,7 +196,7 @@ function Provider(options, schema) {
  * @return {null}
  */
 Provider.prototype.insert = function () {
-    var args = validateArgs(arguments, "items");
+    var args = object.validateArgs(arguments, "items");
     if (args) {
         this._do("_insert", args.context, args.item, args.callback);
     }
@@ -311,7 +214,7 @@ Provider.prototype.insert = function () {
  * @return {null}
  */
 Provider.prototype.upsert = function () {
-    var args = validateArgs(arguments, "item");
+    var args = object.validateArgs(arguments, "item");
     if (args) {
         this._do("_upsert", args.context, args.item, args.callback);
     }
@@ -330,7 +233,7 @@ Provider.prototype.upsert = function () {
  * @return {null}
  */
 Provider.prototype.update = function () {
-    var args = validateArgs(arguments, "item");
+    var args = object.validateArgs(arguments, "item");
     if (args) {
         this._do("_update", args.context, args.item, args.callback);
     }
@@ -349,7 +252,7 @@ Provider.prototype.update = function () {
  * @return {null}
  */
 Provider.prototype.delete = function () {
-    var args = validateArgs(arguments, "itemOrID");
+    var args = object.validateArgs(arguments, "itemOrID");
     if (args) {
         this._do("_delete", args.context, args.item, args.callback);
     }
@@ -368,7 +271,7 @@ Provider.prototype.delete = function () {
  * @return {null}
  */
 Provider.prototype.get = function () {
-    var args = validateArgs(arguments, "itemOrID");
+    var args = object.validateArgs(arguments, "itemOrID");
     if (args) {
         this._do("_get", args.context, args.item, args.callback);
     }
@@ -448,7 +351,7 @@ Provider.prototype.get = function () {
  * @return {(null|Cursor)} - The method returns null if a callback is provided otherwise it returns a {@link Cursor}.
  */
 Provider.prototype.select = function () {
-    var args = validateSelectArgs(arguments);
+    var args = object.validateSelectArgs(arguments);
     if (args) {
         return this._do("_select", args.context, { query: args.query, options: args.options }, args.callback);
     }
@@ -644,7 +547,7 @@ module.exports = Provider;
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Fri Mar 21 2014 12:06:40 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Mon May 26 2014 17:43:41 GMT+0300 (EEST) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>

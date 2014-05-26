@@ -31,7 +31,7 @@
 						<li>
 							<a href="module-autofields.html">autofields</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
@@ -89,15 +89,11 @@
 					<ul class="dropdown-menu ">
 						
 						<li>
-							<a href="tutorial-configuration.html">Configuration</a>
-						</li>
-						
-						<li>
 							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
 						</li>
 						
 						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
 						</li>
 						
 						<li>
@@ -105,7 +101,11 @@
 						</li>
 						
 						<li>
-							<a href="tutorial-sharding.html">Application Level Sharding</a>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
 						</li>
 						
 
@@ -129,32 +129,33 @@
     
     <section>
         <article>
-            <pre class="sunlight-highlight-javascript linenums">/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, es5: true, indent: 4, maxerr: 50 */
-
-"use strict";
+            <pre class="sunlight-highlight-javascript linenums">"use strict";
 
 var Strings     = require("./strings"),
     Err         = require("./utils/error"),
+    object      = require("./utils/object"),
     async       = require("async");
 
-function write(replica, method, context, items, callback) {
-    var i, result, fns = [];
-
-    function getMethod(coll) {
-        return function (cb) {
-            replica.manager[coll][method](context, items, function (err, res) {
-
+function write(replica, method, args) {
+    if (replica.writeStrategy === "rollback") {
+        replica.manager.transaction.set(function (err, trans) {
+            if (err) {
+                args.callback(err);
+            }
+            replica.collections.forEach(function (el) {
+                trans[el][method](args.item);
             });
-        };
+            trans.commit(args.context, args.callback);
+        });
+    } else {
+        var fns = [];
+        replica.collections.forEach(function (el) {
+            fns.push(function (cb) {
+                replica.manager[el][method](args.context, args.item, cb);
+            });
+        });
+        async.parallel(fns, args.callback);
     }
-
-    for (i = 0; i &lt; replica.collections.length; i++) {
-        fns.push(getMethod(replica.collections[i]));
-    }
-
-    async.parallel(fns, function (err, results) {
-        callback(err, result);
-    });
 }
 
 /**
@@ -173,11 +174,12 @@ function write(replica, method, context, items, callback) {
  * See {@link Replica#writeStrategy}.
  *
  * @class Represents a replica set.
- * @param {Provider[]} colls - An array of the data collections participating in the replica set.
+ * @param {Manager} manager - An EntreeJS instance.
+ * @param {string[]} colls - The names of the data collections participating in the replica set.
  * There must be at least two collections in the array.
  * @param {object=} opts - Additional options.
  */
-function Replica(colls, opts) {
+function Replica(manager, colls, opts) {
     if (!Array.isArray(colls) || colls.length &lt; 2) {
         throw new Err(Strings.ERR_COLLS_ARG);
     }
@@ -187,7 +189,12 @@ function Replica(colls, opts) {
     }
 
     /**
-     * An array of the data collections participating in the replica set.
+     * The EntreJS instance holding this replica set.
+     */
+    this.manager = manager;
+
+    /**
+     * An array of the names of the data collections participating in the replica set.
      */
     this.collections = colls;
 
@@ -209,16 +216,12 @@ function Replica(colls, opts) {
     this.readStrategy = opts.readStrategy || "master";
 
     /**
-     * Defines the write strategy for the replica set. Defaults to `all`.
+     * Defines the write strategy for the replica set. Defaults to `rollback`.
      *
-     * - `"all"` - All collections must commit successfully.
-     * If one fails, any successful commits are reverted and an error is returned.
-     * - `"master"` - Only the master collection must commit successfully.
-     * If master fails, any successful commits are reverted and an error is returned.
-     * If any other collection fails, the failure is simply ignored.
-     * - `"none"` - Only master is waited for response and no reversion on failure is done.
+     * - `"rollback"` - Attempts to recover the state of all collections in case any of them fails to write successfully.
+     * - `"none"` - Errors on failures are returned but no actions are taken.
      */
-    this.writeStrategy = opts.writeStrategy || "all";
+    this.writeStrategy = opts.writeStrategy || "rollback";
 
     this._curr = 0;
 }
@@ -240,29 +243,46 @@ Replica.prototype._next = function () {
     }
 };
 
-Replica.prototype.get = function (context, identity, callback) {
-    this.manager[this._next()].get(context, identity, callback);
+Replica.prototype.get = function () {
+    var prov = this.manager[this._next()];
+    return prov.get.apply(prov, arguments);
 };
 
-Replica.prototype.select = function (context, query, options, callback) {
-    this.manager[this._next()].select(context, query, options, callback);
+Replica.prototype.select = function () {
+    // TODO: Have to wrap the cursor to handle bulk update and delete.
+    var prov = this.manager[this._next()];
+    return prov.select.apply(prov, arguments);
 };
 
-Replica.prototype.insert = function (context, items, callback) {
-    write(this, "insert", context, items, callback);
+Replica.prototype.insert = function () {
+    var args = object.validateArgs(arguments, "items");
+    if (args) {
+        write(this, "insert", args);
+    }
 };
 
-Replica.prototype.upsert = function (context, item, callback) {
-    write(this, "upsert", context, item, callback);
+Replica.prototype.upsert = function () {
+    var args = object.validateArgs(arguments, "item");
+    if (args) {
+        write(this, "upsert", args);
+    }
 };
 
-Replica.prototype.update = function (context, item, callback) {
-    write(this, "update", context, item, callback);
+Replica.prototype.update = function () {
+    var args = object.validateArgs(arguments, "item");
+    if (args) {
+        write(this, "update", args);
+    }
 };
 
-Replica.prototype.delete = function (context, item, callback) {
-    write(this, "delete", context, item, callback);
+Replica.prototype.delete = function () {
+    var args = object.validateArgs(arguments, "itemOrID");
+    if (args) {
+        write(this, "delete", args);
+    }
 };
+
+module.exports = Replica;
 </pre>
         </article>
     </section>
@@ -284,7 +304,7 @@ Replica.prototype.delete = function (context, item, callback) {
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Fri Mar 21 2014 12:06:40 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Mon May 26 2014 17:43:41 GMT+0300 (EEST) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>

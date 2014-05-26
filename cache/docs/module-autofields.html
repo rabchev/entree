@@ -10,9 +10,9 @@
 	<![endif]-->
 	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
 
-
+	
 	<link type="text/css" rel="stylesheet" href="styles/site.custom.css">
-
+	
 </head>
 
 <body>
@@ -21,108 +21,108 @@
 		<div class="navbar-inner">
 			<a class="brand" href="index.html">EntreeJS</a>
 			<ul class="nav">
-
+				
 				<li class="dropdown">
 					<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="module-autofields.html">autofields</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
-
+						
 						<li>
 							<a href="module-log.html">log</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 				<li class="dropdown">
 					<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
+						
 						<li>
 							<a href="Cursor.html">Cursor</a>
 						</li>
-
+						
 						<li>
 							<a href="EverliveProvider.html">EverliveProvider</a>
 						</li>
-
+						
 						<li>
 							<a href="FsProvider.html">FsProvider</a>
 						</li>
-
+						
 						<li>
 							<a href="Manager.html">Manager</a>
 						</li>
-
+						
 						<li>
 							<a href="MongoProvider.html">MongoProvider</a>
 						</li>
-
+						
 						<li>
 							<a href="Provider.html">Provider</a>
 						</li>
-
+						
 						<li>
 							<a href="Replica.html">Replica</a>
 						</li>
-
+						
 
 					</ul>
 				</li>
-
+				
 				<li class="dropdown">
 					<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b
 						class="caret"></b></a>
 
 					<ul class="dropdown-menu ">
-
-						<li>
-							<a href="tutorial-configuration.html">Configuration</a>
-						</li>
-
+						
 						<li>
 							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
 						</li>
-
-						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
-						</li>
-
-						<li>
-							<a href="tutorial-replicas.html">Application Level Replication</a>
-						</li>
-
+						
 						<li>
 							<a href="tutorial-sharding.html">Application Level Sharding</a>
 						</li>
-
+						
+						<li>
+							<a href="tutorial-replicas.html">Application Level Replication</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
+						</li>
+						
 
 					</ul>
 				</li>
-
+				
 			</ul>
 		</div>
 	</div>
 
 	<div class="row-fluid">
 
-
+		
 		<div class="span8">
-
+			
 				<div id="main">
-
+					
 
 
 	<h1 class="page-title">Module: autofields</h1>
@@ -132,15 +132,15 @@
     <h2>
     autofields
     </h2>
-
+    
 </header>
 
 <article>
     <div class="container-overview">
+    
 
-
-
-
+    
+        
             <div class="description"><p>Interception module for creating and updating fields automatically.
 That is, fields that don't have to be explicitly set on a document.</p>
 <p>The folowing fields are supported:</p>
@@ -181,78 +181,81 @@ That is, fields that don't have to be explicitly set on a document.</p>
 </tbody>
 </table>
 <p>For more details on using interceptors please see the <a href="tutorial-interceptors.html">Interceptors</a> tutorial.</p></div>
+        
 
-
-
+        
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="autofields.js.html">interceptors/autofields.js</a>, <a href="autofields.js.html#sunlight-1-line-3">line 3</a>
+        <a href="autofields.js.html">interceptors/autofields.js</a>, <a href="autofields.js.html#sunlight-1-line-1">line 1</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
 
-
+        
             <h3>Example</h3>
+            
+    <pre class="sunlight-highlight-javascript"> var entree      = require("entree"),
+     autofields  = entree.resolveInterceptor("autofields");
 
-    <pre class="sunlight-highlight-javascript"> var entree      = require("entree"),     autofields  = entree.resolveInterceptor("autofields");entree.posts.use(autofields.interception({ createdAt: true, version: "_myUpdateCountField" }));</pre>
+entree.posts.use(autofields.interception({ createdAt: true, version: "_myUpdateCountField" }));</pre>
 
 
-
-
+        
+    
     </div>
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
+    
         <h3 class="subsection-title">Methods</h3>
 
         <dl>
-
+            
 <dt>
     <h4 class="name" id="interception"><span class="type-signature">&lt;static> </span>interception<span class="signature">(<span class="optional">opts</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
-
-
+    
+    
 </dt>
 <dd>
-
-
+    
+    
     <div class="description">
         <p>Configures and returns an interceptor function.</p>
 <p>Options</p>
@@ -260,127 +263,128 @@ That is, fields that don't have to be explicitly set on a document.</p>
 <li><code>createdAt</code> {(boolean|string)=} - if true, defaults to &quot;_createdAt&quot;.</li>
 <li><code>createdBy</code> {(boolean|string)=} - if true, defaults to &quot;_createdBy&quot;.</li>
 <li><code>lastModified</code> {(boolean|string)=} - if true, defaults to &quot;_lastModified&quot;.</li>
-<li><code>lastModifiedBy</code> {(boolean|string)=} - if true, defaults to &quot;_lastModifiedBy&quot;.</li>
+<li><code>modifiedBy</code> {(boolean|string)=} - if true, defaults to &quot;_modifiedBy&quot;.</li>
 <li><code>version</code> {(boolean|string)=} - if true, defaults to &quot;_version&quot;.</li>
 </ul>
-<p>If any of the options is a string, then the value is used for field name for that option.</p>
+<p>If any of the options is a string, then the value is used for field name for that option.
+If options are omitted, all supported fields will be configured with their default names.</p>
     </div>
+    
 
-
-
-
-
-
-
+    
+    
+    
+    
+    
         <h5>Parameters:</h5>
-
+        
 
 <table class="params table table-striped">
     <thead>
 	<tr>
-
+		
 		<th>Name</th>
-
+		
 
 		<th>Type</th>
 
-
+		
 		<th>Argument</th>
+		
 
-
-
+		
 
 		<th class="last">Description</th>
 	</tr>
 	</thead>
 
 	<tbody>
-
+	
 
         <tr>
-
+            
                 <td class="name"><code>opts</code></td>
-
+            
 
             <td class="type">
-
-
+            
+                
 <span class="param-type">object</span>
 
 
-
+            
             </td>
 
-
+            
                 <td class="attributes">
-
+                
                     &lt;optional><br>
+                
 
+                
 
-
-
-
+                
                 </td>
+            
 
-
-
+            
 
             <td class="description last"><p>Autofields options, defines which auto-fileds should be handled and their names.</p></td>
         </tr>
 
-
+	
 	</tbody>
 </table>
 
-
-
-
+    
+    
+    
 <dl class="details">
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
-
+    
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="autofields.js.html">interceptors/autofields.js</a>, <a href="autofields.js.html#sunlight-1-line-99">line 99</a>
+        <a href="autofields.js.html">interceptors/autofields.js</a>, <a href="autofields.js.html#sunlight-1-line-137">line 137</a>
     </li></ul></dd>
+    
 
+    
 
+    
 
-
-
-
-
+    
 </dl>
 
+    
+    
 
+    
 
-
-
-
-
-
-
-
-
+    
+    
+    
+    
+    
     <h5>Returns:</h5>
-
-
+    
+            
 
 
 <dl>
@@ -388,7 +392,7 @@ That is, fields that don't have to be explicitly set on a document.</p>
 		Type
 	</dt>
 	<dd>
-
+		
 <span class="param-type">function</span>
 
 
@@ -396,17 +400,17 @@ That is, fields that don't have to be explicitly set on a document.</p>
 </dl>
 
 
-
-
-
+        
+    
+    
 </dd>
 
         </dl>
+    
 
+    
 
-
-
-
+    
 </article>
 
 </section>
@@ -418,25 +422,25 @@ That is, fields that don't have to be explicitly set on a document.</p>
 
 				<div class="clearfix"></div>
 				<footer>
-
-
+					
+					
 		<span class="copyright">
 		EntreeJS Copyright © 2013-2014 The contributors to the EntreeJS project.
 		</span>
 					<br />
-
+					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Fri Mar 21 2014 12:06:40 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Mon May 26 2014 17:43:41 GMT+0300 (EEST) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
 
-
+			
 			<div class="span3">
 				<div id="toc"></div>
 			</div>
-
+			
 			<br clear="both">
 		</div>
 
@@ -468,7 +472,7 @@ That is, fields that don't have to be explicitly set on a document.</p>
 		} );
 	</script>
 
-
+	
 
 </body>
 </html>

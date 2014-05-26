@@ -31,7 +31,7 @@
 						<li>
 							<a href="module-autofields.html">autofields</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
@@ -89,15 +89,11 @@
 					<ul class="dropdown-menu ">
 						
 						<li>
-							<a href="tutorial-configuration.html">Configuration</a>
-						</li>
-						
-						<li>
 							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
 						</li>
 						
 						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
 						</li>
 						
 						<li>
@@ -105,7 +101,11 @@
 						</li>
 						
 						<li>
-							<a href="tutorial-sharding.html">Application Level Sharding</a>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
 						</li>
 						
 
@@ -129,17 +129,15 @@
     
     <section>
         <article>
-            <pre class="sunlight-highlight-javascript linenums">/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, es5: true, indent: 4, maxerr: 50 */
+            <pre class="sunlight-highlight-javascript linenums">"use strict";
 
-"use strict";
-
-var Strings     = require("./strings"),
-    Context     = require("./utils/context"),
-    Err         = require("./utils/error"),
-    _           = require("lodash"),
-    async       = require("async"),
-    util        = require("util"),
-    path        = require("path");
+var TransactionManager  = require("./transactions/transaction-manager"),
+    Replica             = require("./replica"),
+    Context             = require("./utils/context"),
+    Err                 = require("./utils/error"),
+    _                   = require("lodash"),
+    async               = require("async"),
+    path                = require("path");
 
 function mergeConnectons(man, source) {
     if (source) {
@@ -191,6 +189,7 @@ function mergeCollections(man, colls, done) {
 }
 
 function mergeReplicas(man, source) {
+
     // TODO: Implement merge replica set configuration. [2014-01-12]
 }
 
@@ -419,6 +418,31 @@ var addConnection = function (name, provider, opts) {
         setProvider(this, name, args.connection, args.interceptors, args.schema, args.done);
         return this;
     },
+    addReplicaSet = function (name, collections, opts, done) {
+        if (!name || typeof name !== "string") {
+            throw new Err("MISSING_ARG", ["name"]);
+        }
+
+        if (typeof opts === "function") {
+            done = opts;
+            opts = null;
+        }
+
+        if (this[name]) {
+            var err = new Err("PROVIDER_EXISTS", [name]);
+            if (done) {
+                return done(err);
+            }
+            throw err;
+        }
+
+        var replica = new Replica(this, collections, opts);
+        this[name] = replica;
+        this.collections.push(replica);
+        if (done) {
+            done();
+        }
+    },
     removeCollection = function (name, done) {
         if (!this[name]) {
             var err = new Err("NO_SUCH_PROVIDER", [name]);
@@ -451,6 +475,7 @@ var addConnection = function (name, provider, opts) {
         provider.init(function (err) {
             if (!err) {
                 provider.name = name;
+                provider.manager = that;
                 that[name] = provider;
                 that.collections.push(provider);
             } else if (!done) {
@@ -524,8 +549,13 @@ var addConnection = function (name, provider, opts) {
         delete this._opts;
 
         var that = this,
+            transStore = opts.transStore,
             dataModelDoc,
             confConn;
+
+        if (!this.transaction && !transStore) {
+            transStore = "_transactions";
+        }
 
         this.env = opts.env || process.env.NODE_ENV || "development";
         // FUTURE: Add tests for custom config collection. [2014-01-12]
@@ -572,7 +602,38 @@ var addConnection = function (name, provider, opts) {
                 }
             },
             function (done) {
-                if (!dataModelDoc) {
+                var type = typeof transStore,
+                    transMan;
+
+                if (type === "undefined") {
+                    done();
+                } else if (type === "string") {
+                    that.addCollection(transStore, function (err) {
+                        if (err) {
+                            done(err);
+                        }
+                        that.transaction = new TransactionManager(that[transStore], that);
+                        done();
+                    });
+                } else if (type === "object") {
+                    if (transStore.insert && transStore.update && transStore.upsert && transStore.get && transStore.delete) {
+                        transMan = new TransactionManager(transStore, that);
+                    } else if (transStore.module) {
+                        transMan = new TransactionManager(require(transStore.module)(transStore.options));
+                    }
+
+                    if (!transMan) {
+                        return done(new Err("INVALID_TRANS_STORE"));
+                    }
+
+                    that.transaction = transMan;
+                    done();
+                } else {
+                    done(new Err("INVALID_TRANS_STORE"));
+                }
+            },
+            function (done) {
+                if (!dataModelDoc || opts.omitModelDoc) {
                     return done();
                 }
 
@@ -721,6 +782,12 @@ Manager.prototype.setCollections = setCollections;
  */
 Manager.prototype.addCollection = addCollection;
 
+// TODO: document this method.
+/**
+ * Creates new replica set.
+ */
+Manager.prototype.addReplicaSet = addReplicaSet;
+
 /**
  * Removes the specified data collection from this instance.
  *
@@ -861,7 +928,7 @@ module.exports = Manager;
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Fri Mar 21 2014 12:06:40 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Mon May 26 2014 17:43:41 GMT+0300 (EEST) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>

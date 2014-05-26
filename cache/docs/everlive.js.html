@@ -31,7 +31,7 @@
 						<li>
 							<a href="module-autofields.html">autofields</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
@@ -89,15 +89,11 @@
 					<ul class="dropdown-menu ">
 						
 						<li>
-							<a href="tutorial-configuration.html">Configuration</a>
-						</li>
-						
-						<li>
 							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
 						</li>
 						
 						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
 						</li>
 						
 						<li>
@@ -105,7 +101,11 @@
 						</li>
 						
 						<li>
-							<a href="tutorial-sharding.html">Application Level Sharding</a>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
 						</li>
 						
 
@@ -129,14 +129,13 @@
     
     <section>
         <article>
-            <pre class="sunlight-highlight-javascript linenums">/*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, es5: true, indent: 4, maxerr: 50 */
-
-"use strict";
+            <pre class="sunlight-highlight-javascript linenums">"use strict";
 
 var Cursor      = require("../cursor"),
     Provider    = require("../provider"),
     Strings     = require("../strings"),
     Err         = require("../utils/error"),
+    object      = require("../utils/object"),
     url         = require("url"),
     util        = require("util"),
     _           = require("lodash");
@@ -209,7 +208,7 @@ EverliveCursor.prototype.count = function (callback) {
         });
     });
 
-    req.on('error', function (err) {
+    req.on("error", function (err) {
         that.provider.handleError(err, callback);
     });
 
@@ -278,13 +277,13 @@ EverliveCursor.prototype._exec = function (callback, method, data) {
         });
     });
 
-    req.on('error', function (err) {
+    req.on("error", function (err) {
         that.provider.handleError(err, callback);
     });
 
     if (data) {
         payload = JSON.stringify(data);
-        opts.headers["Content-Length"] = payload.length;
+        opts.headers["Content-Length"] = Buffer.byteLength(payload, "utf8");
         req.write(payload);
     }
     req.end();
@@ -302,10 +301,11 @@ EverliveCursor.prototype._exec = function (callback, method, data) {
  *
  * Options
  *
- * - `connStr` {String} &lt;required> Connection string. The base URL to Everlive service, including the API Key.
+ * - `connStr` {string} &lt;required> - Connection string. The base URL to Everlive service, including the API Key.
  * **Example:** `"http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/"`
- * - `authorization` {String} &lt;optional> The value of the authorization HTTP header if the service is protected.
+ * - `authorization` {string} &lt;optional> - The value of the authorization HTTP header if the service is protected.
  * **Example:** `"MasterKey PqmmvlWWBF5svReW7p3mkYG9X61nus1w"`
+ * - `overrideSystemFields` {boolean} &lt;optionanl> - Allows to override of system fields such as: owner, modifiedAt, modifiedBy and etc.
  *
  * @class Represents a provider for [Everlive](http://www.telerik.com/backend-services) cloud storage.
  * @param {object} opts - Additional options. The only required option is `connStr`.
@@ -317,10 +317,14 @@ function EverliveProvider(opts, schema) {
     var path = url.resolve(opts.connStr, schema.__collName);
 
     this._reqOpts = url.parse(path);
-    this._reqOpts.headers = { "Content-Type": "application/json" };
+    this._reqOpts.headers = { "Content-Type": "application/json; charset=utf-8" };
 
     if (opts.authorization) {
         this._reqOpts.headers.Authorization = opts.authorization;
+    }
+
+    if (opts.overrideSystemFields) {
+        this._reqOpts.headers["x-everlive-override-system-fields"] = "true";
     }
 
     if (this._reqOpts.protocol === "https:") {
@@ -406,7 +410,7 @@ EverliveProvider.prototype._insert = function (items, callback) {
     payload = JSON.stringify(items);
 
     opts.method = "POST";
-    opts.headers["Content-Length"] = payload.length;
+    opts.headers["Content-Length"] = Buffer.byteLength(payload, "utf8");
 
     req = this.http.request(opts, function (res) {
         that._handleResponse(res, function (err, data) {
@@ -445,16 +449,25 @@ EverliveProvider.prototype._update = function (item, callback) {
         id      = this._getId(item),
         opts    = _.cloneDeep(this._reqOpts),
         payload,
-        req;
+        req,
+        itm,
+        set;
 
     if (!id) {
         return this.handleError(Strings.MISSING_ID, callback);
     }
-    delete item[idKey];
+    if (item[idKey]) {
+        itm = true;
+        delete item[idKey];
+    }
+    if (item.$set && item.$set[idKey]) {
+        set = true;
+        delete item.$set[idKey];
+    }
     payload = JSON.stringify(item);
 
     opts.method = "PUT";
-    opts.headers["Content-Length"] = payload.length;
+    opts.headers["Content-Length"] = Buffer.byteLength(payload, "utf8");
     opts.path += "/" + id;
 
     req = this.http.request(opts, function (res) {
@@ -462,7 +475,12 @@ EverliveProvider.prototype._update = function (item, callback) {
             if (err) {
                 return callback(err, data);
             }
-            item[idKey] = id;
+            if (itm) {
+                item[idKey] = id;
+            }
+            if (set) {
+                item.$set[idKey] = id;
+            }
             if (typeof data.Result === "object") {
                 _.extend(item, data.Result);
             }
@@ -485,6 +503,15 @@ EverliveProvider.prototype._upsert = function (item, callback) {
         if (data) {
             that._update(item, callback);
         } else {
+            var id      = that._getId(item),
+                idKey   = that._getIdKey();
+
+            try {
+                item = object.update(item, {}, idKey);
+            } catch (err) {
+                return callback(err);
+            }
+            item[idKey] = id;
             that._insert(item, callback);
         }
     });
@@ -540,7 +567,7 @@ EverliveProvider.prototype._get = function (item, callback) {
         });
     });
 
-    req.on('error', function (err) {
+    req.on("error", function (err) {
         that.handleError(err, callback);
     });
 
@@ -578,7 +605,7 @@ module.exports = EverliveProvider;
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Fri Mar 21 2014 12:06:40 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Mon May 26 2014 17:43:41 GMT+0300 (EEST) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>

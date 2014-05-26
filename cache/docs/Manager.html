@@ -31,7 +31,7 @@
 						<li>
 							<a href="module-autofields.html">autofields</a>
 						</li>
-
+						
 						<li>
 							<a href="module-cache.html">cache</a>
 						</li>
@@ -89,15 +89,11 @@
 					<ul class="dropdown-menu ">
 						
 						<li>
-							<a href="tutorial-configuration.html">Configuration</a>
-						</li>
-						
-						<li>
 							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
 						</li>
 						
 						<li>
-							<a href="tutorial-interceptors.html">Interceptors</a>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
 						</li>
 						
 						<li>
@@ -105,7 +101,11 @@
 						</li>
 						
 						<li>
-							<a href="tutorial-sharding.html">Application Level Sharding</a>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
 						</li>
 						
 
@@ -246,7 +246,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-482">line 482</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-543">line 543</a>
     </li></ul></dd>
     
 
@@ -290,6 +290,60 @@
         <dl>
             
 <dt>
+    <h4 class="name" id="addReplicaSet"><span class="type-signature"></span>addReplicaSet<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Creates new replica set.</p>
+    </div>
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-658">line 658</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
     <h4 class="name" id="collections"><span class="type-signature"></span>collections<span class="type-signature"></span></h4>
     
     
@@ -326,7 +380,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-508">line 508</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-569">line 569</a>
     </li></ul></dd>
     
 
@@ -380,7 +434,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-491">line 491</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-552">line 552</a>
     </li></ul></dd>
     
 
@@ -434,7 +488,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-486">line 486</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-547">line 547</a>
     </li></ul></dd>
     
 
@@ -488,7 +542,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-503">line 503</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-564">line 564</a>
     </li></ul></dd>
     
 
@@ -748,7 +802,7 @@ If omitted the default connection will be used.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-591">line 591</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-652">line 652</a>
     </li></ul></dd>
     
 
@@ -951,7 +1005,7 @@ This argument is required and at least connection string must be present.</p></t
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-545">line 545</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-606">line 606</a>
     </li></ul></dd>
     
 
@@ -1001,7 +1055,15 @@ This argument is required and at least connection string must be present.</p></t
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript"> var entree = require("entree"); entree.addConnection("fs-default", "file-system", "./data"); entree.addConnection("mongo-default", "mongodb", "mongodb://localhost/entreeTest"); entree.addConnection("mongo-2", "mongodb", { connStr: "mongodb://191.168.0.100/node2" }); entree.addConnection("everlive", "everlive", {     connStr: "http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/",     authorization: "MasterKey PqmmvlWWBF8svReW8p3mkYG9X61nus1w" });</pre>
+    <pre class="sunlight-highlight-javascript"> var entree = require("entree");
+
+ entree.addConnection("fs-default", "file-system", "./data");
+ entree.addConnection("mongo-default", "mongodb", "mongodb://localhost/entreeTest");
+ entree.addConnection("mongo-2", "mongodb", { connStr: "mongodb://191.168.0.100/node2" });
+ entree.addConnection("everlive", "everlive", {
+     connStr: "http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/",
+     authorization: "MasterKey PqmmvlWWBF8svReW8p3mkYG9X61nus1w"
+ });</pre>
 
 
     
@@ -1174,7 +1236,7 @@ This argument is required and at least connection string must be present.</p></t
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-612">line 612</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-679">line 679</a>
     </li></ul></dd>
     
 
@@ -1369,7 +1431,7 @@ There may be additional configuration documents as described in the <a href="tut
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-672">line 672</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-739">line 739</a>
     </li></ul></dd>
     
 
@@ -1493,7 +1555,7 @@ rights of the caller for the current operation.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-709">line 709</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-776">line 776</a>
     </li></ul></dd>
     
 
@@ -1543,7 +1605,18 @@ rights of the caller for the current operation.</p>
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript"> var entree = require("entree"); app.post("/items", function (req, res) {     var context = entree.createContext(req.user);     entree.items.insert(context, req.body, function (err, result) {         if (err) {             res.statusCode = 500;             return res.send(err.message);         }         res.send(JSON.stringify(result));     }); });</pre>
+    <pre class="sunlight-highlight-javascript"> var entree = require("entree");
+
+ app.post("/items", function (req, res) {
+     var context = entree.createContext(req.user);
+     entree.items.insert(context, req.body, function (err, result) {
+         if (err) {
+             res.statusCode = 500;
+             return res.send(err.message);
+         }
+         res.send(JSON.stringify(result));
+     });
+ });</pre>
 
 
     
@@ -1643,7 +1716,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-622">line 622</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-689">line 689</a>
     </li></ul></dd>
     
 
@@ -1731,7 +1804,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-679">line 679</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-746">line 746</a>
     </li></ul></dd>
     
 
@@ -1849,7 +1922,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-601">line 601</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-668">line 668</a>
     </li></ul></dd>
     
 
@@ -2004,7 +2077,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-554">line 554</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-615">line 615</a>
     </li></ul></dd>
     
 
@@ -2147,7 +2220,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-654">line 654</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-721">line 721</a>
     </li></ul></dd>
     
 
@@ -2197,7 +2270,18 @@ The manager instance can no longer be used after dispose.</p>
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript"> var entree = require("entree"),     cache = enree.resolveInterceptor("cache"),     stores    = [         { store: "memory", max: 1000, ttl: 10 },         { store: "redis", db: 0, ttl: 100 }     ],     caching = cache.interception(stores, ["get", "select"]); entree.addCollection("users", [caching]); // or add interceptor at later stage entree.users.use(caching);</pre>
+    <pre class="sunlight-highlight-javascript"> var entree = require("entree"),
+     cache = enree.resolveInterceptor("cache"),
+     stores    = [
+         { store: "memory", max: 1000, ttl: 10 },
+         { store: "redis", db: 0, ttl: 100 }
+     ],
+     caching = cache.interception(stores, ["get", "select"]);
+
+ entree.addCollection("users", [caching]);
+
+ // or add interceptor at later stage
+ entree.users.use(caching);</pre>
 
 
     
@@ -2296,7 +2380,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-631">line 631</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-698">line 698</a>
     </li></ul></dd>
     
 
@@ -2439,7 +2523,7 @@ The manager instance can no longer be used after dispose.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-577">line 577</a>
+        <a href="manager.js.html">manager.js</a>, <a href="manager.js.html#sunlight-1-line-638">line 638</a>
     </li></ul></dd>
     
 
@@ -2483,7 +2567,18 @@ The manager instance can no longer be used after dispose.</p>
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">manager .setCollections("users")     .setConnection("mongo-default")     .setSchema({ __name__: "user", name: String, age: Number, roles: Array })     .use(logging)     .use(caching) .addCollection("comments")     .setConnection("mongo-hq")     .use(caching) .done(function (err) {     // collections are ready to be used });</pre>
+    <pre class="sunlight-highlight-javascript">manager
+ .setCollections("users")
+     .setConnection("mongo-default")
+     .setSchema({ __name__: "user", name: String, age: Number, roles: Array })
+     .use(logging)
+     .use(caching)
+ .addCollection("comments")
+     .setConnection("mongo-hq")
+     .use(caching)
+ .done(function (err) {
+     // collections are ready to be used
+ });</pre>
 
 
     
@@ -2515,7 +2610,7 @@ The manager instance can no longer be used after dispose.</p>
 					
 		<span class="jsdoc-message">
 		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
-		on Fri Mar 21 2014 12:06:40 GMT+0200 (EET) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		on Mon May 26 2014 17:43:41 GMT+0300 (EEST) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
 		</span>
 				</footer>
 			</div>
