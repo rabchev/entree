@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>EntreeJS Source: interceptors/autofields.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	
+	<link type="text/css" rel="stylesheet" href="styles/site.custom.css">
+	
+</head>
+
+<body>
+<div class="container-fluid">
+	<div class="navbar navbar-fixed-top ">
+		<div class="navbar-inner">
+			<a class="brand" href="index.html">EntreeJS</a>
+			<ul class="nav">
+				
+				<li class="dropdown">
+					<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b
+						class="caret"></b></a>
+
+					<ul class="dropdown-menu ">
+						
+						<li>
+							<a href="module-autofields.html">autofields</a>
+						</li>
+						
+						<li>
+							<a href="module-cache.html">cache</a>
+						</li>
+						
+						<li>
+							<a href="module-log.html">log</a>
+						</li>
+						
+
+					</ul>
+				</li>
+				
+				<li class="dropdown">
+					<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b
+						class="caret"></b></a>
+
+					<ul class="dropdown-menu ">
+						
+						<li>
+							<a href="Cursor.html">Cursor</a>
+						</li>
+						
+						<li>
+							<a href="EverliveProvider.html">EverliveProvider</a>
+						</li>
+						
+						<li>
+							<a href="FsProvider.html">FsProvider</a>
+						</li>
+						
+						<li>
+							<a href="Manager.html">Manager</a>
+						</li>
+						
+						<li>
+							<a href="MongoProvider.html">MongoProvider</a>
+						</li>
+						
+						<li>
+							<a href="Provider.html">Provider</a>
+						</li>
+						
+						<li>
+							<a href="Replica.html">Replica</a>
+						</li>
+						
+
+					</ul>
+				</li>
+				
+				<li class="dropdown">
+					<a href="tutorials.list.html" class="dropdown-toggle" data-toggle="dropdown">Tutorials<b
+						class="caret"></b></a>
+
+					<ul class="dropdown-menu ">
+						
+						<li>
+							<a href="tutorial-default-config-collection.html">Default Config Collection</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-sharding.html">Application Level Sharding</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-replicas.html">Application Level Replication</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-interceptors.html">Interceptors</a>
+						</li>
+						
+						<li>
+							<a href="tutorial-configuration.html">Configuration</a>
+						</li>
+						
+
+					</ul>
+				</li>
+				
+			</ul>
+		</div>
+	</div>
+
+	<div class="row-fluid">
+
+		
+			<div class="span12">
+				
+				<div id="main">
+					
+
+
+		<h1 class="page-title">Source: interceptors/autofields.js</h1>
+    
+    <section>
+        <article>
+            <pre class="sunlight-highlight-javascript linenums">/**
+ * Interception module for creating and updating fields automatically.
+ * That is, fields that don't have to be explicitly set on a document.
+ *
+ * The folowing fields are supported:
+ *
+ * | Type               | Default field name    | Description                                                               |
+ * |--------------------|-----------------------|---------------------------------------------------------------------------|
+ * | Created At         | _createdAt            | Date and time when the item was first added to the collection.            |
+ * | Created By         | _createdBy            | The identifier of the user that first added the item to the collection.   |
+ * | Last Modified      | _lastModified         | Date and time of the last update of the item.                             |
+ * | Modified By        | _modifiedBy           | The identifier of the user that made the last update of the item.         |
+ * | Version            | _version              | The number of times the item was successfully updated.                    |
+ *
+ * For more details on using interceptors please see the {@tutorial interceptors} tutorial.
+ *
+ * @example
+ *  var entree      = require("entree"),
+ *      autofields  = entree.resolveInterceptor("autofields");
+ *
+ * entree.posts.use(autofields.interception({ createdAt: true, version: "_myUpdateCountField" }));
+ *
+ * @module autofields
+ */
+
+"use strict";
+
+var object  = require("../utils/object");
+
+function tryToFind(val) {
+    var type = typeof val;
+    if (type === "string" || type === "number") {
+        return val;
+    }
+
+    return val._id || val.username || val.email || val.name;
+}
+
+function getUserIdentity(context) {
+    if (context) {
+        var user = tryToFind(context);
+        if (user) {
+            return user;
+        }
+        return tryToFind(context.user);
+    }
+    return null;
+}
+
+function updateAutoFields(item, context, opts, upsert) {
+    var identity, date;
+
+    if (object.validateKeys(item) === "fields") {
+        if (opts.createdAt) {
+            item[opts.createdAt] = date = new Date();
+        }
+
+        if (opts.createdBy) {
+            item[opts.createdBy] = identity = getUserIdentity(context);
+        }
+
+        if (opts.version) {
+            item[opts.version] = 1;
+        }
+
+        if (opts.lastModified) {
+            item[opts.lastModified] = date || new Date();
+        }
+
+        if (opts.modifiedBy) {
+            item[opts.modifiedBy] = identity || getUserIdentity(context);
+        }
+    } else {
+        if (upsert && (opts.createdAt || opts.createdBy)) {
+            if (!item.$setOnInsert) {
+                item.$setOnInsert = {};
+            }
+
+            if (opts.createdAt) {
+                item.$setOnInsert[opts.createdAt] = date = new Date();
+            }
+
+            if (opts.createdBy) {
+                item.$setOnInsert[opts.createdBy] = identity = getUserIdentity(context);
+            }
+        }
+
+        if (opts.version) {
+            if (!item.$inc) {
+                item.$inc = {};
+            }
+            item.$inc[opts.version] = 1;
+        }
+
+        if (opts.lastModified || opts.modifiedBy) {
+            if (!item.$set) {
+                item.$set = {};
+            }
+
+            if (opts.lastModified) {
+                item.$set[opts.lastModified] = date || new Date();
+            }
+
+            if (opts.modifiedBy) {
+                item.$set[opts.modifiedBy] = identity || getUserIdentity(context);
+            }
+        }
+    }
+}
+
+function wrapCursor(cursor, context, opts) {
+    var orgFn = cursor.update;
+    cursor.update = function (data, callback) {
+        updateAutoFields(data, context, opts);
+        orgFn.call(cursor, data, callback);
+    };
+    return cursor;
+}
+
+/**
+ * Configures and returns an interceptor function.
+ *
+ * Options
+ *
+ * - `createdAt` {(boolean|string)=} - if true, defaults to "_createdAt".
+ * - `createdBy` {(boolean|string)=} - if true, defaults to "_createdBy".
+ * - `lastModified` {(boolean|string)=} - if true, defaults to "_lastModified".
+ * - `modifiedBy` {(boolean|string)=} - if true, defaults to "_modifiedBy".
+ * - `version` {(boolean|string)=} - if true, defaults to "_version".
+ *
+ * If any of the options is a string, then the value is used for field name for that option.
+ * If options are omitted, all supported fields will be configured with their default names.
+ *
+ * @param {object=} opts - Autofields options, defines which auto-fileds should be handled and their names.
+ * @return {function}
+ */
+exports.interception = function (opts) {
+    if (!opts) {
+        opts = {
+            createdAt       : "_createdAt",
+            createdBy       : "_createdBy",
+            lastModified    : "_lastModified",
+            modifiedBy      : "_modifiedBy",
+            version         : "_version"
+        };
+    } else {
+        if (opts.createdAt && typeof opts.createdAt !== "string") {
+            opts.createdAt = "_createdAt";
+        }
+        if (opts.createdBy && typeof opts.createdBy !== "string") {
+            opts.createdBy = "_createdBy";
+        }
+        if (opts.lastModified && typeof opts.lastModified !== "string") {
+            opts.lastModified = "_lastModified";
+        }
+        if (opts.modifiedBy && typeof opts.modifiedBy !== "string") {
+            opts.modifiedBy = "_modifiedBy";
+        }
+        if (opts.version && typeof opts.version !== "string") {
+            opts.version = "_version";
+        }
+    }
+
+    return function (action, context, item, next, out) {
+        try {
+            switch (action) {
+            case "_insert":
+            case "_update":
+                updateAutoFields(item, context, opts);
+                break;
+            case "_upsert":
+                updateAutoFields(item, context, opts, true);
+                break;
+            case "_select":
+                if (out) {
+                    next(item, function (err, cur) {
+                        if (cur) {
+                            wrapCursor(cur, context, opts);
+                        }
+                        out(err, cur);
+                    });
+                } else {
+                    return wrapCursor(next(item), context, opts);
+                }
+                return;
+            }
+            next(item, out);
+        } catch (err) {
+            if (out) {
+                return out(err);
+            }
+            throw err;
+        }
+    };
+};
+</pre>
+        </article>
+    </section>
+
+
+
+
+
+				</div>
+
+				<div class="clearfix"></div>
+				<footer>
+					
+					
+		<span class="copyright">
+		EntreeJS Copyright © 2013-2014 The contributors to the EntreeJS project.
+		</span>
+					<br />
+					
+		<span class="jsdoc-message">
+		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a>
+		on Mon May 26 2014 17:43:41 GMT+0300 (EEST) using the <a href="https://github.com/terryweiss/docstrap">DocStrap template</a>.
+		</span>
+				</footer>
+			</div>
+
+			
+			<br clear="both">
+		</div>
+
+	</div>
+	<script src="scripts/sunlight.js"></script>
+	<script src="scripts/sunlight.javascript.js"></script>
+	<script src="scripts/sunlight-plugin.doclinks.js"></script>
+	<script src="scripts/sunlight-plugin.linenumbers.js"></script>
+	<script src="scripts/sunlight-plugin.menu.js"></script>
+	<script src="scripts/jquery.min.js"></script>
+	<script src="scripts/jquery.scrollTo.js"></script>
+	<script src="scripts/jquery.localScroll.js"></script>
+	<script src="scripts/bootstrap-dropdown.js"></script>
+	<script src="scripts/toc.js"></script>
+
+
+	<script>  Sunlight.highlightAll({lineNumbers:true,  showMenu: true, enableDoclinks :true}); </script>
+
+	<script>
+		$( function () {
+			$( "#toc" ).toc( {
+				selectors   : "h1,h2,h3,h4",
+				showAndHide : false,
+				scrollTo    : 60
+			} );
+			$( "#toc>ul" ).addClass( "nav nav-pills nav-stacked" );
+			$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+
+		} );
+	</script>
+
+	
+
+</body>
+</html>

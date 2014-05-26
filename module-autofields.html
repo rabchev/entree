@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>EntreeJS Class: EverliveProvider</title>
+	<title>EntreeJS Module: autofields</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -125,15 +125,13 @@
 					
 
 
-	<h1 class="page-title">Class: EverliveProvider</h1>
+	<h1 class="page-title">Module: autofields</h1>
 <section>
 
 <header>
     <h2>
-    EverliveProvider
+    autofields
     </h2>
-    
-        <div class="class-description"><p>Represents a provider for <a href="http://www.telerik.com/backend-services">Everlive</a> cloud storage.</p></div>
     
 </header>
 
@@ -143,8 +141,115 @@
 
     
         
+            <div class="description"><p>Interception module for creating and updating fields automatically.
+That is, fields that don't have to be explicitly set on a document.</p>
+<p>The folowing fields are supported:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Default field name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Created At</td>
+<td>_createdAt</td>
+<td>Date and time when the item was first added to the collection.</td>
+</tr>
+<tr>
+<td>Created By</td>
+<td>_createdBy</td>
+<td>The identifier of the user that first added the item to the collection.</td>
+</tr>
+<tr>
+<td>Last Modified</td>
+<td>_lastModified</td>
+<td>Date and time of the last update of the item.</td>
+</tr>
+<tr>
+<td>Modified By</td>
+<td>_modifiedBy</td>
+<td>The identifier of the user that made the last update of the item.</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>_version</td>
+<td>The number of times the item was successfully updated.</td>
+</tr>
+</tbody>
+</table>
+<p>For more details on using interceptors please see the <a href="tutorial-interceptors.html">Interceptors</a> tutorial.</p></div>
+        
+
+        
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="autofields.js.html">interceptors/autofields.js</a>, <a href="autofields.js.html#sunlight-1-line-1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+            <h3>Example</h3>
+            
+    <pre class="sunlight-highlight-javascript"> var entree      = require("entree"),
+     autofields  = entree.resolveInterceptor("autofields");
+
+entree.posts.use(autofields.interception({ createdAt: true, version: "_myUpdateCountField" }));</pre>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
 <dt>
-    <h4 class="name" id="EverliveProvider"><span class="type-signature"></span>new EverliveProvider<span class="signature">(opts, <span class="optional">schema</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="interception"><span class="type-signature">&lt;static> </span>interception<span class="signature">(<span class="optional">opts</span>)</span><span class="type-signature"> &rarr; {function}</span></h4>
     
     
 </dt>
@@ -152,18 +257,17 @@
     
     
     <div class="description">
-        <p>Constructor for the <a href="http://www.telerik.com/backend-services">Everlive</a> provider. This class inherits from <a href="Provider.html">Provider</a>.</p>
-<p>Each data collection in EntreeJS represents a data provider instance, therefore an
-Everlive provider instance corresponds to an Everlive <a href="http://docs.telerik.com/platform/backend-services/getting-started/types-and-fields">type</a>.</p>
-<p>For usage reference, please refer to <a href="Provider.html">Provider documentation</a>.</p>
+        <p>Configures and returns an interceptor function.</p>
 <p>Options</p>
 <ul>
-<li><code>connStr</code> {string} <required> - Connection string. The base URL to Everlive service, including the API Key.
-<strong>Example:</strong> <code>&quot;http://api.everlive.com/v1/uZEGyZYKiSq5CTSq/&quot;</code></li>
-<li><code>authorization</code> {string} <optional> - The value of the authorization HTTP header if the service is protected.
-<strong>Example:</strong> <code>&quot;MasterKey PqmmvlWWBF5svReW7p3mkYG9X61nus1w&quot;</code></li>
-<li><code>overrideSystemFields</code> {boolean} <optionanl> - Allows to override of system fields such as: owner, modifiedAt, modifiedBy and etc.</li>
+<li><code>createdAt</code> {(boolean|string)=} - if true, defaults to &quot;_createdAt&quot;.</li>
+<li><code>createdBy</code> {(boolean|string)=} - if true, defaults to &quot;_createdBy&quot;.</li>
+<li><code>lastModified</code> {(boolean|string)=} - if true, defaults to &quot;_lastModified&quot;.</li>
+<li><code>modifiedBy</code> {(boolean|string)=} - if true, defaults to &quot;_modifiedBy&quot;.</li>
+<li><code>version</code> {(boolean|string)=} - if true, defaults to &quot;_version&quot;.</li>
 </ul>
+<p>If any of the options is a string, then the value is used for field name for that option.
+If options are omitted, all supported fields will be configured with their default names.</p>
     </div>
     
 
@@ -214,37 +318,6 @@ Everlive provider instance corresponds to an Everlive <a href="http://docs.teler
             
                 <td class="attributes">
                 
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Additional options. The only required option is <code>connStr</code>.</p></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>schema</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
                     &lt;optional><br>
                 
 
@@ -256,7 +329,7 @@ Everlive provider instance corresponds to an Everlive <a href="http://docs.teler
 
             
 
-            <td class="description last"><p>Defines the fields of the collection represented by the provider instance.</p></td>
+            <td class="description last"><p>Autofields options, defines which auto-fileds should be handled and their names.</p></td>
         </tr>
 
 	
@@ -288,7 +361,7 @@ Everlive provider instance corresponds to an Everlive <a href="http://docs.teler
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="everlive.js.html">providers/everlive.js</a>, <a href="everlive.js.html#sunlight-1-line-183">line 183</a>
+        <a href="autofields.js.html">interceptors/autofields.js</a>, <a href="autofields.js.html#sunlight-1-line-137">line 137</a>
     </li></ul></dd>
     
 
@@ -309,25 +382,30 @@ Everlive provider instance corresponds to an Everlive <a href="http://docs.teler
     
     
     
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+	<dt>
+		Type
+	</dt>
+	<dd>
+		
+<span class="param-type">function</span>
+
+
+	</dd>
+</dl>
+
+
+        
     
     
 </dd>
 
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
+        </dl>
     
 
     
