@@ -1,4 +1,4 @@
-/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, indent: 4, maxerr: 50 */
+/*jshint -W106 */
 
 "use strict";
 
@@ -43,7 +43,7 @@ function init(callback) {
         }
     });
 
-    req.on('error', function (err) {
+    req.on("error", function (err) {
         callback(err);
     });
 

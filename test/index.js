@@ -1,5 +1,3 @@
-/*jslint plusplus: true, devel: true, nomen: true, node: true, es5: true, indent: 4, maxerr: 50 */
-
 try {
     var reporter = require("nodeunit").reporters.default;
 } catch (e) {

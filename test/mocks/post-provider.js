@@ -1,12 +1,10 @@
-/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, indent: 4, maxerr: 50 */
-
 "use strict";
 
 var Provider    = require("../../lib/provider"),
     object      = require("../../lib/utils/object"),
     Cursor      = require("./cursor-mock"),
     util        = require("util"),
-    uuid        = require('node-uuid'),
+    uuid        = require("node-uuid"),
     _           = require("lodash"),
     empty       = "";
 

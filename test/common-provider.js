@@ -1,4 +1,4 @@
-/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, es5: true, indent: 4, maxerr: 50 */
+/*jshint -W106 */
 
 "use strict";
 

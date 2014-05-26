@@ -1,4 +1,4 @@
-/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, sloppy: true, indent: 4, maxerr: 50 */
+"use strict";
 
 var Cursor      = require("../../lib/cursor"),
     util        = require("util"),
@@ -6,8 +6,6 @@ var Cursor      = require("../../lib/cursor"),
     _           = require("lodash");
 
 function CursorMock(provider, query, options) {
-    "use strict";
-
     if (query) {
         this.sifter = sift(query);
     }
@@ -21,8 +19,6 @@ function CursorMock(provider, query, options) {
 util.inherits(CursorMock, Cursor);
 
 CursorMock.prototype.reset = function () {
-    "use strict";
-
     this.current = this.skipValue;
     if (this.current !== 0 && this.limitValue !== 0) {
         this.limitValue += this.current;
@@ -57,8 +53,6 @@ CursorMock.prototype._map = function (item) {
 };
 
 CursorMock.prototype._nextObject = function (callback) {
-    "use strict";
-
     var self = this;
     function nextItem() {
         var item;

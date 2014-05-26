@@ -1,5 +1,3 @@
-/*jslint plusplus: true, devel: true, nomen: true, vars: true, node: true, indent: 4, maxerr: 50 */
-
 "use strict";
 
 var testCase    = require("./common-provider"),
@@ -16,7 +14,7 @@ var testCase    = require("./common-provider"),
     };
 
 function init(callback) {
-    var MongoClient = require('mongodb').MongoClient;
+    var MongoClient = require("mongodb").MongoClient;
 
     MongoClient.connect(options.connStr, function (err, db) {
         if (err) {

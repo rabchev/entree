@@ -1,12 +1,10 @@
-/*jslint node: true, plusplus: true, devel: true, nomen: true, vars: true, indent: 4, maxerr: 50 */
-
 "use strict";
 
 var testCase        = require("nodeunit").testCase,
     Manager         = require("../lib/manager"),
     Provider        = require("./mocks/post-provider"),
     log             = require("../lib/interceptors/log"),
-    map             = require('map-stream'),
+    map             = require("map-stream"),
     msgs            = [],
     manager,
     stream;
