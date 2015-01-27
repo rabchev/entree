@@ -25,7 +25,7 @@ var store = {
             }
         };
 
-        self.set = function (key, val, callback) {
+        self.set = function (key, val, ttl, callback) {
             self.setCalls++;
             self.storage[key] = val;
             if (callback) {

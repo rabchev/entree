@@ -1,7 +1,7 @@
 {
   "name": "entree",
   "description": "Data Access Framework for NodeJS",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "main": "index",
   "author": "Boyan Rabchev <boyan@rabchev.com>",
   "contributors": [
@@ -24,13 +24,13 @@
   },
   "homepage": "http://rabchev.github.io/entree",
   "dependencies": {
-    "node-uuid": "*",
-    "sift": "*",
-    "lodash": "*",
-    "async": "*",
-    "mongodb": "*",
-    "cache-manager": "*",
-    "winston": "*"
+    "node-uuid": "^1.4",
+    "sift": "^0.2",
+    "lodash": "^2.0",
+    "async": "^0.9",
+    "mongodb": "^2.0",
+    "cache-manager": "^0.15",
+    "winston": "^0.8"
   },
   "devDependencies": {
     "nodeunit": "*",
