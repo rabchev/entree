@@ -28,7 +28,7 @@
     "sift": "^0.2",
     "lodash": "^2.0",
     "async": "^0.9",
-    "mongodb": "^2.0",
+    "mongodb": "^1.4",
     "cache-manager": "^0.15",
     "winston": "^0.8"
   },
